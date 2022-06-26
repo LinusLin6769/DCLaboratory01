@@ -1,0 +1,18 @@
+{
+    "dataset": {
+        "file name": "m3_monthly_dataset.json",
+        "file type": "json",
+        "file path": "datasets/m3_monthly_dataset.json",
+        "series used": [6, 7, 8]
+    },
+    "transformation config": {
+        "xthresholds": [0.3, 0.1]
+    },
+    "modelling config": {
+        "validation size": 4,
+        "test size": 4,
+        "forecast horizon": 1,
+        "score measure": "SMAPE"
+    },
+    "models": ["MLP"]
+}
