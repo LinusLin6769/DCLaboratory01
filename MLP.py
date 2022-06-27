@@ -53,15 +53,17 @@ for i, entry in tqdm(datasets.items(), desc='Running MLP'):
 
             # n_val folds rolling validation
             for v in range(n_val):
-                train = series[:-split+v+1]
+                train_v = series[:-split+v+1]  #  includes the validation point that should be excluded during transformation
+                train = train_v[:-horizon]
+                val = train_v[-horizon]
 
                 with warnings.catch_warnings():
                     warnings.filterwarnings(action='ignore', category=skConvWarn)
                     
                     # raw
                     rX, ry = data_prep.ts_prep(train, nlag=policy['n lag'], horizon=horizon)
-                    train_X, val_X = rX[:-1], rX[-1]
-                    train_y, val_y = ry[:-1], ry[-1]
+                    train_X, val_X = rX, train[-policy['n lag']:]
+                    train_y, val_y = ry, val
 
                     rmodel = MLPRegressor(hidden_layer_sizes=policy['struc'], max_iter=policy['max iter'], random_state=1)
                     rmodel.fit(train_X, train_y.ravel())
@@ -70,7 +72,7 @@ for i, entry in tqdm(datasets.items(), desc='Running MLP'):
 
                     # with transformation
                     """Transformation has to be improved!!!"""
-                    sigma = np.std(np.diff(np.log(train[:-1])))
+                    sigma = np.std(np.diff(np.log(train)))
                     thres = (sigma*policy['thres up'], -sigma*policy['thres down'])
                     t = DCTransformer()
                     t.transform(train, threshold=thres)
