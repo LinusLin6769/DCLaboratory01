@@ -96,7 +96,7 @@ models = config['models']
 models_params = {
     'MLP': {
         'n of lags': [1, 2],
-        'strucs': [(100, ), (100, 100, )],
+        'strucs': [(100, ), (100, 100, ), (100, 100, 100,)],
         'max iter': [100]
     },
     'EN': {
@@ -104,8 +104,13 @@ models_params = {
         'alpha' : [0.1, 0.8],
         'l1 ratio': [0.1, 0.5]
     },
-    'AutoARIMA': {},
-    'ETS': {}
+    'ETS': {
+        'seasonal periods': [12],
+        'trend': ['add', 'mul'],
+        'seasonal':['add', 'mul'],
+        'damped trend': [True, False]
+    },
+    'AutoARIMA': {}
 }
 
 # create policy sets
@@ -128,8 +133,19 @@ EN_policies = [
         'l1 ratio': h[3]
     } for h in product(thresholds, *models_params['EN'].values())
 ]
+
+ETS_policies = [
+    {
+        'thres up': h[0][0],
+        'thres down': h[0][1],
+        'seasonal periods': h[1],
+        'trend': h[2],
+        'seasonal': h[3],
+        'damped trend': h[4]
+    } for h in product(thresholds, *models_params['ETS'].values())
+]
+
 AutoARIMA_policies = [{}]
-ETS_policies = [{}]
 
 #
 # make directory for this experiment
@@ -167,7 +183,14 @@ for model in models:
         import AutoARIMA as autoarima
     elif model == "ETS":
         import ETS as ets
-
+        with open(f'experiment_info/{start}/{model}_raw.json', 'x') as file:
+            json.dump(ets.raw_info, file, indent=4)
+        with open(f'experiment_info/{start}/{model}_tran.json', 'x') as file:
+            json.dump(ets.tran_info, file, indent=4)
+        """Clear the memory
+        del ets.raw_info
+        del ets.tran_info
+        """
 #
 # process the experiment run info for a bit
 #

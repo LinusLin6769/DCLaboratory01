@@ -14,5 +14,5 @@
         "forecast horizon": 1,
         "score measure": "SMAPE"
     },
-    "models": ["MLP", "EN"]
+    "models": ["MLP", "EN", "ETS"]
 }

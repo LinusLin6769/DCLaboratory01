@@ -47,43 +47,46 @@ for i, entry in tqdm(datasets.items(), desc='Running EN'):
     # suppress convergence warning during validation
     with warnings.catch_warnings():
         warnings.filterwarnings(action='ignore', category=skConvWarn)
+
         for policy in tqdm(policies, desc=f'Series {i}, validating'):
             raw_val_errs = []
             tran_val_errs = []
 
             # n_val folds rolling validation
             for v in range(n_val):
-                train = series[:-split+v+1]
+                train_v = series[:-split+v+1]
+                train = train_v[:-horizon]
+                val = train_v[-horizon:]
 
-                with warnings.catch_warnings():
-                    warnings.filterwarnings(action='ignore', category=skConvWarn)
+#                 with warnings.catch_warnings():
+#                     warnings.filterwarnings(action='ignore', category=skConvWarn)
                     
-                    # raw
-                    rX, ry = data_prep.ts_prep(train, nlag=policy['n lag'], horizon=horizon)
-                    train_X, val_X = rX[:-1], rX[-1]
-                    train_y, val_y = ry[:-1], ry[-1]
-                    
-                    rmodel = ElasticNet(alpha=policy['alpha'], l1_ratio=policy['l1 ratio'], random_state=0)
-                    rmodel.fit(train_X, train_y)
-                    y, y_hat = val_y[0], rmodel.predict([val_X])[0]
-                    raw_val_errs.append(score(y, y_hat))
+                # raw
+                rX, ry = data_prep.ts_prep(train, nlag=policy['n lag'], horizon=horizon)
+                train_X, val_X = rX, train[-policy['n lag']:]
+                train_y, val_y = ry, val
+                
+                rmodel = ElasticNet(alpha=policy['alpha'], l1_ratio=policy['l1 ratio'], random_state=0)
+                rmodel.fit(train_X, train_y)
+                y, y_hat = val_y[0], rmodel.predict([val_X])[0]
+                raw_val_errs.append(score(y, y_hat))
 
-                    # with transformation
-                    """Transformation has to be improved!!!"""
-                    sigma = np.std(np.diff(np.log(train[:-1])))
-                    thres = (sigma*policy['thres up'], -sigma*policy['thres down'])
-                    t = DCTransformer()
-                    t.transform(train, threshold=thres)
-                    ttrain = t.tdata1
+                # with transformation
+                """Transformation has to be improved!!!"""
+                sigma = np.std(np.diff(np.log(train)))
+                thres = (sigma*policy['thres up'], -sigma*policy['thres down'])
+                t = DCTransformer()
+                t.transform(train, threshold=thres)
+                ttrain = t.tdata1
 
-                    tX, ty = data_prep.ts_prep(ttrain, nlag=policy['n lag'], horizon=horizon)
-                    ttrain_X, tval_X = tX[:-1], tX[-1]
-                    ttrain_y, val_y = ty[:-1], ry[-1]
+                tX, ty = data_prep.ts_prep(ttrain, nlag=policy['n lag'], horizon=horizon)
+                ttrain_X, tval_X = tX, ttrain[-policy['n lag']:]
+                ttrain_y, val_y = ty, val
 
-                    tmodel = ElasticNet(alpha=policy['alpha'],l1_ratio=policy['l1 ratio'], random_state=0)
-                    tmodel.fit(ttrain_X, ttrain_y)
-                    y, ty_hat = val_y[0], tmodel.predict([tval_X])[0]
-                    tran_val_errs.append(score(y, ty_hat))
+                tmodel = ElasticNet(alpha=policy['alpha'],l1_ratio=policy['l1 ratio'], random_state=0)
+                tmodel.fit(ttrain_X, ttrain_y)
+                y, ty_hat = val_y[0], tmodel.predict([tval_X])[0]
+                tran_val_errs.append(score(y, ty_hat))
 
             raw_policy_errs.append(np.mean(raw_val_errs))
             tran_policy_errs.append(np.mean(tran_val_errs))
@@ -110,14 +113,16 @@ for i, entry in tqdm(datasets.items(), desc='Running EN'):
         warnings.filterwarnings(action='ignore', category=skConvWarn)
         for j in trange(n_test, desc=f'Series {i}, testing'):
             if j == n_test-1:
-                train = series
+                train_v = series
             else:
-                train = series[:-n_test+j+1]
+                train_v = series[:-n_test+j+1]
+            train = train_v[:-horizon]
+            val = train_v[-horizon:]
 
             # raw
             rX, ry = data_prep.ts_prep(train, nlag=best_raw_policy['n lag'], horizon=horizon)
-            train_X, val_X = rX[:-1], rX[-1]
-            train_y, val_y = ry[:-1], ry[-1]
+            train_X, val_X = rX, train[-best_raw_policy['n lag']:]
+            train_y, val_y = ry, val
 
             rmodel = ElasticNet(alpha=policy['alpha'], l1_ratio=policy['l1 ratio'], random_state=0)
             rmodel.fit(train_X, train_y)
@@ -127,15 +132,15 @@ for i, entry in tqdm(datasets.items(), desc='Running EN'):
 
             # with transformation
             """Transformation has to be improved!!!"""
-            sigma = np.std(np.diff(np.log(train[:-1])))
+            sigma = np.std(np.diff(np.log(train)))
             thres = (sigma*best_tran_policy['thres up'], -sigma*best_tran_policy['thres down'])
             t = DCTransformer()
             t.transform(train, threshold=thres)
             ttrain = t.tdata1
 
             tX, ty = data_prep.ts_prep(ttrain, nlag=best_tran_policy['n lag'], horizon=horizon)
-            ttrain_X, tval_X = tX[:-1], tX[-1]
-            ttrain_y, val_y = ty[:-1], ry[-1]
+            ttrain_X, tval_X = tX, ttrain[-best_tran_policy['n lag']:]
+            ttrain_y, val_y = ty, val
 
             tmodel = ElasticNet(alpha=policy['alpha'],l1_ratio=policy['l1 ratio'], random_state=0)
             tmodel.fit(ttrain_X, ttrain_y)

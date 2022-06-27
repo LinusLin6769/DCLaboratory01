@@ -1,5 +1,5 @@
 from __main__ import datasets, v_size, t_size, horizon, score
-from __main__ import EN_policies as policies
+from __main__ import ETS_policies as policies
 from dc_transformation import DCTransformer
 from statsmodels.tools.sm_exceptions import InterpolationWarning
 from statsmodels.tools.sm_exceptions import ConvergenceWarning as statsConvWarn
@@ -48,51 +48,51 @@ for i, entry in tqdm(datasets.items(), desc='Running ETS'):
 
     # suppress convergence warning during validation
     with warnings.catch_warnings():
-        warnings.filterwarnings(action='ignore', category=skConvWarn)
+        old_settings = np.seterr(over='ignore')  # suppress overflow warnings
+        warnings.filterwarnings(action='ignore', category=statsConvWarn)
+
         for policy in tqdm(policies, desc=f'Series {i}, validating'):
             raw_val_errs = []
             tran_val_errs = []
 
             # n_val folds rolling validation
             for v in range(n_val):
-                train = series[:-split+v+1]
-
-                with warnings.catch_warnings():
-                    warnings.filterwarnings(action='ignore', category=skConvWarn)
+                train_v = series[:-split+v+1]
+                train = train_v[:-horizon]
+                val = train_v[-horizon:]
                     
-                    # raw
-                    rmodel = ExponentialSmoothing()
+                # raw
+                rmodel = ExponentialSmoothing(
+                    train,
+                    seasonal_periods=policy['seasonal periods'],
+                    trend=policy['trend'],
+                    seasonal=policy['seasonal'],
+                    damped_trend=policy['damped trend']
+                ).fit()
+                y, y_hat = val[0], rmodel.forecast(horizon).tolist()[0] # the forecast function returns np.array, which is not acceptable for json
+                raw_val_errs.append(score(y, y_hat))
 
+                # with transformation
+                """Transformation has to be improved!!!"""
+                sigma = np.std(np.diff(np.log(train)))
+                thres = (sigma*policy['thres up'], -sigma*policy['thres down'])
+                t = DCTransformer()
+                t.transform(train, threshold=thres)
+                ttrain = t.tdata1
 
-
-                    rX, ry = data_prep.ts_prep(train, nlag=policy['n lag'], horizon=horizon)
-                    train_X, val_X = rX[:-1], rX[-1]
-                    train_y, val_y = ry[:-1], ry[-1]
-                    
-                    rmodel = ElasticNet(alpha=policy['alpha'], l1_ratio=policy['l1 ratio'], random_state=0)
-                    rmodel.fit(train_X, train_y)
-                    y, y_hat = val_y[0], rmodel.predict([val_X])[0]
-                    raw_val_errs.append(score(y, y_hat))
-
-                    # with transformation
-                    """Transformation has to be improved!!!"""
-                    sigma = np.std(np.diff(np.log(train[:-1])))
-                    thres = (sigma*policy['thres up'], -sigma*policy['thres down'])
-                    t = DCTransformer()
-                    t.transform(train, threshold=thres)
-                    ttrain = t.tdata1
-
-                    tX, ty = data_prep.ts_prep(ttrain, nlag=policy['n lag'], horizon=horizon)
-                    ttrain_X, tval_X = tX[:-1], tX[-1]
-                    ttrain_y, val_y = ty[:-1], ry[-1]
-
-                    tmodel = ElasticNet(alpha=policy['alpha'],l1_ratio=policy['l1 ratio'], random_state=0)
-                    tmodel.fit(ttrain_X, ttrain_y)
-                    y, ty_hat = val_y[0], tmodel.predict([tval_X])[0]
-                    tran_val_errs.append(score(y, ty_hat))
+                tmodel = ExponentialSmoothing(
+                    ttrain,
+                    seasonal_periods=policy['seasonal periods'],
+                    trend=policy['trend'],
+                    seasonal=policy['seasonal'],
+                    damped_trend=policy['damped trend']
+                ).fit()
+                y, ty_hat = val[0], tmodel.forecast(horizon).tolist()[0]
+                tran_val_errs.append(score(y, ty_hat))
 
             raw_policy_errs.append(np.mean(raw_val_errs))
             tran_policy_errs.append(np.mean(tran_val_errs))
+        np.seterr(**old_settings)  # restore the warning settings
     
     # model selection with all the validation errors
     best_raw_val_SMAPE_ind = np.argmin(raw_policy_errs)
@@ -113,41 +113,47 @@ for i, entry in tqdm(datasets.items(), desc='Running ETS'):
     tran_y_hats = []
 
     with warnings.catch_warnings():
-        warnings.filterwarnings(action='ignore', category=skConvWarn)
+        old_settings = np.seterr(over='ignore')
+        warnings.filterwarnings(action='ignore', category=statsConvWarn)
         for j in trange(n_test, desc=f'Series {i}, testing'):
             if j == n_test-1:
-                train = series
+                train_v = series
             else:
-                train = series[:-n_test+j+1]
+                train_v = series[:-n_test+j+1]
+            train = train_v[:-horizon]
+            val = train_v[-horizon:]
 
             # raw
-            rX, ry = data_prep.ts_prep(train, nlag=best_raw_policy['n lag'], horizon=horizon)
-            train_X, val_X = rX[:-1], rX[-1]
-            train_y, val_y = ry[:-1], ry[-1]
-
-            rmodel = ElasticNet(alpha=policy['alpha'], l1_ratio=policy['l1 ratio'], random_state=0)
-            rmodel.fit(train_X, train_y)
-            y, y_hat = val_y[0], rmodel.predict([val_X])[0]
+            rmodel = ExponentialSmoothing(
+                train,
+                seasonal_periods=policy['seasonal periods'],
+                trend=policy['trend'],
+                seasonal=policy['seasonal'],
+                damped_trend=policy['damped trend']
+            ).fit()
+            y, y_hat = val[0], rmodel.forecast(horizon).tolist()[0]
             raw_test_errs.append(score(y, y_hat))
             raw_y_hats.append(y_hat)
 
             # with transformation
             """Transformation has to be improved!!!"""
-            sigma = np.std(np.diff(np.log(train[:-1])))
+            sigma = np.std(np.diff(np.log(train)))
             thres = (sigma*best_tran_policy['thres up'], -sigma*best_tran_policy['thres down'])
             t = DCTransformer()
             t.transform(train, threshold=thres)
             ttrain = t.tdata1
 
-            tX, ty = data_prep.ts_prep(ttrain, nlag=best_tran_policy['n lag'], horizon=horizon)
-            ttrain_X, tval_X = tX[:-1], tX[-1]
-            ttrain_y, val_y = ty[:-1], ry[-1]
-
-            tmodel = ElasticNet(alpha=policy['alpha'],l1_ratio=policy['l1 ratio'], random_state=0)
-            tmodel.fit(ttrain_X, ttrain_y)
-            y, ty_hat = val_y[0], tmodel.predict([tval_X])[0]
+            tmodel = ExponentialSmoothing(
+                ttrain,
+                seasonal_periods=policy['seasonal periods'],
+                trend=policy['trend'],
+                seasonal=policy['seasonal'],
+                damped_trend=policy['damped trend']
+            ).fit()
+            y, ty_hat = val[0], tmodel.forecast(horizon).tolist()[0]
             tran_test_errs.append(score(y, ty_hat))
             tran_y_hats.append(ty_hat)
+        np.seterr(**old_settings)  # restore the warning settings
 
     raw_info[i] = {
         'message': None,  # placeholder for other information
