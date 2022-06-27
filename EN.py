@@ -24,10 +24,10 @@ for i, entry in tqdm(datasets.items(), desc='Running EN'):
     for s in series:
         if s <= 0:
             raw_info[i] = {
-                'message': 'Existence of value <= 0, skipped.'
+                'message': 'Skipped: existence of value <= 0.'
             }
             tran_info[i] = {
-                'message': 'Existene of value <= 0, skipped.'
+                'message': 'Skipped: existene of value <= 0.'
             }
             skip = True
             break
@@ -47,6 +47,7 @@ for i, entry in tqdm(datasets.items(), desc='Running EN'):
     # suppress convergence warning during validation
     with warnings.catch_warnings():
         warnings.filterwarnings(action='ignore', category=skConvWarn)
+        warnings.filterwarnings(action='ignore', category=UserWarning)
 
         for policy in tqdm(policies, desc=f'Series {i}, validating'):
             raw_val_errs = []
@@ -58,9 +59,6 @@ for i, entry in tqdm(datasets.items(), desc='Running EN'):
                 train = train_v[:-horizon]
                 val = train_v[-horizon:]
 
-#                 with warnings.catch_warnings():
-#                     warnings.filterwarnings(action='ignore', category=skConvWarn)
-                    
                 # raw
                 rX, ry = data_prep.ts_prep(train, nlag=policy['n lag'], horizon=horizon)
                 train_X, val_X = rX, train[-policy['n lag']:]
@@ -79,14 +77,17 @@ for i, entry in tqdm(datasets.items(), desc='Running EN'):
                 t.transform(train, threshold=thres)
                 ttrain = t.tdata1
 
-                tX, ty = data_prep.ts_prep(ttrain, nlag=policy['n lag'], horizon=horizon)
-                ttrain_X, tval_X = tX, ttrain[-policy['n lag']:]
-                ttrain_y, val_y = ty, val
+                if len(ttrain) > 1:
+                    tX, ty = data_prep.ts_prep(ttrain, nlag=policy['n lag'], horizon=horizon)
+                    ttrain_X, tval_X = tX, ttrain[-policy['n lag']:]
+                    ttrain_y, val_y = ty, val
 
-                tmodel = ElasticNet(alpha=policy['alpha'],l1_ratio=policy['l1 ratio'], random_state=0)
-                tmodel.fit(ttrain_X, ttrain_y)
-                y, ty_hat = val_y[0], tmodel.predict([tval_X])[0]
-                tran_val_errs.append(score(y, ty_hat))
+                    tmodel = ElasticNet(alpha=policy['alpha'],l1_ratio=policy['l1 ratio'], random_state=0)
+                    tmodel.fit(ttrain_X, ttrain_y)
+                    y, ty_hat = val_y[0], tmodel.predict([tval_X])[0]
+                    tran_val_errs.append(score(y, ty_hat))
+                else:
+                    tran_val_errs.append(0.999)
 
             raw_policy_errs.append(np.mean(raw_val_errs))
             tran_policy_errs.append(np.mean(tran_val_errs))

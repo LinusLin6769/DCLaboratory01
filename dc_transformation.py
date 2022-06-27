@@ -2,6 +2,7 @@ from typing import Dict, Callable, List
 from datetime import datetime, timedelta
 from scipy.interpolate import interp1d
 import numpy as np
+import warnings
 
 class DCTransformer:
 
@@ -156,42 +157,52 @@ class DCTransformer:
     def interpolation0(self) -> None:
         marked_x = np.array(self.markers[0][0]).astype(int)
         y = np.array(self.markers[0][1]).astype(float)
+        
+        # with inappropriate threshold, the algo might not find any extreme or dc
+        if len(y) >= 2:
+            index_x = list(np.arange(len(self.data)))
 
-        index_x = list(np.arange(len(self.data)))
+            interpolate_max_range = marked_x[-1]
+            index_x_max_range = index_x[-1]
+            out_of_range_fill = np.arange(interpolate_max_range+1, index_x_max_range+1)
 
-        interpolate_max_range = marked_x[-1]
-        index_x_max_range = index_x[-1]
-        out_of_range_fill = np.arange(interpolate_max_range+1, index_x_max_range+1)
+            # generate the interpolated values
+            #
+            # in-range interpolation
+            inter_y = interp1d(marked_x, y)
 
-        # generate the interpolated values
-        #
-        # in-range interpolation
-        inter_y = interp1d(marked_x, y)
-
-        # out-range interpolation (use original data)
-        temp = np.arange(interpolate_max_range+1)
-        transformed_target = inter_y(temp)
-        self.tdata0 = np.append(transformed_target, self.data[out_of_range_fill])
+            # out-range interpolation (use original data)
+            temp = np.arange(interpolate_max_range+1)
+            transformed_target = inter_y(temp)
+            self.tdata0 = np.append(transformed_target, self.data[out_of_range_fill])
+        else:
+            self.tdata0 = np.array([y])
+            warnings.warn("Cannot found any extreme. Check if threshold is appropriate.")
     
     def interpolation1(self) -> None:
         marked_x = np.array(self.markers[100][0]).astype(int)
         y = np.array(self.markers[100][1]).astype(float)
 
-        index_x = list(np.arange(len(self.data)))
+        # with inappropriate threshold, the algo might not find any extreme or dc
+        if len(y) >= 2:
+            index_x = list(np.arange(len(self.data)))
 
-        interpolate_max_range = marked_x[-1]
-        index_x_max_range = index_x[-1]
-        out_of_range_fill = np.arange(interpolate_max_range+1, index_x_max_range+1)
+            interpolate_max_range = marked_x[-1]
+            index_x_max_range = index_x[-1]
+            out_of_range_fill = np.arange(interpolate_max_range+1, index_x_max_range+1)
 
-        # generate the interpolated values
-        #
-        # in-range interpolation
-        inter_y = interp1d(marked_x, y)
+            # generate the interpolated values
+            #
+            # in-range interpolation
+            inter_y = interp1d(marked_x, y)
 
-        # out-range interpolation (use original data)
-        temp = np.arange(interpolate_max_range+1)
-        transformed_target = inter_y(temp)
-        self.tdata1 = np.append(transformed_target, self.data[out_of_range_fill])
+            # out-range interpolation (use original data)
+            temp = np.arange(interpolate_max_range+1)
+            transformed_target = inter_y(temp)
+            self.tdata1 = np.append(transformed_target, self.data[out_of_range_fill])
+        else:
+            self.tdata1 = np.array([y])
+            warnings.warn("Cannot found any directional change. Check if threshold is appropriate.")
 
     def make_plot(self, marks=False, w_data0=False) -> None:
         import matplotlib.pyplot as plt

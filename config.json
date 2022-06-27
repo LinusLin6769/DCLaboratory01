@@ -3,14 +3,15 @@
         "file name": "m3_monthly_dataset.json",
         "file type": "json",
         "file path": "datasets/m3_monthly_dataset.json",
-        "series used": [6, 7, 8]
+        "use series": [6, 7, 8],
+        "min length": 50
     },
     "transformation config": {
-        "xthresholds": [0.3, 0.1]
+        "xthresholds": [0.01, 1.1, 0.4]
     },
     "modelling config": {
-        "validation size": 4,
-        "test size": 4,
+        "validation size": 10,
+        "test size": 15,
         "forecast horizon": 1,
         "score measure": "SMAPE"
     },

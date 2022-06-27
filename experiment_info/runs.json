@@ -178,5 +178,257 @@
             }
         },
         "messages": null
+    },
+    {
+        "run time": ["27-06-2022--19-55-31", "27-06-2022--19-55-32"],
+        "config input": {
+            "dataset": {
+                "file name": "m3_monthly_dataset.json",
+                "file type": "json",
+                "file path": "datasets/m3_monthly_dataset.json",
+                "series used": [6, 7, 8]
+            },
+            "transformation config": {
+                "xthresholds": [0.02, 1.5, 0.5]
+            },
+            "modelling config": {
+                "validation size": 0.05,
+                "test size": 3,
+                "forecast horizon": 1,
+                "score measure": "SMAPE"
+            },
+            "models": ["MLP", "EN", "ETS"]
+        },
+        "model hyper_params": {
+            "MLP": {
+                "n of lags": [1, 2],
+                "strucs": [[0], [3]],
+                "max iter": [500]
+            },
+            "EN": {
+                "n of lags": [1, 2],
+                "alpha": [0.1, 0.3],
+                "l1 ratio": [0.1, 0.5]
+            },
+            "ETS": {
+                "seasonal periods": [12],
+                "trend": ["add", "mul"],
+                "seasonal": ["add", "mul"],
+                "damped trend": [true, false]
+            }
+        },
+        "messages": null
+    },
+    {
+        "run time": ["27-06-2022--20-00-59", "27-06-2022--20-01-00"],
+        "config input": {
+            "dataset": {
+                "file name": "m3_monthly_dataset.json",
+                "file type": "json",
+                "file path": "datasets/m3_monthly_dataset.json",
+                "series used": [6, 7, 8]
+            },
+            "transformation config": {
+                "xthresholds": [0.02, 1.1, 0.3]
+            },
+            "modelling config": {
+                "validation size": 0.1,
+                "test size": 3,
+                "forecast horizon": 1,
+                "score measure": "SMAPE"
+            },
+            "models": ["MLP", "EN", "ETS"]
+        },
+        "model hyper_params": {
+            "MLP": {
+                "n of lags": [1, 2],
+                "strucs": [[0], [3]],
+                "max iter": [500]
+            },
+            "EN": {
+                "n of lags": [1, 2],
+                "alpha": [0.1, 0.3],
+                "l1 ratio": [0.1, 0.5]
+            },
+            "ETS": {
+                "seasonal periods": [12],
+                "trend": ["add", "mul"],
+                "seasonal": ["add", "mul"],
+                "damped trend": [true, false]
+            }
+        },
+        "messages": null
+    },
+    {
+        "run time": ["27-06-2022--20-03-48", "27-06-2022--20-03-48"],
+        "config input": {
+            "dataset": {
+                "file name": "m3_monthly_dataset.json",
+                "file type": "json",
+                "file path": "datasets/m3_monthly_dataset.json",
+                "series used": [6, 7, 8]
+            },
+            "transformation config": {
+                "xthresholds": [0.02, 1.1, 0.3]
+            },
+            "modelling config": {
+                "validation size": 0.1,
+                "test size": 3,
+                "forecast horizon": 1,
+                "score measure": "SMAPE"
+            },
+            "models": ["MLP", "EN", "ETS"]
+        },
+        "model hyper_params": {
+            "MLP": {
+                "n of lags": [1, 2],
+                "strucs": [[0], [3]],
+                "max iter": [500]
+            },
+            "EN": {
+                "n of lags": [1, 2],
+                "alpha": [0.1, 0.3],
+                "l1 ratio": [0.1, 0.5]
+            },
+            "ETS": {
+                "seasonal periods": [12],
+                "trend": ["add", "mul"],
+                "seasonal": ["add", "mul"],
+                "damped trend": [true, false]
+            }
+        },
+        "messages": null
+    },
+    {
+        "run time": ["27-06-2022--20-14-50", "27-06-2022--20-19-04"],
+        "config input": {
+            "dataset": {
+                "file name": "m3_monthly_dataset.json",
+                "file type": "json",
+                "file path": "datasets/m3_monthly_dataset.json",
+                "use series": [6, 7, 8],
+                "min length": 50
+            },
+            "transformation config": {
+                "xthresholds": [0.02, 1.1, 0.3]
+            },
+            "modelling config": {
+                "validation size": 0.1,
+                "test size": 3,
+                "forecast horizon": 1,
+                "score measure": "SMAPE"
+            },
+            "models": ["MLP", "EN", "ETS"]
+        },
+        "number of series used": 3,
+        "used series": ["T6", "T7", "T8"],
+        "model hyper_params": {
+            "MLP": {
+                "n of lags": [1, 2],
+                "strucs": [[0], [3]],
+                "max iter": [500]
+            },
+            "EN": {
+                "n of lags": [1, 2],
+                "alpha": [0.1, 0.3],
+                "l1 ratio": [0.1, 0.5]
+            },
+            "ETS": {
+                "seasonal periods": [12],
+                "trend": ["add", "mul"],
+                "seasonal": ["add", "mul"],
+                "damped trend": [true, false]
+            }
+        },
+        "messages": null
+    },
+    {
+        "run time": ["27-06-2022--20-33-44", "27-06-2022--20-37-55"],
+        "config input": {
+            "dataset": {
+                "file name": "m3_monthly_dataset.json",
+                "file type": "json",
+                "file path": "datasets/m3_monthly_dataset.json",
+                "use series": [6, 7, 8],
+                "min length": 50
+            },
+            "transformation config": {
+                "xthresholds": [0.02, 1.1, 0.3]
+            },
+            "modelling config": {
+                "validation size": 0.1,
+                "test size": 3,
+                "forecast horizon": 1,
+                "score measure": "SMAPE"
+            },
+            "models": ["MLP", "EN", "ETS"]
+        },
+        "number of series used": 3,
+        "used series": ["T6", "T7", "T8"],
+        "model hyper_params": {
+            "MLP": {
+                "n of lags": [1, 2],
+                "strucs": [[0], [3]],
+                "max iter": [500]
+            },
+            "EN": {
+                "n of lags": [1, 2],
+                "alpha": [0.1, 0.3],
+                "l1 ratio": [0.1, 0.5]
+            },
+            "ETS": {
+                "seasonal periods": [12],
+                "trend": ["add", "mul"],
+                "seasonal": ["add", "mul"],
+                "damped trend": [true, false]
+            }
+        },
+        "messages": null
+    },
+    {
+        "run time": ["27-06-2022--21-21-34", "27-06-2022--21-25-18"],
+        "config input": {
+            "dataset": {
+                "file name": "m3_monthly_dataset.json",
+                "file type": "json",
+                "file path": "datasets/m3_monthly_dataset.json",
+                "use series": [6, 7, 8],
+                "min length": 50
+            },
+            "transformation config": {
+                "xthresholds": [0.01, 1.1, 0.4]
+            },
+            "modelling config": {
+                "validation size": 10,
+                "test size": 15,
+                "forecast horizon": 1,
+                "score measure": "SMAPE"
+            },
+            "models": ["MLP", "EN", "ETS"]
+        },
+        "number of series used": 3,
+        "model hyper_params": {
+            "MLP": {
+                "n of lags": [1, 2],
+                "strucs": [[0], [3]],
+                "max iter": [500]
+            },
+            "EN": {
+                "n of lags": [1, 2],
+                "alpha": [0.1, 0.3],
+                "l1 ratio": [0.1, 0.5]
+            },
+            "ETS": {
+                "seasonal periods": [12],
+                "trend": ["add", "mul"],
+                "seasonal": ["add", "mul"],
+                "damped trend": [true, false]
+            }
+        },
+        "messages": {
+            "Warning": [
+                "Only 3 series are chosen. Check the specified min_length or use_series."
+            ]
+        }
     }
 ]

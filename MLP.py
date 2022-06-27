@@ -2,6 +2,7 @@ from __main__ import datasets, v_size, t_size, horizon, score
 from __main__ import MLP_policies as policies
 from dc_transformation import DCTransformer
 from sklearn.neural_network import MLPRegressor
+from sklearn.linear_model import LinearRegression
 from sklearn.exceptions import ConvergenceWarning as skConvWarn
 from itertools import product
 from tqdm import trange, tqdm
@@ -24,10 +25,10 @@ for i, entry in tqdm(datasets.items(), desc='Running MLP'):
     for s in series:
         if s <= 0:
             raw_info[i] = {
-                'message': 'Existence of value <= 0, skipped.'
+                'message': 'Skipped: existence of value <= 0.'
             }
             tran_info[i] = {
-                'message': 'Existene of value <= 0, skipped.'
+                'message': 'Skipped: existene of value <= 0.'
             }
             skip = True
             break
@@ -47,7 +48,8 @@ for i, entry in tqdm(datasets.items(), desc='Running MLP'):
     # suppress convergence warning during validation
     with warnings.catch_warnings():
         warnings.filterwarnings(action='ignore', category=skConvWarn)
-        
+        warnings.filterwarnings(action='ignore', category=UserWarning)
+
         for policy in tqdm(policies, desc=f'Series {i}, validating'):
             raw_val_errs = []
             tran_val_errs = []
@@ -57,16 +59,18 @@ for i, entry in tqdm(datasets.items(), desc='Running MLP'):
                 train_v = series[:-split+v+1]  #  includes the validation point that should be excluded during transformation
                 train = train_v[:-horizon]
                 val = train_v[-horizon:]
-
-#                 with warnings.catch_warnings():
-#                     warnings.filterwarnings(action='ignore', category=skConvWarn)
-                    
+            
                 # raw
                 rX, ry = data_prep.ts_prep(train, nlag=policy['n lag'], horizon=horizon)
                 train_X, val_X = rX, train[-policy['n lag']:]
                 train_y, val_y = ry, val
 
-                rmodel = MLPRegressor(hidden_layer_sizes=policy['struc'], max_iter=policy['max iter'], random_state=1)
+                # converge to linear regression if no hidden layer
+                if policy['struc'] == (0, ):
+                    rmodel = LinearRegression()
+                else:
+                    rmodel = MLPRegressor(hidden_layer_sizes=policy['struc'], max_iter=policy['max iter'], random_state=1)
+
                 rmodel.fit(train_X, train_y.ravel())
                 y, y_hat = val_y[0], rmodel.predict([val_X])[0]
                 raw_val_errs.append(score(y, y_hat))
@@ -79,14 +83,22 @@ for i, entry in tqdm(datasets.items(), desc='Running MLP'):
                 t.transform(train, threshold=thres)
                 ttrain = t.tdata1
 
-                tX, ty = data_prep.ts_prep(ttrain, nlag=policy['n lag'], horizon=horizon)
-                ttrain_X, tval_X = tX, ttrain[-policy['n lag']:]
-                ttrain_y, val_y = ty, val
+                if len(ttrain) > 1:
+                    tX, ty = data_prep.ts_prep(ttrain, nlag=policy['n lag'], horizon=horizon)
+                    ttrain_X, tval_X = tX, ttrain[-policy['n lag']:]
+                    ttrain_y, val_y = ty, val
 
-                tmodel = MLPRegressor(hidden_layer_sizes=policy['struc'], max_iter=policy['max iter'], random_state=1)
-                tmodel.fit(ttrain_X, ttrain_y.ravel())
-                y, ty_hat = val_y[0], tmodel.predict([tval_X])[0]
-                tran_val_errs.append(score(y, ty_hat))
+                    # coverge to linear regression if no hidden layer
+                    if policy['struc'] == (0, ):
+                        tmodel = LinearRegression()
+                    else:
+                        tmodel = MLPRegressor(hidden_layer_sizes=policy['struc'], max_iter=policy['max iter'], random_state=1)
+                    
+                    tmodel.fit(ttrain_X, ttrain_y.ravel())
+                    y, ty_hat = val_y[0], tmodel.predict([tval_X])[0]
+                    tran_val_errs.append(score(y, ty_hat))
+                else:
+                    tran_val_errs.append(0.999)
 
             raw_policy_errs.append(np.mean(raw_val_errs))
             tran_policy_errs.append(np.mean(tran_val_errs))
@@ -123,8 +135,13 @@ for i, entry in tqdm(datasets.items(), desc='Running MLP'):
             rX, ry = data_prep.ts_prep(train, nlag=best_raw_policy['n lag'], horizon=horizon)
             train_X, val_X = rX, train[-best_raw_policy['n lag']:]
             train_y, val_y = ry, val
-
-            rmodel = MLPRegressor(hidden_layer_sizes=best_raw_policy['struc'], max_iter=best_raw_policy['max iter'], random_state=1)
+            
+            # converge to linear regression if no hidden layer
+            if best_raw_policy['struc'] == (0, ):
+                rmodel = LinearRegression()
+            else:
+                rmodel = MLPRegressor(hidden_layer_sizes=best_raw_policy['struc'], max_iter=best_raw_policy['max iter'], random_state=1)
+            
             rmodel.fit(train_X, train_y.ravel())
             y, y_hat = val_y[0], rmodel.predict([val_X])[0]
             raw_test_errs.append(score(y, y_hat))
@@ -142,7 +159,12 @@ for i, entry in tqdm(datasets.items(), desc='Running MLP'):
             ttrain_X, tval_X = tX, ttrain[-best_tran_policy['n lag']:]
             ttrain_y, val_y = ty, val
 
-            tmodel = MLPRegressor(hidden_layer_sizes=best_tran_policy['struc'], max_iter=best_tran_policy['max iter'], random_state=1)
+            # converge to linear regression if no hidden layer
+            if best_tran_policy['struc'] == (0, ):
+                tmodel = LinearRegression()
+            else:
+                tmodel = MLPRegressor(hidden_layer_sizes=best_tran_policy['struc'], max_iter=best_tran_policy['max iter'], random_state=1)
+            
             tmodel.fit(ttrain_X, ttrain_y.ravel())
             y, ty_hat = val_y[0], tmodel.predict([tval_X])[0]
             tran_test_errs.append(score(y, ty_hat))

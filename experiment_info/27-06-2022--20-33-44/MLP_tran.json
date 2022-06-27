@@ -1,0 +1,59 @@
+{
+    "T6": {
+        "message": null,
+        "test SMAPE": 0.421041,
+        "val SMAPE": 0.33415,
+        "best model": {
+            "thres up": 0.32,
+            "thres down": 0.02,
+            "n lag": 2,
+            "struc": [
+                0
+            ],
+            "max iter": 500
+        },
+        "y hats": [
+            3023.6789336469783,
+            3413.5093838349935,
+            4695.118928944485
+        ]
+    },
+    "T7": {
+        "message": null,
+        "test SMAPE": 0.474183,
+        "val SMAPE": 0.515619,
+        "best model": {
+            "thres up": 0.32,
+            "thres down": 0.02,
+            "n lag": 2,
+            "struc": [
+                0
+            ],
+            "max iter": 500
+        },
+        "y hats": [
+            3341.066324095301,
+            2627.7437801813912,
+            3724.4128380918683
+        ]
+    },
+    "T8": {
+        "message": null,
+        "test SMAPE": 0.514973,
+        "val SMAPE": 0.155662,
+        "best model": {
+            "thres up": 0.92,
+            "thres down": 0.32,
+            "n lag": 1,
+            "struc": [
+                0
+            ],
+            "max iter": 500
+        },
+        "y hats": [
+            2815.4368245812984,
+            2190.558648286233,
+            2396.1458753146217
+        ]
+    }
+}

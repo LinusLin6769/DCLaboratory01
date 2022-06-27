@@ -26,10 +26,10 @@ for i, entry in tqdm(datasets.items(), desc='Running ETS'):
     for s in series:
         if s <= 0:
             raw_info[i] = {
-                'message': 'Existence of value <= 0, skipped.'
+                'message': 'Skipped: existence of value <= 0.'
             }
             tran_info[i] = {
-                'message': 'Existene of value <= 0, skipped.'
+                'message': 'Skipped: existene of value <= 0.'
             }
             skip = True
             break
@@ -50,6 +50,7 @@ for i, entry in tqdm(datasets.items(), desc='Running ETS'):
     with warnings.catch_warnings():
         old_settings = np.seterr(over='ignore')  # suppress overflow warnings
         warnings.filterwarnings(action='ignore', category=statsConvWarn)
+        warnings.filterwarnings(action='ignore', category=UserWarning)
 
         for policy in tqdm(policies, desc=f'Series {i}, validating'):
             raw_val_errs = []
@@ -80,21 +81,25 @@ for i, entry in tqdm(datasets.items(), desc='Running ETS'):
                 t.transform(train, threshold=thres)
                 ttrain = t.tdata1
 
-                tmodel = ExponentialSmoothing(
-                    ttrain,
-                    seasonal_periods=policy['seasonal periods'],
-                    trend=policy['trend'],
-                    seasonal=policy['seasonal'],
-                    damped_trend=policy['damped trend']
-                ).fit()
-                y, ty_hat = val[0], tmodel.forecast(horizon).tolist()[0]
-                tran_val_errs.append(score(y, ty_hat))
+                if len(ttrain) > 1:
+                    tmodel = ExponentialSmoothing(
+                        ttrain,
+                        seasonal_periods=policy['seasonal periods'],
+                        trend=policy['trend'],
+                        seasonal=policy['seasonal'],
+                        damped_trend=policy['damped trend']
+                    ).fit()
+                    y, ty_hat = val[0], tmodel.forecast(horizon).tolist()[0]
+                    tran_val_errs.append(score(y, ty_hat))
+                else:
+                    tran_val_errs.append(0.999)
 
             raw_policy_errs.append(np.mean(raw_val_errs))
             tran_policy_errs.append(np.mean(tran_val_errs))
         np.seterr(**old_settings)  # restore the warning settings
     
     # model selection with all the validation errors
+    print(tran_policy_errs)
     best_raw_val_SMAPE_ind = np.argmin(raw_policy_errs)
     best_tran_val_SMAPE_ind = np.argmin(tran_policy_errs)
     best_raw_val_SMAPE = raw_policy_errs[best_raw_val_SMAPE_ind]
