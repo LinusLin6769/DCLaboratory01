@@ -55,5 +55,74 @@
             }
         },
         "messages": null
+    },
+    {
+        "run time": [
+            "27-06-2022--10-03-12",
+            "27-06-2022--10-03-37"
+        ],
+        "config input": {
+            "dataset": {
+                "file name": "m3_monthly_dataset.json",
+                "file type": "json",
+                "file path": "datasets/m3_monthly_dataset.json",
+                "series used": [
+                    6,
+                    7,
+                    8
+                ]
+            },
+            "transformation config": {
+                "xthresholds": [
+                    0.3,
+                    0.1
+                ]
+            },
+            "modelling config": {
+                "validation size": 4,
+                "test size": 4,
+                "forecast horizon": 1,
+                "score measure": "SMAPE"
+            },
+            "models": [
+                "MLP",
+                "EN"
+            ]
+        },
+        "model hyper_params": {
+            "MLP": {
+                "n of lags": [
+                    1,
+                    2
+                ],
+                "strucs": [
+                    [
+                        100
+                    ],
+                    [
+                        100,
+                        100
+                    ]
+                ],
+                "max iter": [
+                    100
+                ]
+            },
+            "EN": {
+                "n of lags": [
+                    1,
+                    2
+                ],
+                "alpha": [
+                    0.1,
+                    0.8
+                ],
+                "l1 ratio": [
+                    0.1,
+                    0.5
+                ]
+            }
+        },
+        "messages": null
     }
 ]

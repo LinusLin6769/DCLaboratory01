@@ -51,7 +51,7 @@ for i, entry in tqdm(datasets.items(), desc='Running MLP'):
             raw_val_errs = []
             tran_val_errs = []
 
-            # n_val folds rolling validation (one raw and one transformed)
+            # n_val folds rolling validation
             for v in range(n_val):
                 train = series[:-split+v+1]
 

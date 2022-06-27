@@ -99,7 +99,11 @@ models_params = {
         'strucs': [(100, ), (100, 100, )],
         'max iter': [100]
     },
-    'EN': {},
+    'EN': {
+        'n of lags': [1, 2],
+        'alpha' : [0.1, 0.8],
+        'l1 ratio': [0.1, 0.5]
+    },
     'AutoARIMA': {},
     'ETS': {}
 }
@@ -115,7 +119,15 @@ MLP_policies = [
     } for h in product(thresholds, *models_params['MLP'].values())
 ]
 
-EN_policies = [{}]
+EN_policies = [
+    {
+        'thres up': h[0][0],
+        'thres down': h[0][1],
+        'n lag': h[1],
+        'alpha': h[2],
+        'l1 ratio': h[3]
+    } for h in product(thresholds, *models_params['EN'].values())
+]
 AutoARIMA_policies = [{}]
 ETS_policies = [{}]
 
@@ -129,6 +141,7 @@ if not os.path.exists(f'experiment_info/{start}/'):
 # let the agents play
 #
 run_info = {}
+print(f'Running {models}...')
 for model in models:
     if model == "MLP":
         import MLP as mlp
@@ -142,6 +155,14 @@ for model in models:
         """
     elif model == "EN":
         import EN as en
+        with open(f'experiment_info/{start}/{model}_raw.json', 'x') as file:
+            json.dump(en.raw_info, file, indent=4)
+        with open(f'experiment_info/{start}/{model}_tran.json', 'x') as file:
+            json.dump(en.tran_info, file, indent=4)
+        """Clear the memory
+        del en.raw_info
+        del en.tran_info
+        """
     elif model == "AutoARIMA":
         import AutoARIMA as autoarima
     elif model == "ETS":
