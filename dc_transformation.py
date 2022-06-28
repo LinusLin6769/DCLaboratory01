@@ -154,7 +154,7 @@ class DCTransformer:
 
         self.markers = {k: np.array(v).T for k, v in self.markers.items()}
 
-    def interpolation0(self) -> None:
+    def interpolation0(self, warn=False) -> None:
         marked_x = np.array(self.markers[0][0]).astype(int)
         y = np.array(self.markers[0][1]).astype(float)
         
@@ -177,9 +177,10 @@ class DCTransformer:
             self.tdata0 = np.append(transformed_target, self.data[out_of_range_fill])
         else:
             self.tdata0 = np.array([y])
-            warnings.warn("Cannot found any extreme. Check if threshold is appropriate.")
+            if warn:
+                warnings.warn("Cannot found any extreme. Check if threshold is appropriate.")
     
-    def interpolation1(self) -> None:
+    def interpolation1(self, warn=False) -> None:
         marked_x = np.array(self.markers[100][0]).astype(int)
         y = np.array(self.markers[100][1]).astype(float)
 
@@ -202,7 +203,8 @@ class DCTransformer:
             self.tdata1 = np.append(transformed_target, self.data[out_of_range_fill])
         else:
             self.tdata1 = np.array([y])
-            warnings.warn("Cannot found any directional change. Check if threshold is appropriate.")
+            if warn:
+                warnings.warn("Cannot found any directional change. Check if threshold is appropriate.")
 
     def make_plot(self, marks=False, w_data0=False) -> None:
         import matplotlib.pyplot as plt

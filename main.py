@@ -5,6 +5,7 @@ import warnings
 from datetime import datetime
 from copy import copy
 from itertools import product
+from multiprocessing import Pool, cpu_count
 
 time_format = "%d-%m-%Y--%H-%M-%S"
 messages = {}
@@ -28,23 +29,42 @@ if config['dataset']['file type'] == 'json':
 use = config['dataset']['use series']
 min_len = config['dataset']['min length']
 
-# use time series with length >= 80
+datasets = {}
+lens = []
+# use time series with length >= min_len
 if use == 'all':
     print(f'Reading all {len(ts)} time series...')
-    datasets = {
-        f'T{k}': {
-            'raw': v,
-            'legnth': len(v),
-        } for k, v in ts.items() if len(v) >= min_len
-    }
-else:
+    for k, v in ts.items():
+        l = len(v)
+        if l >= min_len:
+            datasets[k] = {
+                'raw': v,
+                'length': l
+            }
+            lens.append(l)
+elif type(use) == list:
     print(f'Reading series number {use}...')
-    datasets = {
-        f'T{i}': {
-            'raw': ts[str(i)],
-            'legnth': len(ts[str(i)]),
-        } for i in use if len(ts[str(i)]) >= min_len
-    }
+    for i in use:
+        l = len(ts[str(i)])
+        if l >= min_len:
+            datasets[f'T{i}'] = {
+                'raw': ts[str(i)],
+                'length': l
+            }
+            lens.append(l)
+elif type(use) == int:
+    count = 0
+    for k, v in ts.items():
+        if count == use:
+            break
+        l = len(v)
+        if l >= min_len:
+            datasets[k] = {
+                'raw': v,
+                'length': l
+            }
+            lens.append(l)
+            count += 1
 
 used = list(datasets.keys())
 n_series = len(used)
@@ -106,9 +126,12 @@ if type(horizon) != int:
 # performance measurement (used in validation, testing)
 #
 # predefined performance measurement options
+def SAPE(y, y_hat):
+    return np.abs(y_hat-y)/np.mean((np.abs(y_hat), np.abs(y)))
+
 measures = {
     # !!! If the horizon > 1, need a new distance measure.
-    'SAPE': lambda y, y_hat: np.abs(y_hat-y)/np.mean((np.abs(y_hat), np.abs(y)))
+    'SAPE': SAPE
 }
 
 if measure == 'SMAPE':
@@ -118,28 +141,40 @@ else:
 
 #
 # models
-models = config['models']
+models = config['models'] # 187
 
 #
 # create policy sets for the agents
 #
 # predefined model hyperparameters to tune and their search space
 models_params = {
-    'MLP': {
-        'n of lags': [1, 2], # [1, 2, 3, 4, 5],
-        'strucs': [(0, ), (3, )], # [(0, ), (1, ), (3, ), (5, ), (7, ), (9, )],
+    'MLP': { # 3x5=15 policies x36 thresholds = 41 secs
+        'n of lags': [1, 3, 5],
+        'strucs': [(0, ), (1, ), (3, ), (5, ), (7, )],
         'max iter': [500]
     },
-    'EN': {
-        'n of lags': [1, 2], # [1, 2, 3, 4, 5],
-        'alpha' : [0.1, 0.3], # [round(x, 3) for x in np.arange(0.1, 1.1, 0.1)],
-        'l1 ratio': [0.1, 0.5], # [round(x, 3) for x in np.arange(0.1, 1.1, 0.1)]
+    'EN': {  # 3x4x4=48 policies x36 thresholds = 1 sec
+        'n of lags': [1, 3, 5],
+        'alpha' : [10**scale for scale in [-1, 0, 1, 2]],
+        'l1 ratio': [round(x, 3) for x in np.arange(0.01, 1.01, 0.3)]
     },
-    'ETS': {
+    'ETS': {  # 2x2x2=8 policies x36 thresholds = 27 sec
         'seasonal periods': [12],  # known monthly data, search space should be [1, 4, 12, 52]
         'trend': ['add', 'mul'],
         'seasonal':['add', 'mul'],
         'damped trend': [True, False]
+    },
+    'XGB' :{  # 3x3x2x3 54
+        'n of lags': [1, 3, 5],
+        'max depth': [3, 10, 17], # 3 ~ 20
+        'booster': ['gbtree', 'dart'], # gblineaer uses linear functions
+        'subsample ratio': [0.1, 0.4, 0.7], # 0 ~ 1
+    },
+    'LGBM' : {  # 3x3x4x2=72 policies x36 thresholds = 2 min 7 sec
+        'n of lags': [1, 3, 5],
+        'max depth': [-1, 10, 20], # -1 ~ 32
+        'min split gain': [0, 3, 5], # 0 ~ 5
+        'importance type': ['split', 'gain']
     },
     'AutoARIMA': {}
 }
@@ -176,6 +211,28 @@ ETS_policies = [
     } for h in product(thresholds, *models_params['ETS'].values())
 ]
 
+XGB_policies = [
+    {
+        'thres up': h[0][0],
+        'thres down': h[0][1],
+        'n lag': h[1],
+        'max depth': h[2],
+        'booster': h[3],
+        'subsample ratio': h[4]
+    } for h in product(thresholds, *models_params['XGB'].values())
+]
+
+LGBM_policies = [
+    {
+        'thres up': h[0][0],
+        'thres down': h[0][1],
+        'n lag': h[1],
+        'max depth': h[2],
+        'min split gain': h[3],
+        'importance type': h[4]
+    } for h in product(thresholds, *models_params['LGBM'].values())
+]
+
 AutoARIMA_policies = [{}]
 
 #
@@ -185,20 +242,41 @@ if not os.path.exists(f'experiment_info/{start}/'):
     os.mkdir(f'experiment_info/{start}/')
 
 #
+# multiprocessing with pool
+#
+n_workers = config['execution config']['n of workers']
+worker_count = len(os.sched_getaffinity(0))
+print(f'You have {worker_count} workers deployable.')
+
+if type(n_workers) != int and n_workers >= worker_count:
+    raise ValueError('Invalid number of works.')
+
+#
 # let the agents play
 #
-run_info = {}
-print(f'Running {models}...')
+proceed = input(f'You are running {models} with {n_workers} workers. Do you want to proceed? [yes/no]')
+if proceed == "yes":
+    print(f'Running {models} with {n_workers} workers...')
+elif proceed == "no":
+    print("Process terminated.")
+    exit()
+else:
+    print("Invalid response. Process terminated.")
+    exit()
 
+run_info = {}
 
 for model in models:
     if model == "MLP":
         try:
-            import MLP as mlp
+            from MLP import run_mlp
+            mlp_raw_info, mlp_tran_info = run_mlp(
+                datasets, v_size, t_size, horizon, score, MLP_policies, n_workers
+            )
             with open(f'experiment_info/{start}/{model}_raw.json', 'x') as file:
-                json.dump(mlp.raw_info, file, indent=4)
+                json.dump(mlp_raw_info, file, indent=4)
             with open(f'experiment_info/{start}/{model}_tran.json', 'x') as file:
-                json.dump(mlp.tran_info, file, indent=4)
+                json.dump(mlp_tran_info, file, indent=4)
             """Clear the memory
             del mlp.raw_info
             del mlp.tran_info
@@ -213,11 +291,14 @@ for model in models:
 
     elif model == "EN":
         try:
-            import EN as en
+            from EN import run_en
+            en_raw_info, en_tran_info = run_en(
+                datasets, v_size, t_size, horizon, score, EN_policies, n_workers
+            )
             with open(f'experiment_info/{start}/{model}_raw.json', 'x') as file:
-                json.dump(en.raw_info, file, indent=4)
+                json.dump(en_raw_info, file, indent=4)
             with open(f'experiment_info/{start}/{model}_tran.json', 'x') as file:
-                json.dump(en.tran_info, file, indent=4)
+                json.dump(en_tran_info, file, indent=4)
             """Clear the memory
             del en.raw_info
             del en.tran_info
@@ -228,6 +309,59 @@ for model in models:
             
         else:
             print(f'{model} agent has completed successfully.')
+            print(f'{model}: .json info generated.')
+
+    elif model == "XGB":
+        # try:
+        from XGB import run_xgb
+        xgb_raw_info, xgb_tran_info = run_xgb(
+            datasets, v_size, t_size, horizon, score, XGB_policies, n_workers
+        )
+        with open(f'experiment_info/{start}/{model}_raw.json', 'x') as file:
+            json.dump(xgb_raw_info, file, indent=4)
+
+        with open(f'experiment_info/{start}/{model}_tran.json', 'x') as file:
+            json.dump(xgb_tran_info, file, indent=4)
+
+    elif model == "LGBM":
+        try:
+            from LGBM import run_lgbm
+            lgbm_raw_info, lgbm_tran_info = run_lgbm(
+                datasets, v_size, t_size, horizon, score, LGBM_policies
+            )
+            with open(f'experiment_info/{start}/{model}_raw.json', 'x') as file:
+                json.dump(lgbm_raw_info, file, indent=4)
+
+            with open(f'experiment_info/{start}/{model}_tran.json', 'x') as file:
+                json.dump(lgbm_tran_info, file, indent=4)
+        except Exception as e:
+            print(f'Exception {e.__class__} occurred in running {model}.')
+            print(f'{model}: no .json info is generated.')
+            
+        else:
+            print(f'{model} agent has completed successfully.')
+            print(f'{model}: .json info generated.')
+
+    elif model == "ETS":
+        try:
+            from ETS import run_ets
+            ets_raw_info, ets_tran_info = run_ets(datasets, v_size, t_size, horizon, score, ETS_policies, n_workers)
+
+            with open(f'experiment_info/{start}/{model}_raw.json', 'x') as file:
+                json.dump(ets_raw_info, file, indent=4)
+            with open(f'experiment_info/{start}/{model}_tran.json', 'x') as file:
+                json.dump(ets_tran_info, file, indent=4)
+
+                """Clear the memory
+                del ets.raw_info
+                del ets.tran_info
+                """
+        except Exception as e:
+            print(f'Exception {e.__class__} occurred in running {model}.')
+            print(f'{model}: no .json info is generated.')
+            
+        else:
+            print(f'{model} agent has comleted successfully.')
             print(f'{model}: .json info generated.')
 
     elif model == "AutoARIMA":
@@ -242,24 +376,6 @@ for model in models:
             print(f'{model} agents ran successfully.')
             print(f'{model}: .json info generated.')"""
 
-    elif model == "ETS":
-        try:
-            import ETS as ets
-            with open(f'experiment_info/{start}/{model}_raw.json', 'x') as file:
-                json.dump(ets.raw_info, file, indent=4)
-            with open(f'experiment_info/{start}/{model}_tran.json', 'x') as file:
-                json.dump(ets.tran_info, file, indent=4)
-            """Clear the memory
-            del ets.raw_info
-            del ets.tran_info
-            """
-        except Exception as e:
-            print(f'Exception {e.__class__} occurred in running {model}.')
-            print(f'{model}: no .json info is generated.')
-            
-        else:
-            print(f'{model} agent has comleted successfully.')
-            print(f'{model}: .json info generated.')
 #
 # process the experiment run info for a bit
 #
@@ -280,6 +396,7 @@ new_run = {
     'run time': [start, end],
     'config input': config,
     'number of series used': n_series,
+    'Avg. len of series': np.mean(lens),
     'model hyper_params': {
         m: models_params[m] for m in models
     },

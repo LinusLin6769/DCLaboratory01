@@ -1,27 +1,23 @@
-# from __main__ import datasets, v_size, t_size, horizon, score
-# from __main__ import EN_policies as policies
+
 from dc_transformation import DCTransformer
 from parallel_validation import ParallelValidation
-from sklearn.linear_model import ElasticNet
-from sklearn.exceptions import ConvergenceWarning as skConvWarn
 from multiprocessing import Pool, Process, Pipe
 from typing import List, Tuple, Dict
 from itertools import product
-from p_tqdm import p_map
+import xgboost as xgb
 from tqdm import trange, tqdm
+from p_tqdm import p_map
 from copy import copy
 import data_prep, ts_analysis
 import warnings
 import numpy as np
 import pandas as pd
 
-
-def run_en(datasets, v_size, t_size, horizon, score, policies, n_workers) -> Tuple[Dict]:
-
+def run_xgb(datasets, v_size, t_size, horizon, score, policies, n_workers) -> Tuple[Dict]:
     raw_info = {}
     tran_info = {}
 
-    for i, entry in tqdm(datasets.items(), desc='Running EN'):
+    for i, entry in tqdm(datasets.items(), desc='Running XBG'):
         series = entry['raw']
 
         """If series has non-positive values, then skip.
@@ -48,14 +44,11 @@ def run_en(datasets, v_size, t_size, horizon, score, policies, n_workers) -> Tup
         n_test = t_size if type(t_size) == int else int(t_size * N)
         n_val = v_size if type(v_size) == int else int(v_size * N)
         split = n_val + n_test
-        raw_policy_errs = []
-        tran_policy_errs = []
 
         # suppress convergence warning during validation
         with warnings.catch_warnings():
-            warnings.filterwarnings(action='ignore', category=skConvWarn)
             warnings.filterwarnings(action='ignore', category=UserWarning)
-
+            
             with Pool(processes=n_workers) as p:
                 arg = {
                     'series': series,
@@ -64,18 +57,17 @@ def run_en(datasets, v_size, t_size, horizon, score, policies, n_workers) -> Tup
                     'horizon': horizon,
                     'score': score
                 }
-                par_val = ParallelValidation(arg, model='EN')
+                par_val = ParallelValidation(arg, model='XGB')
                 res = tqdm(
                     iterable=p.imap(par_val.run_parallel, policies),
                     desc=f'Validating series {i}',
-                    total=len(policies)
-                )
+                    total=len(policies))
                 res = list(res)
-    
+        
         raw_policy_errs, tran_policy_errs = zip(*res)
         raw_policy_errs = [np.mean(e) for e in raw_policy_errs]
         tran_policy_errs = [np.mean(e) for e in tran_policy_errs]
-
+        
         # model selection with all the validation errors
         best_raw_val_SMAPE_ind = np.argmin(raw_policy_errs)
         best_tran_val_SMAPE_ind = np.argmin(tran_policy_errs)
@@ -94,44 +86,55 @@ def run_en(datasets, v_size, t_size, horizon, score, policies, n_workers) -> Tup
         raw_y_hats = []
         tran_y_hats = []
 
-        with warnings.catch_warnings():
-            warnings.filterwarnings(action='ignore', category=skConvWarn)
-            for j in trange(n_test, desc=f'Series {i}, testing'):
-                if j == n_test-1:
-                    train_v = series
-                else:
-                    train_v = series[:-n_test+j+1]
-                train = train_v[:-horizon]
-                val = train_v[-horizon:]
+        # with warnings.catch_warnings():
+        for j in trange(n_test, desc=f'Series {i}, testing'):
+            if j == n_test-1:
+                train_v = series
+            else:
+                train_v = series[:-n_test+j+1]
+            train = train_v[:-horizon]
+            val = train_v[-horizon:]
 
-                # raw
-                rX, ry = data_prep.ts_prep(train, nlag=best_raw_policy['n lag'], horizon=horizon)
-                train_X, val_X = rX, train[-best_raw_policy['n lag']:]
-                train_y, val_y = ry, val
+            # raw
+            rX, ry = data_prep.ts_prep(train, nlag=best_raw_policy['n lag'], horizon=horizon)
+            train_X, val_X = rX, train[-best_raw_policy['n lag']:]
+            train_y, val_y = ry, val
+            
+            rmodel = xgb.XGBRegressor(
+                max_depth=best_raw_policy['max depth'],
+                booster=best_raw_policy['booster'],
+                subsample=best_raw_policy['subsample ratio'],
+                random_state=0
+            )
+            
+            rmodel.fit(train_X, train_y)
+            y, y_hat = val_y[0], rmodel.predict([val_X])[0]
+            raw_test_errs.append(score(y, y_hat))
+            raw_y_hats.append(y_hat)
 
-                rmodel = ElasticNet(alpha=best_raw_policy['alpha'], l1_ratio=best_raw_policy['l1 ratio'], random_state=0)
-                rmodel.fit(train_X, train_y)
-                y, y_hat = val_y[0], rmodel.predict([val_X])[0]
-                raw_test_errs.append(score(y, y_hat))
-                raw_y_hats.append(y_hat)
+            # with transformation
+            """Transformation has to be improved!!!"""
+            sigma = np.std(np.diff(np.log(train)))
+            thres = (sigma*best_tran_policy['thres up'], -sigma*best_tran_policy['thres down'])
+            t = DCTransformer()
+            t.transform(train, threshold=thres)
+            ttrain = t.tdata1
 
-                # with transformation
-                """Transformation has to be improved!!!"""
-                sigma = np.std(np.diff(np.log(train)))
-                thres = (sigma*best_tran_policy['thres up'], -sigma*best_tran_policy['thres down'])
-                t = DCTransformer()
-                t.transform(train, threshold=thres)
-                ttrain = t.tdata1
+            tX, ty = data_prep.ts_prep(ttrain, nlag=best_tran_policy['n lag'], horizon=horizon)
+            ttrain_X, tval_X = tX, ttrain[-best_tran_policy['n lag']:]
+            ttrain_y, val_y = ty, val
 
-                tX, ty = data_prep.ts_prep(ttrain, nlag=best_tran_policy['n lag'], horizon=horizon)
-                ttrain_X, tval_X = tX, ttrain[-best_tran_policy['n lag']:]
-                ttrain_y, val_y = ty, val
-
-                tmodel = ElasticNet(alpha=best_tran_policy['alpha'],l1_ratio=best_tran_policy['l1 ratio'], random_state=0)
-                tmodel.fit(ttrain_X, ttrain_y)
-                y, ty_hat = val_y[0], tmodel.predict([tval_X])[0]
-                tran_test_errs.append(score(y, ty_hat))
-                tran_y_hats.append(ty_hat)
+            tmodel = xgb.XGBRegressor(
+                max_depth=best_tran_policy['max depth'],
+                booster=best_tran_policy['booster'],
+                subsample=best_tran_policy['subsample ratio'],
+                random_state=0
+            )
+            
+            tmodel.fit(ttrain_X, ttrain_y)
+            y, ty_hat = val_y[0], tmodel.predict([tval_X])[0]
+            tran_test_errs.append(score(y, ty_hat))
+            tran_y_hats.append(ty_hat)
 
         raw_info[i] = {
             'message': None,  # placeholder for other information
@@ -148,5 +151,8 @@ def run_en(datasets, v_size, t_size, horizon, score, policies, n_workers) -> Tup
             'best model': best_tran_policy,
             'y hats': tran_y_hats  # probably should put elsewhere
         }
-    
+
     return raw_info, tran_info
+
+if __name__ == '__main__':
+    pass

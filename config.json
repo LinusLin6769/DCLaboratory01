@@ -3,11 +3,11 @@
         "file name": "m3_monthly_dataset.json",
         "file type": "json",
         "file path": "datasets/m3_monthly_dataset.json",
-        "use series": [6, 7, 8],
-        "min length": 50
+        "use series": 210,
+        "min length": 130
     },
     "transformation config": {
-        "xthresholds": [0.01, 1.1, 0.4]
+        "xthresholds": [0.01, 1.1, 0.2]
     },
     "modelling config": {
         "validation size": 10,
@@ -15,5 +15,8 @@
         "forecast horizon": 1,
         "score measure": "SMAPE"
     },
-    "models": ["MLP", "EN", "ETS"]
+    "models": ["MLP", "EN", "ETS", "LGBM"],
+    "execution config": {
+        "n of workers": 20
+    }
 }
