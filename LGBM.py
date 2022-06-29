@@ -76,7 +76,7 @@ def run_lgbm(datasets, v_size, t_size, horizon, score, policies) -> Tuple[Dict]:
                     raw_val_errs.append(score(y, y_hat))
 
                     # with transformation
-                    # @TODO: Transformation has to be improved!!!
+                    # @NOTE: Estimation of sigma can be improved!!!
                     sigma = np.std(np.diff(np.log(train)))
                     thres = (sigma*policy['thres up'], -sigma*policy['thres down'])
                     t = DCTransformer()

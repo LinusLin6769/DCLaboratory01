@@ -5,23 +5,32 @@ import warnings
 from datetime import datetime
 from copy import copy
 from itertools import product
-from multiprocessing import Pool, cpu_count
 
+def get_time(time_format: str = "%d-%m-%Y--%H-%M-%S") -> str:
+    now = datetime.now()
+    return now.strftime(time_format)
+
+def prompt_time(time_format: str = "%d-%m-%Y--%H-%M-%S") -> None:
+    print(f'Timestamp: {get_time(time_format)}')
+
+
+# -----------------------------------------------------------
+# Start
 time_format = "%d-%m-%Y--%H-%M-%S"
+
 messages = {}
 
-# datetime object containing current date and time
-now = datetime.now()
+start = get_time()
 
-start = now.strftime(time_format)
+print(f'Programme starting at {start}')
 
+
+# ------------------------------------------------------------
 # load the configuration of this run
 with open('config.json', 'r') as config_json:
     config = json.load(config_json)
 
-#
 # grab the time series from the dataset
-#
 if config['dataset']['file type'] == 'json':
     with open(config['dataset']['file path']) as dataset:
         ts = json.load(dataset)
@@ -31,6 +40,7 @@ min_len = config['dataset']['min length']
 
 datasets = {}
 lens = []
+
 # use time series with length >= min_len
 if use == 'all':
     print(f'Reading all {len(ts)} time series...')
@@ -66,7 +76,7 @@ elif type(use) == int:
             lens.append(l)
             count += 1
 
-used = list(datasets.keys())
+used = list(datasets.keys()) # a list of indices of used time series
 n_series = len(used)
 print(f'Total of {n_series} series are used after length filtering.')
 
@@ -96,9 +106,10 @@ if n_series > 50:
     else:
         print("Invalid response. Process terminated.")
         exit()
-#
+
+
+# ------------------------------------------------------------------------
 # grab configuration set-ups
-#
 # transformation
 t_config = config['transformation config']
 xthresholds = [round(x, 3) for x in np.arange(*t_config['xthresholds'])]
@@ -106,12 +117,12 @@ xthresholds = [round(x, 3) for x in np.arange(*t_config['xthresholds'])]
 # threshold of the transformation
 thresholds = list(product(xthresholds, xthresholds))
 
-#
-# regression/forecast modelling
+# regression/forecast modelling configuration
 v_size = config['modelling config']['validation size']
 t_size = config['modelling config']['test size']
 horizon = config['modelling config']['forecast horizon']
 measure = config['modelling config']['score measure']
+models = config['models']
 
 if type(v_size) != int and type(v_size) != float:
     raise ValueError('Invalid validation size in config.json')
@@ -122,15 +133,15 @@ if type(t_size) != int and type(t_size) != float:
 if type(horizon) != int:
     raise ValueError('Invalid forecast horizon in config.json')
 
-#
+
+# -----------------------------------------------------------------------
 # performance measurement (used in validation, testing)
-#
 # predefined performance measurement options
+# @TODO: Define a better distance measure adaptable for higher dimension!!!
 def SAPE(y, y_hat):
     return np.abs(y_hat-y)/np.mean((np.abs(y_hat), np.abs(y)))
 
 measures = {
-    # !!! If the horizon > 1, need a new distance measure.
     'SAPE': SAPE
 }
 
@@ -139,26 +150,22 @@ if measure == 'SMAPE':
 else:
     raise ValueError('Invalid score measure in config.json')
 
-#
-# models
-models = config['models'] # 187
 
-#
-# create policy sets for the agents
-#
-# predefined model hyperparameters to tune and their search space
+# ----------------------------------------------------------------------------
+# Create policy sets for the agents.
+# Predefined model hyperparameters to tune and their search space
 models_params = {
-    'MLP': { # 3x5=15 policies x36 thresholds = 41 secs
+    'MLP': { # 3x5=15 policies x36 thresholds x10 val = 41 secs
         'n of lags': [1, 3, 5],
         'strucs': [(0, ), (1, ), (3, ), (5, ), (7, )],
         'max iter': [500]
     },
-    'EN': {  # 3x4x4=48 policies x36 thresholds = 1 sec
+    'EN': {  # 3x4x4=48 policies x36 thresholds x10 val = 1 sec
         'n of lags': [1, 3, 5],
         'alpha' : [10**scale for scale in [-1, 0, 1, 2]],
         'l1 ratio': [round(x, 3) for x in np.arange(0.01, 1.01, 0.3)]
     },
-    'ETS': {  # 2x2x2=8 policies x36 thresholds = 27 sec
+    'ETS': {  # 2x2x2=8 policies x36 thresholds x10 val = 27 sec
         'seasonal periods': [12],  # known monthly data, search space should be [1, 4, 12, 52]
         'trend': ['add', 'mul'],
         'seasonal':['add', 'mul'],
@@ -170,7 +177,7 @@ models_params = {
         'booster': ['gbtree', 'dart'], # gblineaer uses linear functions
         'subsample ratio': [0.1, 0.4, 0.7], # 0 ~ 1
     },
-    'LGBM' : {  # 3x3x4x2=72 policies x36 thresholds = 2 min 7 sec
+    'LGBM' : {  # 3x3x4x2=72 policies x36 thresholds x10 val = 7 min
         'n of lags': [1, 3, 5],
         'max depth': [-1, 10, 20], # -1 ~ 32
         'min split gain': [0, 3, 5], # 0 ~ 5
@@ -235,25 +242,18 @@ LGBM_policies = [
 
 AutoARIMA_policies = [{}]
 
-#
-# make directory for this experiment
-#
-if not os.path.exists(f'experiment_info/{start}/'):
-    os.mkdir(f'experiment_info/{start}/')
 
-#
+# --------------------------------------------------------------------------
 # multiprocessing with pool
-#
 n_workers = config['execution config']['n of workers']
 worker_count = len(os.sched_getaffinity(0))
 print(f'You have {worker_count} workers deployable.')
-
 if type(n_workers) != int and n_workers >= worker_count:
     raise ValueError('Invalid number of works.')
 
-#
-# let the agents play
-#
+
+# --------------------------------------------------------------------------
+# Let the agents play.
 proceed = input(f'You are running {models} with {n_workers} workers. Do you want to proceed? [yes/no]')
 if proceed == "yes":
     print(f'Running {models} with {n_workers} workers...')
@@ -266,6 +266,10 @@ else:
 
 run_info = {}
 
+# make directory for information of this experiment
+if not os.path.exists(f'experiment_info/{start}/'):
+    os.mkdir(f'experiment_info/{start}/')
+
 for model in models:
     if model == "MLP":
         try:
@@ -273,6 +277,7 @@ for model in models:
             mlp_raw_info, mlp_tran_info = run_mlp(
                 datasets, v_size, t_size, horizon, score, MLP_policies, n_workers
             )
+            # one time series costs about 1 kb in the .json file
             with open(f'experiment_info/{start}/{model}_raw.json', 'x') as file:
                 json.dump(mlp_raw_info, file, indent=4)
             with open(f'experiment_info/{start}/{model}_tran.json', 'x') as file:
@@ -284,10 +289,12 @@ for model in models:
         except Exception as e:
             print(f'Exception {e.__class__} occurred in running {model}.')
             print(f'{model}: no .json info is generated.')
-            
+            prompt_time()
         else:
+
             print(f'{model} agent has completed successfully.')
             print(f'{model}: .json info generated.')
+            prompt_time()
 
     elif model == "EN":
         try:
@@ -306,10 +313,12 @@ for model in models:
         except Exception as e:
             print(f'Exception {e.__class__} occurred in running {model}.')
             print(f'{model}: no .json info is generated.')
+            prompt_time()
             
         else:
             print(f'{model} agent has completed successfully.')
             print(f'{model}: .json info generated.')
+            prompt_time()
 
     elif model == "XGB":
         # try:
@@ -337,10 +346,12 @@ for model in models:
         except Exception as e:
             print(f'Exception {e.__class__} occurred in running {model}.')
             print(f'{model}: no .json info is generated.')
-            
+            prompt_time()
+
         else:
             print(f'{model} agent has completed successfully.')
             print(f'{model}: .json info generated.')
+            prompt_time()
 
     elif model == "ETS":
         try:
@@ -359,10 +370,12 @@ for model in models:
         except Exception as e:
             print(f'Exception {e.__class__} occurred in running {model}.')
             print(f'{model}: no .json info is generated.')
+            prompt_time()
             
         else:
             print(f'{model} agent has comleted successfully.')
             print(f'{model}: .json info generated.')
+            prompt_time()
 
     elif model == "AutoARIMA":
         """
@@ -371,24 +384,21 @@ for model in models:
         except Exception as e:
             print(f'Exception {e.__class__} occurred in running {model}.')
             print(f'{model}: no .json info is generated.')
+            prompt_time()
             
         else:
             print(f'{model} agents ran successfully.')
-            print(f'{model}: .json info generated.')"""
+            print(f'{model}: .json info generated.')
+            prompt_time()"""
 
-#
-# process the experiment run info for a bit
-#
+
+# ---------------------------------------------------------
+# Process and log the information regarding the run.
 for agent in run_info:
     pass
 
-now = datetime.now()
-end = now.strftime(time_format)
+end = get_time()
 
-#
-# record information
-#
-# run
 with open('experiment_info/runs.json', 'r') as file:
     ran = json.load(file)
 
@@ -409,3 +419,4 @@ with open('experiment_info/runs.json', 'w') as file:
     json.dump(ran, file, indent=4)
 
 print('End of main')
+prompt_time()

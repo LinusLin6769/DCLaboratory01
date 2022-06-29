@@ -119,7 +119,7 @@ def run_mlp(datasets, v_size, t_size, horizon, score, policies, n_workers) -> Tu
                 raw_y_hats.append(y_hat)
 
                 # with transformation
-                """Transformation has to be improved!!!"""
+                # @NOTE: Estimation of sigma can be improved!!!
                 sigma = np.std(np.diff(np.log(train)))
                 thres = (sigma*best_tran_policy['thres up'], -sigma*best_tran_policy['thres down'])
                 t = DCTransformer()
