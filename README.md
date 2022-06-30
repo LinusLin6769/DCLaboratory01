@@ -8,11 +8,12 @@
 
 The things that are controlled by the `config.json` file include
 
+- whether this run is for real, or it's just a test of something
 - which dataset to use, which series to use
 - search space of the parameters of the transformation
 - how the modelling process is done (validation size, test size etc.)
 - which models to use
-- how many cpu cores to use during multiprocessing
+- how many CPU cores to use during multiprocessing
 
 ## Running the experiment
 
@@ -28,9 +29,10 @@ The execution goes as the following:
 
 - `main.py` gets the configuration of the experiment from `config.json`
 - `main.py` performs some useful checks on whether the inputs it read from `config.json` are valid and reasonable
-- `main.py` then starts training the models using one of the datasets stored in the directory `datasets/`.
+- `main.py` gets the search space of the hyperparameters of the models from `model_policies`
+- `main.py` then starts training the models using the dataset specified in `config.json`, which is stored in the directory `datasets/`.
 
-  - Note that the programme currently is only able to read .JSON file. This is one of the reasons why the `playground.ipynb` exists.
+  - Note that the programme currently is only able to read .JSON files. This is one of the reasons why the `playground.ipynb` exists.
   - A model is trained on all the series used, a .JSON file containing the experiment information of this model is created and placed in the directory of this experiment, and the programme moves on to another model until all models are trained.
 
 - After the models are trained, a dictionary of overall information regarding this run is appended to the `runs.json` file, which is a log of all the runs being run.

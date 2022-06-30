@@ -94,7 +94,7 @@ def run_mlp(datasets, v_size, t_size, horizon, score, policies, n_workers) -> Tu
 
         with warnings.catch_warnings():
             warnings.filterwarnings(action='ignore', category=skConvWarn)
-            for j in trange(n_test, desc=f'Series {i}, testing'):
+            for j in trange(n_test, desc=f'Testing series {i}'):
                 if j == n_test-1:
                     train_v = series
                 else:

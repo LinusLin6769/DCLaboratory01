@@ -11,7 +11,7 @@ import warnings
 import numpy as np
 import pandas as pd
 
-def run_lgbm(datasets, v_size, t_size, horizon, score, policies) -> Tuple[Dict]:
+def run_lgbm(datasets, v_size, t_size, horizon, score, policies, n_workers) -> Tuple[Dict]:
     raw_info = {}
     tran_info = {}
 
@@ -69,6 +69,7 @@ def run_lgbm(datasets, v_size, t_size, horizon, score, policies) -> Tuple[Dict]:
                         max_depth=policy['max depth'],
                         min_split_gain=policy['min split gain'],
                         importance_type=policy['importance type'],
+                        n_jobs=n_workers,
                         random_state=0
                     )
                     rmodel.fit(train_X, train_y.ravel())
@@ -92,6 +93,7 @@ def run_lgbm(datasets, v_size, t_size, horizon, score, policies) -> Tuple[Dict]:
                         max_depth=policy['max depth'],
                         min_split_gain=policy['min split gain'],
                         importance_type=policy['importance type'],
+                        n_jobs=n_workers,
                         random_state=0
                         )
                         tmodel.fit(ttrain_X, ttrain_y.ravel())
@@ -123,7 +125,7 @@ def run_lgbm(datasets, v_size, t_size, horizon, score, policies) -> Tuple[Dict]:
         tran_y_hats = []
 
         # with warnings.catch_warnings():
-        for j in trange(n_test, desc=f'Series {i}, testing'):
+        for j in trange(n_test, desc=f'Testing series {i}'):
             if j == n_test-1:
                 train_v = series
             else:

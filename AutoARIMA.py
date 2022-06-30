@@ -1,1 +1,1 @@
-# I haven't build AutoARIMA yet.
+# I haven't built AutoARIMA yet.

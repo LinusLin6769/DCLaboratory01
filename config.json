@@ -1,13 +1,16 @@
 {
+    "type of run": "real run",
     "dataset": {
         "file name": "m3_monthly_dataset.json",
         "file type": "json",
-        "file path": "datasets/m3_monthly_dataset.json",
+        "file path": "datasets/",
+        "cumulate used": 210,
         "use series": 210,
-        "min length": 130
+        "min length": 130,
+        "max length": 9999
     },
     "transformation config": {
-        "xthresholds": [0.01, 1.1, 0.2]
+        "xthresholds": [0.01, 1.1, 0.1]
     },
     "modelling config": {
         "validation size": 10,
@@ -15,7 +18,7 @@
         "forecast horizon": 1,
         "score measure": "SMAPE"
     },
-    "models": ["MLP", "EN", "ETS", "LGBM"],
+    "models": ["EN", "MLP", "ETS"],
     "execution config": {
         "n of workers": 20
     }

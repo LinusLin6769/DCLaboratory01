@@ -101,7 +101,7 @@ def run_ets(datasets, v_size, t_size, horizon, score, policies, n_workers) -> Tu
         with warnings.catch_warnings():
             old_settings = np.seterr(all='ignore')
             warnings.filterwarnings(action='ignore', category=statsConvWarn)
-            for j in trange(n_test, desc=f'Series {i}, testing'):
+            for j in trange(n_test, desc=f'Testing series {i}'):
                 if j == n_test-1:
                     train_v = series
                 else:

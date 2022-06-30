@@ -1,5 +1,3 @@
-# from __main__ import datasets, v_size, t_size, horizon, score
-# from __main__ import EN_policies as policies
 from dc_transformation import DCTransformer
 from parallel_validation import ParallelValidation
 from sklearn.linear_model import ElasticNet
@@ -96,7 +94,7 @@ def run_en(datasets, v_size, t_size, horizon, score, policies, n_workers) -> Tup
 
         with warnings.catch_warnings():
             warnings.filterwarnings(action='ignore', category=skConvWarn)
-            for j in trange(n_test, desc=f'Series {i}, testing'):
+            for j in trange(n_test, desc=f'Testing series {i}'):
                 if j == n_test-1:
                     train_v = series
                 else:
@@ -111,6 +109,7 @@ def run_en(datasets, v_size, t_size, horizon, score, policies, n_workers) -> Tup
 
                 rmodel = ElasticNet(alpha=best_raw_policy['alpha'], l1_ratio=best_raw_policy['l1 ratio'], random_state=0)
                 rmodel.fit(train_X, train_y)
+
                 y, y_hat = val_y[0], rmodel.predict([val_X])[0]
                 raw_test_errs.append(score(y, y_hat))
                 raw_y_hats.append(y_hat)

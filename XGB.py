@@ -47,27 +47,68 @@ def run_xgb(datasets, v_size, t_size, horizon, score, policies, n_workers) -> Tu
 
         # suppress convergence warning during validation
         with warnings.catch_warnings():
+            old_settings = np.seterr(all='ignore')
             warnings.filterwarnings(action='ignore', category=UserWarning)
             
-            with Pool(processes=n_workers) as p:
-                arg = {
-                    'series': series,
-                    'n_val': n_val,
-                    'split': split,
-                    'horizon': horizon,
-                    'score': score
-                }
-                par_val = ParallelValidation(arg, model='XGB')
-                res = tqdm(
-                    iterable=p.imap(par_val.run_parallel, policies),
-                    desc=f'Validating series {i}',
-                    total=len(policies))
-                res = list(res)
-        
-        raw_policy_errs, tran_policy_errs = zip(*res)
-        raw_policy_errs = [np.mean(e) for e in raw_policy_errs]
-        tran_policy_errs = [np.mean(e) for e in tran_policy_errs]
-        
+            raw_policy_errs = []
+            tran_policy_errs = []
+
+            for policy in tqdm(policies, desc=f'Validating series {i}'):
+                raw_val_errs = []
+                tran_val_errs = []
+
+                # n_val folds rolling validation
+                for v in range(n_val):
+                    train_v = series[:-split+v+1]
+                    train = train_v[:-horizon]
+                    val = train_v[-horizon:]
+
+                    # raw
+                    rX, ry = data_prep.ts_prep(train, nlag=policy['n lag'], horizon=horizon)
+                    train_X, val_X = rX, train[-policy['n lag']:]
+                    train_y, val_y = ry, val
+                    
+                    rmodel = xgb.XGBRegressor(
+                        max_depth=policy['max depth'],
+                        booster=policy['booster'],
+                        subsample=policy['subsample ratio'],
+                        n_jobs=n_workers,
+                        random_state=0
+                    )
+                    rmodel.fit(train_X, train_y)
+                    y, y_hat = val_y[0], rmodel.predict([val_X])[0]
+                    raw_val_errs.append(score(y, y_hat))
+
+                    # with transformation
+                    # @NOTE: Estimation of sigma can be improved!!!
+                    sigma = np.std(np.diff(np.log(train)))
+                    thres = (sigma*policy['thres up'], -sigma*policy['thres down'])
+                    t = DCTransformer()
+                    t.transform(train, threshold=thres)
+                    ttrain = t.tdata1
+
+                    if len(ttrain) > 1:
+                        tX, ty = data_prep.ts_prep(ttrain, nlag=policy['n lag'], horizon=horizon)
+                        ttrain_X, tval_X = tX, ttrain[-policy['n lag']:]
+                        ttrain_y, val_y = ty, val
+
+                        tmodel = xgb.XGBRegressor(
+                            max_depth=policy['max depth'],
+                            booster=policy['booster'],
+                            subsample=policy['subsample ratio'],
+                            n_jobs=n_workers,
+                            random_state=0
+                        )
+                        tmodel.fit(ttrain_X, ttrain_y)
+                        y, ty_hat = val_y[0], tmodel.predict([tval_X])[0]
+                        tran_val_errs.append(score(y, ty_hat))
+                        
+                    else:
+                        tran_val_errs.append(0.999)
+                raw_policy_errs.append(np.nanmean(raw_val_errs))
+                tran_policy_errs.append(np.nanmean(tran_val_errs))
+            np.seterr(**old_settings)
+
         # model selection with all the validation errors
         best_raw_val_SMAPE_ind = np.argmin(raw_policy_errs)
         best_tran_val_SMAPE_ind = np.argmin(tran_policy_errs)
@@ -87,7 +128,7 @@ def run_xgb(datasets, v_size, t_size, horizon, score, policies, n_workers) -> Tu
         tran_y_hats = []
 
         # with warnings.catch_warnings():
-        for j in trange(n_test, desc=f'Series {i}, testing'):
+        for j in trange(n_test, desc=f'Testing series {i}'):
             if j == n_test-1:
                 train_v = series
             else:

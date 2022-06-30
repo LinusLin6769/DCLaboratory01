@@ -3,6 +3,7 @@ from sklearn.neural_network import MLPRegressor
 from sklearn.linear_model import LinearRegression
 from statsmodels.tsa.api import ExponentialSmoothing
 from sklearn.linear_model import ElasticNet
+from sklearn.ensemble import RandomForestRegressor
 import xgboost as xgb
 import lightgbm as lgbm
 from typing import List, Tuple, Dict
@@ -20,7 +21,8 @@ class ParallelValidation:
             'ETS': self.val_ets,
             'EN': self.val_en,
             'XGB': self.val_xgb,
-            'LGBM': self.val_lgbm
+            'LGBM': self.val_lgbm,
+            'RF': self.val_rf
         }
 
     def run_parallel(self, p):
@@ -169,7 +171,63 @@ class ParallelValidation:
                 tran_val_errs.append(0.999)
         
         return raw_val_errs, tran_val_errs
+
+    def val_rf(self, policy, series, n_val, split, horizon, score) -> Tuple[List]:
+
+        raw_val_errs = []
+        tran_val_errs = []
+
+        # n_val folds rolling validation
+        for v in range(n_val):
+            train_v = series[:-split+v+1]
+            train = train_v[:-horizon]
+            val = train_v[-horizon:]
+
+            # raw
+            rX, ry = data_prep.ts_prep(train, nlag=policy['n lag'], horizon=horizon)
+            train_X, val_X = rX, train[-policy['n lag']:]
+            train_y, val_y = ry, val
+            
+            rmodel = RandomForestRegressor(
+                max_depth=policy['max depth'],
+                min_samples_split=policy['min samples split'],
+                min_impurity_decrease=policy['min impurity decrease'],
+                ccp_alpha=policy['ccp alpha']
+            )
+            rmodel.fit(train_X, train_y.ravel())
+
+            y, y_hat = val_y[0], rmodel.predict([val_X])[0]
+            raw_val_errs.append(score(y, y_hat))
+
+            # with transformation
+            # @NOTE: Estimation of sigma can be improved!!!
+            sigma = np.std(np.diff(np.log(train)))
+            thres = (sigma*policy['thres up'], -sigma*policy['thres down'])
+            t = DCTransformer()
+            t.transform(train, threshold=thres)
+            ttrain = t.tdata1
+
+            if len(ttrain) > 1:
+                tX, ty = data_prep.ts_prep(ttrain, nlag=policy['n lag'], horizon=horizon)
+                ttrain_X, tval_X = tX, ttrain[-policy['n lag']:]
+                ttrain_y, val_y = ty, val
+
+                tmodel = RandomForestRegressor(
+                    max_depth=policy['max depth'],
+                    min_samples_split=policy['min samples split'],
+                    min_impurity_decrease=policy['min impurity decrease'],
+                    ccp_alpha=policy['ccp alpha']
+                )
+                tmodel.fit(ttrain_X, ttrain_y.ravel())
+
+                y, ty_hat = val_y[0], tmodel.predict([tval_X])[0]
+                tran_val_errs.append(score(y, ty_hat))
+            else:
+                tran_val_errs.append(0.999)
+        
+        return raw_val_errs, tran_val_errs
     
+    # @NOTE: Not used because the XGboost library has its own parallelism that conflicts with other customised parallel settings.
     def val_xgb(self, policy, series, n_val, split, horizon, score) -> Tuple[List]:
         raw_val_errs = []
         tran_val_errs = []
@@ -222,7 +280,7 @@ class ParallelValidation:
         
         return raw_val_errs, tran_val_errs
 
-    # @NOTE: LightGBM doesn't work with multiprocessing. This function is not used.
+    # @NOTE: LightGBM doesn't work with multiprocessing. This function is not used. The reason is the same with the XGboost library.
     def val_lgbm(self, policy, series, n_val, split, horizon, score) -> Tuple[List]:
         raw_val_errs = []
         tran_val_errs = []
