@@ -155,17 +155,17 @@ else:
 # Create policy sets for the agents.
 # Predefined model hyperparameters to tune and their search space
 models_params = {
-    'MLP': { # 3x5=15 policies x36 thresholds x10 val = 41 secs
+    'MLP': { # 3x5=15 policies x36 thresholds x10 val x20 workers = 41 secs
         'n of lags': [1, 3, 5],
         'strucs': [(0, ), (1, ), (3, ), (5, ), (7, )],
         'max iter': [500]
     },
-    'EN': {  # 3x4x4=48 policies x36 thresholds x10 val = 1 sec
+    'EN': {  # 3x4x4=48 policies x36 thresholds x10 val x20 workers = 1 sec
         'n of lags': [1, 3, 5],
         'alpha' : [10**scale for scale in [-1, 0, 1, 2]],
         'l1 ratio': [round(x, 3) for x in np.arange(0.01, 1.01, 0.3)]
     },
-    'ETS': {  # 2x2x2=8 policies x36 thresholds x10 val = 27 sec
+    'ETS': {  # 2x2x2=8 policies x36 thresholds x10 val x20 workers = 27 sec
         'seasonal periods': [12],  # known monthly data, search space should be [1, 4, 12, 52]
         'trend': ['add', 'mul'],
         'seasonal':['add', 'mul'],
@@ -177,11 +177,11 @@ models_params = {
         'booster': ['gbtree', 'dart'], # gblineaer uses linear functions
         'subsample ratio': [0.1, 0.4, 0.7], # 0 ~ 1
     },
-    'LGBM' : {  # 3x3x4x2=72 policies x36 thresholds x10 val = 7 min
+    'LGBM' : {  # 3x3x4x2=72 policies x36 thresholds x10 val not parallel = 7 min
         'n of lags': [1, 3, 5],
         'max depth': [-1, 10, 20], # -1 ~ 32
         'min split gain': [0, 3, 5], # 0 ~ 5
-        'importance type': ['split', 'gain']
+        'importance type': ['split']  # 'gain' doesn't not tend to win
     },
     'AutoARIMA': {}
 }
