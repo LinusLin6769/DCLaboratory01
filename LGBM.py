@@ -11,7 +11,7 @@ import warnings
 import numpy as np
 import pandas as pd
 
-def run_lgbm(datasets, v_size, t_size, horizon, score, policies, n_workers) -> Tuple[Dict]:
+def run_lgbm(datasets, v_size, retrain_window, t_size, horizon, score, policies, n_workers) -> Tuple[Dict]:
     raw_info = {}
     tran_info = {}
 
@@ -41,6 +41,7 @@ def run_lgbm(datasets, v_size, t_size, horizon, score, policies, n_workers) -> T
         N = len(series)
         n_test = t_size if type(t_size) == int else int(t_size * N)
         n_val = v_size if type(v_size) == int else int(v_size * N)
+        retrain_window = retrain_window if type(retrain_window) == int else int(retrain_window * N)
         split = n_val + n_test
 
         raw_policy_errs = []
@@ -65,14 +66,16 @@ def run_lgbm(datasets, v_size, t_size, horizon, score, policies, n_workers) -> T
                     train_X, val_X = rX, train[-policy['n lag']:]
                     train_y, val_y = ry, val
                     
-                    rmodel = lgbm.LGBMRegressor(
-                        max_depth=policy['max depth'],
-                        min_split_gain=policy['min split gain'],
-                        importance_type=policy['importance type'],
-                        n_jobs=n_workers,
-                        random_state=0
-                    )
-                    rmodel.fit(train_X, train_y.ravel())
+                    if v % retrain_window == 0:
+                        rmodel = lgbm.LGBMRegressor(
+                            max_depth=policy['max depth'],
+                            min_split_gain=policy['min split gain'],
+                            importance_type=policy['importance type'],
+                            n_jobs=n_workers,
+                            random_state=0
+                        )
+                        rmodel.fit(train_X, train_y.ravel())
+
                     y, y_hat = val_y[0], rmodel.predict([val_X])[0]
                     raw_val_errs.append(score(y, y_hat))
 
@@ -89,14 +92,15 @@ def run_lgbm(datasets, v_size, t_size, horizon, score, policies, n_workers) -> T
                         ttrain_X, tval_X = tX, ttrain[-policy['n lag']:]
                         ttrain_y, val_y = ty, val
 
-                        tmodel = lgbm.LGBMRegressor(
-                        max_depth=policy['max depth'],
-                        min_split_gain=policy['min split gain'],
-                        importance_type=policy['importance type'],
-                        n_jobs=n_workers,
-                        random_state=0
-                        )
-                        tmodel.fit(ttrain_X, ttrain_y.ravel())
+                        if v % retrain_window == 0:
+                            tmodel = lgbm.LGBMRegressor(
+                            max_depth=policy['max depth'],
+                            min_split_gain=policy['min split gain'],
+                            importance_type=policy['importance type'],
+                            n_jobs=n_workers,
+                            random_state=0
+                            )
+                            tmodel.fit(ttrain_X, ttrain_y.ravel())
                         y, ty_hat = val_y[0], tmodel.predict([tval_X])[0]
                         tran_val_errs.append(score(y, ty_hat))
                         
@@ -138,14 +142,15 @@ def run_lgbm(datasets, v_size, t_size, horizon, score, policies, n_workers) -> T
             train_X, val_X = rX, train[-best_raw_policy['n lag']:]
             train_y, val_y = ry, val
             
-            rmodel = lgbm.LGBMRegressor(
-                max_depth=best_raw_policy['max depth'],
-                min_split_gain=best_raw_policy['min split gain'],
-                importance_type=best_raw_policy['importance type'],
-                random_state=0
-            )
-            
-            rmodel.fit(train_X, train_y.ravel())
+            if j % retrain_window == 0:
+                rmodel = lgbm.LGBMRegressor(
+                    max_depth=best_raw_policy['max depth'],
+                    min_split_gain=best_raw_policy['min split gain'],
+                    importance_type=best_raw_policy['importance type'],
+                    random_state=0
+                )
+                rmodel.fit(train_X, train_y.ravel())
+
             y, y_hat = val_y[0], rmodel.predict([val_X])[0]
             raw_test_errs.append(score(y, y_hat))
             raw_y_hats.append(y_hat)
@@ -162,14 +167,14 @@ def run_lgbm(datasets, v_size, t_size, horizon, score, policies, n_workers) -> T
             ttrain_X, tval_X = tX, ttrain[-best_tran_policy['n lag']:]
             ttrain_y, val_y = ty, val
 
-            tmodel = lgbm.LGBMRegressor(
-                max_depth=best_tran_policy['max depth'],
-                min_split_gain=best_tran_policy['min split gain'],
-                importance_type=best_tran_policy['importance type'],
-                random_state=0
-            )
-            
-            tmodel.fit(ttrain_X, ttrain_y.ravel())
+            if j % retrain_window == 0:
+                tmodel = lgbm.LGBMRegressor(
+                    max_depth=best_tran_policy['max depth'],
+                    min_split_gain=best_tran_policy['min split gain'],
+                    importance_type=best_tran_policy['importance type'],
+                    random_state=0
+                )
+                tmodel.fit(ttrain_X, ttrain_y.ravel())
             y, ty_hat = val_y[0], tmodel.predict([tval_X])[0]
             tran_test_errs.append(score(y, ty_hat))
             tran_y_hats.append(ty_hat)

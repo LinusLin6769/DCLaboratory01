@@ -10,11 +10,11 @@ models_params = {
     },
     'EN': {  # 3x4x4=48 policies x36 thresholds x10 val x20 workers = 1 sec
         'n of lags': [1, 3, 5],
-        'alpha' : [10**scale for scale in [-1, 0, 1, 2]],
-        'l1 ratio': [round(x, 3) for x in np.arange(0.01, 1.01, 0.3)]
+        'alpha' : [10**scale for scale in [-1, 0, 1, 2, 3]],
+        'l1 ratio': [0.01, 0.3, 0.5, 0.8, 0.9] # [round(x, 3) for x in np.arange(0.01, 1.01, 0.3)]
     },
     'ETS': {  # 2x2x2=8 policies x36 thresholds x10 val x20 workers = 27 sec
-        'seasonal periods': [12],  # known monthly data, search space should be [1, 4, 12, 52]
+        'seasonal periods': [8, 12, 24],  # 7 if daily data with monthly cycle
         'trend': ['add', 'mul'],
         'seasonal':['add', 'mul'],
         'damped trend': [True, False]

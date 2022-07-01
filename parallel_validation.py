@@ -28,7 +28,7 @@ class ParallelValidation:
     def run_parallel(self, p):
         return self.models[self.model](policy=p, **self.args)
 
-    def val_mlp(self, policy, series, n_val, split, horizon, score) -> Tuple[List]:
+    def val_mlp(self, policy, series, n_val, retrain_window, split, horizon, score) -> Tuple[List]:
 
         raw_val_errs = []
         tran_val_errs = []
@@ -44,13 +44,14 @@ class ParallelValidation:
             train_X, val_X = rX, train[-policy['n lag']:]
             train_y, val_y = ry, val
 
-            # converge to linear regression if no hidden layer
-            if policy['struc'] == (0, ):
-                rmodel = LinearRegression()
-            else:
-                rmodel = MLPRegressor(hidden_layer_sizes=policy['struc'], max_iter=policy['max iter'], random_state=1)
+            if v % retrain_window == 0:
+                # converge to linear regression if no hidden layer
+                if policy['struc'] == (0, ):
+                    rmodel = LinearRegression()
+                else:
+                    rmodel = MLPRegressor(hidden_layer_sizes=policy['struc'], max_iter=policy['max iter'], random_state=1)
+                rmodel.fit(train_X, train_y.ravel())
 
-            rmodel.fit(train_X, train_y.ravel())
             y, y_hat = val_y[0], rmodel.predict([val_X])[0]
             raw_val_errs.append(score(y, y_hat))
 
@@ -67,13 +68,14 @@ class ParallelValidation:
                 ttrain_X, tval_X = tX, ttrain[-policy['n lag']:]
                 ttrain_y, val_y = ty, val
 
-                # coverge to linear regression if no hidden layer
-                if policy['struc'] == (0, ):
-                    tmodel = LinearRegression()
-                else:
-                    tmodel = MLPRegressor(hidden_layer_sizes=policy['struc'], max_iter=policy['max iter'], random_state=1)
-                
-                tmodel.fit(ttrain_X, ttrain_y.ravel())
+                if v % retrain_window == 0:
+                    # coverge to linear regression if no hidden layer
+                    if policy['struc'] == (0, ):
+                        tmodel = LinearRegression()
+                    else:
+                        tmodel = MLPRegressor(hidden_layer_sizes=policy['struc'], max_iter=policy['max iter'], random_state=1)
+                    tmodel.fit(ttrain_X, ttrain_y.ravel())
+
                 y, ty_hat = val_y[0], tmodel.predict([tval_X])[0]
                 tran_val_errs.append(score(y, ty_hat))
             else:
@@ -81,7 +83,7 @@ class ParallelValidation:
         
         return raw_val_errs, tran_val_errs
 
-    def val_ets(self, policy, series, n_val, split, horizon, score) -> Tuple[List]:
+    def val_ets(self, policy, series, n_val, retrain_window, split, horizon, score) -> Tuple[List]:
 
         raw_val_errs = []
         tran_val_errs = []
@@ -93,13 +95,14 @@ class ParallelValidation:
             val = train_v[-horizon:]
                 
             # raw
-            rmodel = ExponentialSmoothing(
-                train,
-                seasonal_periods=policy['seasonal periods'],
-                trend=policy['trend'],
-                seasonal=policy['seasonal'],
-                damped_trend=policy['damped trend']
-            ).fit()
+            if v % retrain_window == 0:
+                rmodel = ExponentialSmoothing(
+                    train,
+                    seasonal_periods=policy['seasonal periods'],
+                    trend=policy['trend'],
+                    seasonal=policy['seasonal'],
+                    damped_trend=policy['damped trend']
+                ).fit()
             y, y_hat = val[0], rmodel.forecast(horizon).tolist()[0] # the forecast function returns np.array, which is not acceptable for json
             raw_val_errs.append(score(y, y_hat))
 
@@ -112,13 +115,16 @@ class ParallelValidation:
             ttrain = t.tdata1
 
             if len(ttrain) > 1:
-                tmodel = ExponentialSmoothing(
-                    ttrain,
-                    seasonal_periods=policy['seasonal periods'],
-                    trend=policy['trend'],
-                    seasonal=policy['seasonal'],
-                    damped_trend=policy['damped trend']
-                ).fit()
+
+                if v % retrain_window == 0:
+                    tmodel = ExponentialSmoothing(
+                        ttrain,
+                        seasonal_periods=policy['seasonal periods'],
+                        trend=policy['trend'],
+                        seasonal=policy['seasonal'],
+                        damped_trend=policy['damped trend']
+                    ).fit()
+
                 y, ty_hat = val[0], tmodel.forecast(horizon).tolist()[0]
                 tran_val_errs.append(score(y, ty_hat))
             else:
@@ -126,7 +132,7 @@ class ParallelValidation:
         
         return raw_val_errs, tran_val_errs
 
-    def val_en(self, policy, series, n_val, split, horizon, score) -> Tuple[List]:
+    def val_en(self, policy, series, n_val, retrain_window, split, horizon, score) -> Tuple[List]:
 
         raw_val_errs = []
         tran_val_errs = []
@@ -142,11 +148,13 @@ class ParallelValidation:
             train_X, val_X = rX, train[-policy['n lag']:]
             train_y, val_y = ry, val
             
-            rmodel = ElasticNet(
-                alpha=policy['alpha'],
-                l1_ratio=policy['l1 ratio'],
-                random_state=0)
-            rmodel.fit(train_X, train_y)
+            if v % retrain_window == 0:
+                rmodel = ElasticNet(
+                    alpha=policy['alpha'],
+                    l1_ratio=policy['l1 ratio'],
+                    random_state=0)
+                rmodel.fit(train_X, train_y)
+
             y, y_hat = val_y[0], rmodel.predict([val_X])[0]
             raw_val_errs.append(score(y, y_hat))
 
@@ -163,8 +171,10 @@ class ParallelValidation:
                 ttrain_X, tval_X = tX, ttrain[-policy['n lag']:]
                 ttrain_y, val_y = ty, val
 
-                tmodel = ElasticNet(alpha=policy['alpha'],l1_ratio=policy['l1 ratio'], random_state=0)
-                tmodel.fit(ttrain_X, ttrain_y)
+                if v % retrain_window == 0:
+                    tmodel = ElasticNet(alpha=policy['alpha'],l1_ratio=policy['l1 ratio'], random_state=0)
+                    tmodel.fit(ttrain_X, ttrain_y)
+
                 y, ty_hat = val_y[0], tmodel.predict([tval_X])[0]
                 tran_val_errs.append(score(y, ty_hat))
             else:
@@ -172,7 +182,7 @@ class ParallelValidation:
         
         return raw_val_errs, tran_val_errs
 
-    def val_rf(self, policy, series, n_val, split, horizon, score) -> Tuple[List]:
+    def val_rf(self, policy, series, n_val, retrain_window, split, horizon, score) -> Tuple[List]:
 
         raw_val_errs = []
         tran_val_errs = []
@@ -188,13 +198,14 @@ class ParallelValidation:
             train_X, val_X = rX, train[-policy['n lag']:]
             train_y, val_y = ry, val
             
-            rmodel = RandomForestRegressor(
-                max_depth=policy['max depth'],
-                min_samples_split=policy['min samples split'],
-                min_impurity_decrease=policy['min impurity decrease'],
-                ccp_alpha=policy['ccp alpha']
-            )
-            rmodel.fit(train_X, train_y.ravel())
+            if v % retrain_window == 0:
+                rmodel = RandomForestRegressor(
+                    max_depth=policy['max depth'],
+                    min_samples_split=policy['min samples split'],
+                    min_impurity_decrease=policy['min impurity decrease'],
+                    ccp_alpha=policy['ccp alpha']
+                )
+                rmodel.fit(train_X, train_y.ravel())
 
             y, y_hat = val_y[0], rmodel.predict([val_X])[0]
             raw_val_errs.append(score(y, y_hat))
@@ -212,13 +223,14 @@ class ParallelValidation:
                 ttrain_X, tval_X = tX, ttrain[-policy['n lag']:]
                 ttrain_y, val_y = ty, val
 
-                tmodel = RandomForestRegressor(
-                    max_depth=policy['max depth'],
-                    min_samples_split=policy['min samples split'],
-                    min_impurity_decrease=policy['min impurity decrease'],
-                    ccp_alpha=policy['ccp alpha']
-                )
-                tmodel.fit(ttrain_X, ttrain_y.ravel())
+                if v % retrain_window == 0:
+                    tmodel = RandomForestRegressor(
+                        max_depth=policy['max depth'],
+                        min_samples_split=policy['min samples split'],
+                        min_impurity_decrease=policy['min impurity decrease'],
+                        ccp_alpha=policy['ccp alpha']
+                    )
+                    tmodel.fit(ttrain_X, ttrain_y.ravel())
 
                 y, ty_hat = val_y[0], tmodel.predict([tval_X])[0]
                 tran_val_errs.append(score(y, ty_hat))
@@ -228,7 +240,7 @@ class ParallelValidation:
         return raw_val_errs, tran_val_errs
     
     # @NOTE: Not used because the XGboost library has its own parallelism that conflicts with other customised parallel settings.
-    def val_xgb(self, policy, series, n_val, split, horizon, score) -> Tuple[List]:
+    def val_xgb(self, policy, series, n_val, retrain_window, split, horizon, score) -> Tuple[List]:
         raw_val_errs = []
         tran_val_errs = []
 
@@ -243,13 +255,15 @@ class ParallelValidation:
             train_X, val_X = rX, train[-policy['n lag']:]
             train_y, val_y = ry, val
             
-            rmodel = xgb.XGBRegressor(
-                max_depth=policy['max depth'],
-                booster=policy['booster'],
-                subsample=policy['subsample ratio'],
-                random_state=0
-            )
-            rmodel.fit(train_X, train_y)
+            if v % retrain_window == 0:
+                rmodel = xgb.XGBRegressor(
+                    max_depth=policy['max depth'],
+                    booster=policy['booster'],
+                    subsample=policy['subsample ratio'],
+                    random_state=0
+                )
+                rmodel.fit(train_X, train_y)
+
             y, y_hat = val_y[0], rmodel.predict([val_X])[0]
             raw_val_errs.append(score(y, y_hat))
 
@@ -266,13 +280,14 @@ class ParallelValidation:
                 ttrain_X, tval_X = tX, ttrain[-policy['n lag']:]
                 ttrain_y, val_y = ty, val
 
-                tmodel = xgb.XGBRegressor(
-                max_depth=policy['max depth'],
-                booster=policy['booster'],
-                subsample=policy['subsample ratio'],
-                random_state=0
-                )
-                tmodel.fit(ttrain_X, ttrain_y)
+                if v % retrain_window == 0:
+                    tmodel = xgb.XGBRegressor(
+                    max_depth=policy['max depth'],
+                    booster=policy['booster'],
+                    subsample=policy['subsample ratio'],
+                    random_state=0
+                    )
+                    tmodel.fit(ttrain_X, ttrain_y)
                 y, ty_hat = val_y[0], tmodel.predict([tval_X])[0]
                 tran_val_errs.append(score(y, ty_hat))
             else:
@@ -281,7 +296,7 @@ class ParallelValidation:
         return raw_val_errs, tran_val_errs
 
     # @NOTE: LightGBM doesn't work with multiprocessing. This function is not used. The reason is the same with the XGboost library.
-    def val_lgbm(self, policy, series, n_val, split, horizon, score) -> Tuple[List]:
+    def val_lgbm(self, policy, series, n_val, retrain_window, split, horizon, score) -> Tuple[List]:
         raw_val_errs = []
         tran_val_errs = []
 
@@ -296,13 +311,14 @@ class ParallelValidation:
             train_X, val_X = rX, train[-policy['n lag']:]
             train_y, val_y = ry, val
             
-            rmodel = lgbm.LGBMRegressor(
-                max_depth=policy['max depth'],
-                min_split_gain=policy['min split gain'],
-                importance_type=policy['importance type'],
-                random_state=0
-            )
-            rmodel.fit(train_X, train_y.ravel())
+            if v % retrain_window == 0:
+                rmodel = lgbm.LGBMRegressor(
+                    max_depth=policy['max depth'],
+                    min_split_gain=policy['min split gain'],
+                    importance_type=policy['importance type'],
+                    random_state=0
+                )
+                rmodel.fit(train_X, train_y.ravel())
             y, y_hat = val_y[0], rmodel.predict([val_X])[0]
             raw_val_errs.append(score(y, y_hat))
 
@@ -319,13 +335,14 @@ class ParallelValidation:
                 ttrain_X, tval_X = tX, ttrain[-policy['n lag']:]
                 ttrain_y, val_y = ty, val
 
-                tmodel = lgbm.LGBMRegressor(
-                max_depth=policy['max depth'],
-                min_split_gain=policy['min split gain'],
-                importance_type=policy['importance type'],
-                random_state=0
-                )
-                tmodel.fit(ttrain_X, ttrain_y.ravel())
+                if v % retrain_window == 0:
+                    tmodel = lgbm.LGBMRegressor(
+                    max_depth=policy['max depth'],
+                    min_split_gain=policy['min split gain'],
+                    importance_type=policy['importance type'],
+                    random_state=0
+                    )
+                    tmodel.fit(ttrain_X, ttrain_y.ravel())
                 y, ty_hat = val_y[0], tmodel.predict([tval_X])[0]
                 tran_val_errs.append(score(y, ty_hat))
             else:

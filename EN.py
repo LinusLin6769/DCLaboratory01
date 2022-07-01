@@ -14,7 +14,7 @@ import numpy as np
 import pandas as pd
 
 
-def run_en(datasets, v_size, t_size, horizon, score, policies, n_workers) -> Tuple[Dict]:
+def run_en(datasets, v_size, retrain_window, t_size, horizon, score, policies, n_workers) -> Tuple[Dict]:
 
     raw_info = {}
     tran_info = {}
@@ -45,6 +45,7 @@ def run_en(datasets, v_size, t_size, horizon, score, policies, n_workers) -> Tup
         N = len(series)
         n_test = t_size if type(t_size) == int else int(t_size * N)
         n_val = v_size if type(v_size) == int else int(v_size * N)
+        retrain_window = retrain_window if type(retrain_window) == int else int(retrain_window * N)
         split = n_val + n_test
         raw_policy_errs = []
         tran_policy_errs = []
@@ -58,6 +59,7 @@ def run_en(datasets, v_size, t_size, horizon, score, policies, n_workers) -> Tup
                 arg = {
                     'series': series,
                     'n_val': n_val,
+                    'retrain_window': retrain_window,
                     'split': split,
                     'horizon': horizon,
                     'score': score
@@ -107,8 +109,9 @@ def run_en(datasets, v_size, t_size, horizon, score, policies, n_workers) -> Tup
                 train_X, val_X = rX, train[-best_raw_policy['n lag']:]
                 train_y, val_y = ry, val
 
-                rmodel = ElasticNet(alpha=best_raw_policy['alpha'], l1_ratio=best_raw_policy['l1 ratio'], random_state=0)
-                rmodel.fit(train_X, train_y)
+                if j % retrain_window == 0:
+                    rmodel = ElasticNet(alpha=best_raw_policy['alpha'], l1_ratio=best_raw_policy['l1 ratio'], random_state=0)
+                    rmodel.fit(train_X, train_y)
 
                 y, y_hat = val_y[0], rmodel.predict([val_X])[0]
                 raw_test_errs.append(score(y, y_hat))
@@ -126,8 +129,10 @@ def run_en(datasets, v_size, t_size, horizon, score, policies, n_workers) -> Tup
                 ttrain_X, tval_X = tX, ttrain[-best_tran_policy['n lag']:]
                 ttrain_y, val_y = ty, val
 
-                tmodel = ElasticNet(alpha=best_tran_policy['alpha'],l1_ratio=best_tran_policy['l1 ratio'], random_state=0)
-                tmodel.fit(ttrain_X, ttrain_y)
+                if j % retrain_window == 0:
+                    tmodel = ElasticNet(alpha=best_tran_policy['alpha'],l1_ratio=best_tran_policy['l1 ratio'], random_state=0)
+                    tmodel.fit(ttrain_X, ttrain_y)
+
                 y, ty_hat = val_y[0], tmodel.predict([tval_X])[0]
                 tran_test_errs.append(score(y, ty_hat))
                 tran_y_hats.append(ty_hat)

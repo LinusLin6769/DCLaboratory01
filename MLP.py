@@ -18,7 +18,7 @@ import pandas as pd
 
 
 
-def run_mlp(datasets, v_size, t_size, horizon, score, policies, n_workers) -> Tuple[Dict]:
+def run_mlp(datasets, v_size, retrain_window, t_size, horizon, score, policies, n_workers) -> Tuple[Dict]:
     raw_info = {}
     tran_info = {}
 
@@ -48,6 +48,7 @@ def run_mlp(datasets, v_size, t_size, horizon, score, policies, n_workers) -> Tu
         N = len(series)
         n_test = t_size if type(t_size) == int else int(t_size * N)
         n_val = v_size if type(v_size) == int else int(v_size * N)
+        retrain_window = retrain_window if type(retrain_window) == int else int(retrain_window * N)
         split = n_val + n_test
 
         # suppress convergence warning during validation
@@ -59,6 +60,7 @@ def run_mlp(datasets, v_size, t_size, horizon, score, policies, n_workers) -> Tu
                 arg = {
                     'series': series,
                     'n_val': n_val,
+                    'retrain_window': retrain_window,
                     'split': split,
                     'horizon': horizon,
                     'score': score
@@ -107,13 +109,14 @@ def run_mlp(datasets, v_size, t_size, horizon, score, policies, n_workers) -> Tu
                 train_X, val_X = rX, train[-best_raw_policy['n lag']:]
                 train_y, val_y = ry, val
                 
-                # converge to linear regression if no hidden layer
-                if best_raw_policy['struc'] == (0, ):
-                    rmodel = LinearRegression()
-                else:
-                    rmodel = MLPRegressor(hidden_layer_sizes=best_raw_policy['struc'], max_iter=best_raw_policy['max iter'], random_state=1)
-                
-                rmodel.fit(train_X, train_y.ravel())
+                if j % retrain_window == 0:
+                    # converge to linear regression if no hidden layer
+                    if best_raw_policy['struc'] == (0, ):
+                        rmodel = LinearRegression()
+                    else:
+                        rmodel = MLPRegressor(hidden_layer_sizes=best_raw_policy['struc'], max_iter=best_raw_policy['max iter'], random_state=1)
+                    rmodel.fit(train_X, train_y.ravel())
+
                 y, y_hat = val_y[0], rmodel.predict([val_X])[0]
                 raw_test_errs.append(score(y, y_hat))
                 raw_y_hats.append(y_hat)
@@ -130,13 +133,14 @@ def run_mlp(datasets, v_size, t_size, horizon, score, policies, n_workers) -> Tu
                 ttrain_X, tval_X = tX, ttrain[-best_tran_policy['n lag']:]
                 ttrain_y, val_y = ty, val
 
-                # converge to linear regression if no hidden layer
-                if best_tran_policy['struc'] == (0, ):
-                    tmodel = LinearRegression()
-                else:
-                    tmodel = MLPRegressor(hidden_layer_sizes=best_tran_policy['struc'], max_iter=best_tran_policy['max iter'], random_state=1)
-                
-                tmodel.fit(ttrain_X, ttrain_y.ravel())
+                if j % retrain_window == 0:
+                    # converge to linear regression if no hidden layer
+                    if best_tran_policy['struc'] == (0, ):
+                        tmodel = LinearRegression()
+                    else:
+                        tmodel = MLPRegressor(hidden_layer_sizes=best_tran_policy['struc'], max_iter=best_tran_policy['max iter'], random_state=1)
+                    tmodel.fit(ttrain_X, ttrain_y.ravel())
+
                 y, ty_hat = val_y[0], tmodel.predict([tval_X])[0]
                 tran_test_errs.append(score(y, ty_hat))
                 tran_y_hats.append(ty_hat)

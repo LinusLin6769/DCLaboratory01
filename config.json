@@ -1,25 +1,26 @@
 {
-    "type of run": "real run",
+    "type of run": "test",
     "dataset": {
-        "file name": "m3_monthly_dataset.json",
+        "file name": "m4_hourly_dataset.json",
         "file type": "json",
         "file path": "datasets/",
-        "cumulate used": 210,
-        "use series": 210,
-        "min length": 130,
+        "cumulate used": 0,
+        "use series":150,
+        "min length": 1000,
         "max length": 9999
     },
     "transformation config": {
         "xthresholds": [0.01, 1.1, 0.1]
     },
     "modelling config": {
-        "validation size": 10,
-        "test size": 15,
+        "retrain window":5,
+        "validation size": 0.1,
+        "test size": 0.1,
         "forecast horizon": 1,
         "score measure": "SMAPE"
     },
-    "models": ["EN", "MLP", "ETS"],
+    "models": ["EN", "ETS", "MLP"],
     "execution config": {
-        "n of workers": 20
+        "n of workers": 22
     }
 }

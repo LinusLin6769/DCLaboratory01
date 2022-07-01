@@ -17,7 +17,7 @@ import warnings
 import numpy as np
 import pandas as pd
 
-def run_ets(datasets, v_size, t_size, horizon, score, policies, n_workers) -> Tuple[Dict]:
+def run_ets(datasets, v_size, retrain_window, t_size, horizon, score, policies, n_workers) -> Tuple[Dict]:
 
     raw_info = {}
     tran_info = {}
@@ -48,6 +48,7 @@ def run_ets(datasets, v_size, t_size, horizon, score, policies, n_workers) -> Tu
         N = len(series)
         n_test = t_size if type(t_size) == int else int(t_size * N)
         n_val = v_size if type(v_size) == int else int(v_size * N)
+        retrain_window = retrain_window if type(retrain_window) == int else int(retrain_window * N)
         split = n_val + n_test
         raw_policy_errs = []
         tran_policy_errs = []
@@ -63,6 +64,7 @@ def run_ets(datasets, v_size, t_size, horizon, score, policies, n_workers) -> Tu
                     'series': series,
                     'n_val': n_val,
                     'split': split,
+                    'retrain_window': retrain_window,
                     'horizon': horizon,
                     'score': score,
                 }
@@ -110,13 +112,15 @@ def run_ets(datasets, v_size, t_size, horizon, score, policies, n_workers) -> Tu
                 val = train_v[-horizon:]
 
                 # raw
-                rmodel = ExponentialSmoothing(
-                    train,
-                    seasonal_periods=best_raw_policy['seasonal periods'],
-                    trend=best_raw_policy['trend'],
-                    seasonal=best_raw_policy['seasonal'],
-                    damped_trend=best_raw_policy['damped trend']
-                ).fit()
+                if j % retrain_window == 0:
+                    rmodel = ExponentialSmoothing(
+                        train,
+                        seasonal_periods=best_raw_policy['seasonal periods'],
+                        trend=best_raw_policy['trend'],
+                        seasonal=best_raw_policy['seasonal'],
+                        damped_trend=best_raw_policy['damped trend']
+                    ).fit()
+
                 y, y_hat = val[0], rmodel.forecast(horizon).tolist()[0]
                 raw_test_errs.append(score(y, y_hat))
                 raw_y_hats.append(y_hat)
@@ -129,13 +133,14 @@ def run_ets(datasets, v_size, t_size, horizon, score, policies, n_workers) -> Tu
                 t.transform(train, threshold=thres)
                 ttrain = t.tdata1
 
-                tmodel = ExponentialSmoothing(
-                    ttrain,
-                    seasonal_periods=best_tran_policy['seasonal periods'],
-                    trend=best_tran_policy['trend'],
-                    seasonal=best_tran_policy['seasonal'],
-                    damped_trend=best_tran_policy['damped trend']
-                ).fit()
+                if j % retrain_window == 0:
+                    tmodel = ExponentialSmoothing(
+                        ttrain,
+                        seasonal_periods=best_tran_policy['seasonal periods'],
+                        trend=best_tran_policy['trend'],
+                        seasonal=best_tran_policy['seasonal'],
+                        damped_trend=best_tran_policy['damped trend']
+                    ).fit()
                 y, ty_hat = val[0], tmodel.forecast(horizon).tolist()[0]
                 tran_test_errs.append(score(y, ty_hat))
                 tran_y_hats.append(ty_hat)
