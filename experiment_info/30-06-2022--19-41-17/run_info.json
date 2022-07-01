@@ -1,0 +1,54 @@
+{
+    "run time": ["30-06-2022--19-41-17", "01-07-2022--08-56-24"],
+    "config input": {
+        "type of run": "real run",
+        "dataset": {
+            "file name": "m3_monthly_dataset.json",
+            "file type": "json",
+            "file path": "datasets/",
+            "cumulate used": 210,
+            "use series": 210,
+            "min length": 130,
+            "max length": 9999
+        },
+        "transformation config": {
+            "xthresholds": [0.01, 1.1, 0.1]
+        },
+        "modelling config": {
+            "validation size": 10,
+            "test size": 15,
+            "forecast horizon": 1,
+            "score measure": "SMAPE"
+        },
+        "models": ["EN", "MLP", "ETS"],
+        "execution config": {
+            "n of workers": 20
+        }
+    },
+    "number of series used": 210,
+    "Avg. len of series": 137.14761904761906,
+    "took time": {
+        "EN": ["30-06-2022--19-41-35", "30-06-2022--20-02-07"],
+        "MLP": ["30-06-2022--20-02-07", "01-07-2022--03-41-16"],
+        "ETS": ["01-07-2022--03-41-16", "01-07-2022--08-56-24"]
+    },
+    "model hyper_params": {
+        "EN": {
+            "n of lags": [1, 3, 5],
+            "alpha": [0.1, 1, 10, 100],
+            "l1 ratio": [0.01, 0.31, 0.61, 0.91]
+        },
+        "MLP": {
+            "n of lags": [1, 3, 5],
+            "strucs": [[0], [1], [3], [5], [7]],
+            "max iter": [500]
+        },
+        "ETS": {
+            "seasonal periods": [12],
+            "trend": ["add", "mul"],
+            "seasonal": ["add", "mul"],
+            "damped trend": [true, false]
+        }
+    },
+    "messages": {}
+}
