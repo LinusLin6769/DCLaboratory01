@@ -1,13 +1,13 @@
 {
-    "type of run": "test",
+    "type of run": "real run",
     "dataset": {
-        "file name": "m4_hourly_dataset.json",
+        "file name": "m4_daily_finance.json",
         "file type": "json",
         "file path": "datasets/",
-        "cumulate used": 3,
-        "use series":9,
-        "min length": 500,
-        "max length": 9999
+        "cumulate used": 0,
+        "use series":38,
+        "min length": 1000,
+        "max length": 1500
     },
     "transformation config": {
         "xthresholds": [0.01, 1.1, 0.1]
@@ -21,6 +21,6 @@
     },
     "models": ["EN", "ETS", "MLP", "RF", "LGBM", "LSVR"],
     "execution config": {
-        "n of workers": 20
+        "n of workers": 22
     }
 }
