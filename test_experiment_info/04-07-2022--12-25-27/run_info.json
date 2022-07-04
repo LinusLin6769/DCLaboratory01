@@ -1,0 +1,60 @@
+{
+    "run time": [
+        "04-07-2022--12-25-27",
+        "04-07-2022--12-25-47"
+    ],
+    "config input": {
+        "type of run": "test",
+        "dataset": {
+            "file name": "m4_hourly_dataset.json",
+            "file type": "json",
+            "file path": "datasets/",
+            "cumulate used": 0,
+            "use series": 1,
+            "min length": 500,
+            "max length": 9999
+        },
+        "transformation config": {
+            "xthresholds": [
+                0.01,
+                1.1,
+                0.1
+            ]
+        },
+        "modelling config": {
+            "retrain window": 10,
+            "validation size": 0.1,
+            "test size": 0.1,
+            "forecast horizon": 1,
+            "score measure": "SMAPE"
+        },
+        "models": [
+            "LSVR"
+        ],
+        "execution config": {
+            "n of workers": 20
+        }
+    },
+    "number of series used": 1,
+    "Avg. len of series": 748.0,
+    "took time": {
+        "LSVR": [
+            "04-07-2022--12-25-30",
+            "04-07-2022--12-25-47"
+        ]
+    },
+    "model hyper_params": {
+        "LSVR": {
+            "n of lags": [
+                12,
+                24,
+                36
+            ]
+        }
+    },
+    "messages": {
+        "Warning": [
+            "Only 1 series are chosen for this run."
+        ]
+    }
+}

@@ -1,0 +1,68 @@
+{
+    "run time": [
+        "04-07-2022--11-25-35",
+        "04-07-2022--11-27-47"
+    ],
+    "config input": {
+        "type of run": "test",
+        "dataset": {
+            "file name": "m4_hourly_dataset.json",
+            "file type": "json",
+            "file path": "datasets/",
+            "cumulate used": 0,
+            "use series": 1,
+            "min length": 500,
+            "max length": 9999
+        },
+        "transformation config": {
+            "xthresholds": [
+                0.01,
+                1.1,
+                0.1
+            ]
+        },
+        "modelling config": {
+            "retrain window": 10,
+            "validation size": 0.1,
+            "test size": 0.1,
+            "forecast horizon": 1,
+            "score measure": "SMAPE"
+        },
+        "models": [
+            "MLP"
+        ],
+        "execution config": {
+            "n of workers": 20
+        }
+    },
+    "number of series used": 1,
+    "Avg. len of series": 748.0,
+    "took time": {
+        "MLP": [
+            "04-07-2022--11-25-40",
+            "04-07-2022--11-27-47"
+        ]
+    },
+    "model hyper_params": {
+        "MLP": {
+            "n of lags": [
+                12,
+                24,
+                36
+            ],
+            "strucs": [
+                [
+                    30
+                ]
+            ],
+            "max iter": [
+                2000
+            ]
+        }
+    },
+    "messages": {
+        "Warning": [
+            "Only 1 series are chosen for this run."
+        ]
+    }
+}

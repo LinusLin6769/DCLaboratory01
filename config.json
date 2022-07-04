@@ -4,23 +4,23 @@
         "file name": "m4_hourly_dataset.json",
         "file type": "json",
         "file path": "datasets/",
-        "cumulate used": 0,
-        "use series":150,
-        "min length": 1000,
+        "cumulate used": 3,
+        "use series":9,
+        "min length": 500,
         "max length": 9999
     },
     "transformation config": {
         "xthresholds": [0.01, 1.1, 0.1]
     },
     "modelling config": {
-        "retrain window":5,
+        "retrain window":10,
         "validation size": 0.1,
         "test size": 0.1,
         "forecast horizon": 1,
         "score measure": "SMAPE"
     },
-    "models": ["EN", "ETS", "MLP"],
+    "models": ["EN", "ETS", "MLP", "RF", "LGBM", "LSVR"],
     "execution config": {
-        "n of workers": 22
+        "n of workers": 20
     }
 }

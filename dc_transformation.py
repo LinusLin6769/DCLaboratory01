@@ -237,7 +237,7 @@ class DCTransformer:
 
         self.dc_dissect()
         self.marker()
-        self.interpolation0()    # with extrema only (tdata0)
+        # self.interpolation0()    # with extrema only (tdata0)
         self.interpolation1()    # with extrema and directional changes (tdata1)
 
     def get_raw_data(self) -> np.array:

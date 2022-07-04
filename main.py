@@ -28,9 +28,11 @@ print(f'Programme starting at {start}')
 with open('config.json', 'r') as config_json:
     config = json.load(config_json)
 
+file_name = config['dataset']['file name']
+
 # grab the time series from the dataset
 if config['dataset']['file type'] == 'json':
-    with open(config['dataset']['file path']+config['dataset']['file name']) as dataset:
+    with open(config['dataset']['file path']+file_name) as dataset:
         ts = json.load(dataset)
 else:
     raise ValueError('The programme currently only deals with .JSON files.')
@@ -211,6 +213,7 @@ from ETS import run_ets
 from LGBM import run_lgbm
 from XGB import run_xgb
 from RF import run_rf
+from LSVR import run_lsvr
 
 run_funcs = {
     'MLP': run_mlp,
@@ -218,7 +221,8 @@ run_funcs = {
     'ETS': run_ets,
     'LGBM': run_lgbm,
     'XGB': run_xgb,
-     'RF': run_rf
+     'RF': run_rf,
+    'LSVR': run_lsvr
 }
 
 took_time = {k: None for k in models}

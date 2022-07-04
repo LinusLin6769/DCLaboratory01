@@ -27,15 +27,15 @@ from the command-line tool. The input is the `config.json` file, where the user 
 
 The execution goes as the following:
 
-- `main.py` gets the configuration of the experiment from `config.json`
-- `main.py` performs some useful checks on whether the inputs it read from `config.json` are valid and reasonable
-- `main.py` gets the search space of the hyperparameters of the models from `model_policies`
-- `main.py` then starts training the models using the dataset specified in `config.json`, which is stored in the directory `datasets/`.
+1. `main.py` gets the configuration of the experiment from `config.json`
+2. `main.py` performs some useful checks on whether the inputs it read from `config.json` are valid and reasonable
+3. `main.py` gets the search space of the hyperparameters of the models from `model_policies`
+4. `main.py` then starts training the models using the dataset specified in `config.json`, which is stored in the directory `datasets/`.
 
-  - Note that the programme currently is only able to read .JSON files. This is one of the reasons why the `playground.ipynb` exists.
-  - A model is trained on all the series used, a .JSON file containing the experiment information of this model is created and placed in the directory of this experiment, and the programme moves on to another model until all models are trained.
+   1. Note that the programme currently is only able to read .JSON files. This is one of the reasons why the `playground.ipynb` exists.
+   2. A model is trained on all the series used, a .JSON file containing the experiment information of this model is created and placed in the directory of this experiment, and the programme moves on to another model until all models are trained.
 
-- After the models are trained, a dictionary of overall information regarding this run is appended to the `runs.json` file, which is a log of all the runs being run.
+5. After the models are trained, a dictionary of overall information regarding this run is appended to the `runs.json` file, which is a log of all the runs being run.
 
 ## Analysing the results
 
