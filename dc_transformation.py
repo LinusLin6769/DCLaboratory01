@@ -154,7 +154,7 @@ class DCTransformer:
 
         self.markers = {k: np.array(v).T for k, v in self.markers.items()}
 
-    def interpolation0(self, warn=False) -> None:
+    def interpolation0(self, kind, warn=False) -> None:
         marked_x = np.array(self.markers[0][0]).astype(int)
         y = np.array(self.markers[0][1]).astype(float)
         
@@ -169,7 +169,7 @@ class DCTransformer:
             # generate the interpolated values
             #
             # in-range interpolation
-            inter_y = interp1d(marked_x, y)
+            inter_y = interp1d(marked_x, y, kind=kind)
 
             # out-range interpolation (use original data)
             temp = np.arange(interpolate_max_range+1)
@@ -180,7 +180,7 @@ class DCTransformer:
             if warn:
                 warnings.warn("Cannot found any extreme. Check if threshold is appropriate.")
     
-    def interpolation1(self, warn=False) -> None:
+    def interpolation1(self, kind, warn=False) -> None:
         marked_x = np.array(self.markers[100][0]).astype(int)
         y = np.array(self.markers[100][1]).astype(float)
 
@@ -195,7 +195,7 @@ class DCTransformer:
             # generate the interpolated values
             #
             # in-range interpolation
-            inter_y = interp1d(marked_x, y)
+            inter_y = interp1d(marked_x, y, kind=kind)
 
             # out-range interpolation (use original data)
             temp = np.arange(interpolate_max_range+1)
@@ -222,7 +222,7 @@ class DCTransformer:
         plt.title(f'Std. of log-return: {self.sigma}, Thresholds: delta up = {round(self.DELTA_UP*100, 3)}%, delta down = {round(self.DELTA_DOWN*100, 3)}%, number of extrema: {len(self.markers[0][0])}')
         plt.show()
 
-    def transform(self, data, threshold=None) -> None:
+    def transform(self, data, threshold=None, kind='linear') -> None:
         self.data = np.array(data)
         self.sigma = round(np.std(np.diff(np.log(self.data))), 6)  # standard deviation of log-return
 
@@ -237,8 +237,8 @@ class DCTransformer:
 
         self.dc_dissect()
         self.marker()
-        # self.interpolation0()    # with extrema only (tdata0)
-        self.interpolation1()    # with extrema and directional changes (tdata1)
+        # self.interpolation0(kind=kind)    # with extrema only (tdata0)
+        self.interpolation1(kind=kind)    # with extrema and directional changes (tdata1)
 
     def get_raw_data(self) -> np.array:
         """Return the untransformed raw data."""
@@ -278,7 +278,7 @@ if __name__ == '__main__':
         if count == 5*(n_5+1): break
     
     t = DCTransformer()
-    t.transform(ts['T2']['raw'], threshold=(0.04, -0.04))
+    t.transform(ts['T2']['raw'], threshold=(0.04, -0.04), kind='linear')
     t.make_plot(marks=True, w_data0=False)
 
 

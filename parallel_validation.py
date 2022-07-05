@@ -3,6 +3,7 @@ from sklearn.neural_network import MLPRegressor
 from sklearn.linear_model import LinearRegression
 from sklearn.svm import LinearSVR
 from statsmodels.tsa.api import ExponentialSmoothing
+from sktime.forecasting.ets import AutoETS
 from sklearn.linear_model import ElasticNet
 from sklearn.ensemble import RandomForestRegressor
 import xgboost as xgb
@@ -61,7 +62,7 @@ class ParallelValidation:
             sigma = np.std(np.diff(np.log(train)))
             thres = (sigma*policy['thres up'], -sigma*policy['thres down'])
             t = DCTransformer()
-            t.transform(train, threshold=thres)
+            t.transform(train, threshold=thres, kind=policy['interp kind'])
             ttrain = t.tdata1
 
             if len(ttrain) > 1:
@@ -118,7 +119,7 @@ class ParallelValidation:
             sigma = np.std(np.diff(np.log(train)))
             thres = (sigma*policy['thres up'], -sigma*policy['thres down'])
             t = DCTransformer()
-            t.transform(train, threshold=thres)
+            t.transform(train, threshold=thres, kind=policy['interp kind'])
             ttrain = t.tdata1
 
             if len(ttrain) > 1:
@@ -154,14 +155,12 @@ class ParallelValidation:
                 
             # raw
             if v % retrain_window == 0:
-                rmodel = ExponentialSmoothing(
-                    train,
-                    seasonal_periods=policy['seasonal periods'],
-                    trend=policy['trend'],
-                    seasonal=policy['seasonal'],
-                    damped_trend=policy['damped trend']
-                ).fit()
-            y, y_hat = val[0], rmodel.forecast(horizon).tolist()[0] # the forecast function returns np.array, which is not acceptable for json
+                rmodel = AutoETS(auto=policy['auto'])
+                rmodel.fit(pd.Series(train))
+            else:
+                rmodel.update(pd.Series(train[-1], index=[len(train)-1]))
+
+            y, y_hat = val[0], float(rmodel.predict(horizon))
             raw_val_errs.append(score(y, y_hat))
 
             # with transformation
@@ -169,21 +168,18 @@ class ParallelValidation:
             sigma = np.std(np.diff(np.log(train)))
             thres = (sigma*policy['thres up'], -sigma*policy['thres down'])
             t = DCTransformer()
-            t.transform(train, threshold=thres)
+            t.transform(train, threshold=thres, kind=policy['interp kind'])
             ttrain = t.tdata1
 
             if len(ttrain) > 1:
 
                 if v % retrain_window == 0:
-                    tmodel = ExponentialSmoothing(
-                        ttrain,
-                        seasonal_periods=policy['seasonal periods'],
-                        trend=policy['trend'],
-                        seasonal=policy['seasonal'],
-                        damped_trend=policy['damped trend']
-                    ).fit()
+                    tmodel = AutoETS(auto=policy['auto'])
+                    tmodel.fit(pd.Series(ttrain))
+                else:
+                    tmodel.update(pd.Series(ttrain[-1], index=[len(ttrain)-1]))
 
-                y, ty_hat = val[0], tmodel.forecast(horizon).tolist()[0]
+                y, ty_hat = val[0], float(tmodel.predict(horizon))
                 tran_val_errs.append(score(y, ty_hat))
             else:
                 tran_val_errs.append(0.999)
@@ -221,7 +217,7 @@ class ParallelValidation:
             sigma = np.std(np.diff(np.log(train)))
             thres = (sigma*policy['thres up'], -sigma*policy['thres down'])
             t = DCTransformer()
-            t.transform(train, threshold=thres)
+            t.transform(train, threshold=thres, kind=policy['interp kind'])
             ttrain = t.tdata1
 
             if len(ttrain) > 1:
@@ -273,7 +269,7 @@ class ParallelValidation:
             sigma = np.std(np.diff(np.log(train)))
             thres = (sigma*policy['thres up'], -sigma*policy['thres down'])
             t = DCTransformer()
-            t.transform(train, threshold=thres)
+            t.transform(train, threshold=thres, kind=policy['interp kind'])
             ttrain = t.tdata1
 
             if len(ttrain) > 1:
@@ -330,7 +326,7 @@ class ParallelValidation:
             sigma = np.std(np.diff(np.log(train)))
             thres = (sigma*policy['thres up'], -sigma*policy['thres down'])
             t = DCTransformer()
-            t.transform(train, threshold=thres)
+            t.transform(train, threshold=thres, kind=policy['interp kind'])
             ttrain = t.tdata1
 
             if len(ttrain) > 1:
@@ -385,7 +381,7 @@ class ParallelValidation:
             sigma = np.std(np.diff(np.log(train)))
             thres = (sigma*policy['thres up'], -sigma*policy['thres down'])
             t = DCTransformer()
-            t.transform(train, threshold=thres)
+            t.transform(train, threshold=thres, kind=policy['interp kind'])
             ttrain = t.tdata1
 
             if len(ttrain) > 1:

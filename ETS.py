@@ -1,6 +1,7 @@
 # from __main__ import datasets, v_size, t_size, horizon, score
 # from __main__ import ETS_policies as policies
 from dc_transformation import DCTransformer
+from sktime.forecasting.ets import AutoETS
 from statsmodels.tools.sm_exceptions import InterpolationWarning
 from statsmodels.tools.sm_exceptions import ConvergenceWarning as statsConvWarn
 from statsmodels.tsa.api import ExponentialSmoothing
@@ -91,6 +92,7 @@ def run_ets(datasets, v_size, retrain_window, t_size, horizon, score, policies, 
         best_tran_policy = copy(policies[best_tran_val_SMAPE_ind])
         del best_raw_policy['thres up']
         del best_raw_policy['thres down']
+        del best_raw_policy['interp kind']
 
         #
         # test
@@ -103,6 +105,7 @@ def run_ets(datasets, v_size, retrain_window, t_size, horizon, score, policies, 
         with warnings.catch_warnings():
             old_settings = np.seterr(all='ignore')
             warnings.filterwarnings(action='ignore', category=statsConvWarn)
+            warnings.filterwarnings(action='ignore', category=UserWarning)
             for j in trange(n_test, desc=f'Testing series {i}'):
                 if j == n_test-1:
                     train_v = series
@@ -113,15 +116,12 @@ def run_ets(datasets, v_size, retrain_window, t_size, horizon, score, policies, 
 
                 # raw
                 if j % retrain_window == 0:
-                    rmodel = ExponentialSmoothing(
-                        train,
-                        seasonal_periods=best_raw_policy['seasonal periods'],
-                        trend=best_raw_policy['trend'],
-                        seasonal=best_raw_policy['seasonal'],
-                        damped_trend=best_raw_policy['damped trend']
-                    ).fit()
+                    rmodel = AutoETS(auto=best_raw_policy['auto'])
+                    rmodel.fit(pd.Series(train))
+                else:
+                    rmodel.update(pd.Series(train[-1], index=[len(train)-1]))
 
-                y, y_hat = val[0], rmodel.forecast(horizon).tolist()[0]
+                y, y_hat = val[0], float(rmodel.predict(horizon))
                 raw_test_errs.append(score(y, y_hat))
                 raw_y_hats.append(y_hat)
 
@@ -130,18 +130,16 @@ def run_ets(datasets, v_size, retrain_window, t_size, horizon, score, policies, 
                 sigma = np.std(np.diff(np.log(train)))
                 thres = (sigma*best_tran_policy['thres up'], -sigma*best_tran_policy['thres down'])
                 t = DCTransformer()
-                t.transform(train, threshold=thres)
+                t.transform(train, threshold=thres, kind=best_tran_policy['interp kind'])
                 ttrain = t.tdata1
 
                 if j % retrain_window == 0:
-                    tmodel = ExponentialSmoothing(
-                        ttrain,
-                        seasonal_periods=best_tran_policy['seasonal periods'],
-                        trend=best_tran_policy['trend'],
-                        seasonal=best_tran_policy['seasonal'],
-                        damped_trend=best_tran_policy['damped trend']
-                    ).fit()
-                y, ty_hat = val[0], tmodel.forecast(horizon).tolist()[0]
+                    tmodel = AutoETS(auto=best_tran_policy['auto'])
+                    tmodel.fit(pd.Series(ttrain))
+                else:
+                    tmodel.update(pd.Series(ttrain[-1], index=[len(ttrain)-1]))
+
+                y, ty_hat = val[0], float(tmodel.predict(horizon))
                 tran_test_errs.append(score(y, ty_hat))
                 tran_y_hats.append(ty_hat)
             np.seterr(**old_settings)  # restore the warning settings

@@ -987,5 +987,47 @@
             }
         },
         "messages": {}
+    },
+    {
+        "run time": ["05-07-2022--19-01-08", "05-07-2022--19-09-41"],
+        "config input": {
+            "type of run": "test",
+            "dataset": {
+                "file name": "m4_daily_finance.json",
+                "file type": "json",
+                "file path": "datasets/",
+                "cumulate used": 0,
+                "use series": 3,
+                "min length": 1000,
+                "max length": 1500
+            },
+            "transformation config": {
+                "xthresholds": [0.01, 1.1, 0.1]
+            },
+            "modelling config": {
+                "retrain window": 10,
+                "validation size": 0.1,
+                "test size": 0.1,
+                "forecast horizon": 1,
+                "score measure": "SMAPE"
+            },
+            "models": ["ETS"],
+            "execution config": {
+                "n of workers": 22
+            }
+        },
+        "number of series used": 3,
+        "Avg. len of series": 1233.3333333333333,
+        "took time": {
+            "ETS": ["05-07-2022--19-01-13", "05-07-2022--19-09-41"]
+        },
+        "model hyper_params": {
+            "ETS": {
+                "auto": [true]
+            }
+        },
+        "messages": {
+            "Warning": ["Only 3 series are chosen for this run."]
+        }
     }
 ]

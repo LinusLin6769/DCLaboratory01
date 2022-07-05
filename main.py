@@ -119,9 +119,10 @@ if n_series > 50:
 # transformation
 t_config = config['transformation config']
 xthresholds = [round(x, 3) for x in np.arange(*t_config['xthresholds'])]
+interp_kind = t_config['interp kind']
 
-# threshold of the transformation
-thresholds = list(product(xthresholds, xthresholds))
+# transformation policies
+t_policies = list(product(xthresholds, xthresholds, interp_kind))
 
 # regression/forecast modelling configuration
 retrain_window = config['modelling config']['retrain window']

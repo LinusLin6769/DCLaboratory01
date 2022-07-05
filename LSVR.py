@@ -83,6 +83,7 @@ def run_lsvr(datasets, v_size, retrain_window, t_size, horizon, score, policies,
         best_tran_policy = copy(policies[best_tran_val_SMAPE_ind])
         del best_raw_policy['thres up']
         del best_raw_policy['thres down']
+        del best_raw_policy['interp kind']
 
         #
         # test
@@ -123,7 +124,7 @@ def run_lsvr(datasets, v_size, retrain_window, t_size, horizon, score, policies,
                 sigma = np.std(np.diff(np.log(train)))
                 thres = (sigma*best_tran_policy['thres up'], -sigma*best_tran_policy['thres down'])
                 t = DCTransformer()
-                t.transform(train, threshold=thres)
+                t.transform(train, threshold=thres, kind=best_tran_policy['interp kind'])
                 ttrain = t.tdata1
 
                 tX, ty = data_prep.ts_prep(ttrain, nlag=best_tran_policy['n lag'], horizon=horizon)
