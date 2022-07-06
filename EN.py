@@ -13,6 +13,25 @@ import warnings
 import numpy as np
 import pandas as pd
 
+def run_en_tran(pool, arg, policies, ind):
+
+    par_val = ParallelValidation(arg, model='EN', type='tran')
+    res = tqdm(
+        iterable=pool.imap(par_val.run_parallel, policies),
+        desc=f'Tran: validating series {ind}',
+        total=len(policies))
+
+    return list(res)
+
+def run_en_raw(pool, arg, policies, ind):
+
+    par_val = ParallelValidation(arg, model='EN', type='raw')
+    res = tqdm(
+        iterable=pool.imap(par_val.run_parallel, policies),
+        desc=f'Raw: validating series {ind}',
+        total=len(policies))
+
+    return list(res)
 
 def run_en(datasets, v_size, retrain_window, t_size, horizon, score, policies, n_workers) -> Tuple[Dict]:
 
@@ -55,6 +74,9 @@ def run_en(datasets, v_size, retrain_window, t_size, horizon, score, policies, n
             warnings.filterwarnings(action='ignore', category=skConvWarn)
             warnings.filterwarnings(action='ignore', category=UserWarning)
 
+            raw_policies = policies['raw']
+            tran_policies = policies['tran']
+
             with Pool(processes=n_workers) as p:
                 arg = {
                     'series': series,
@@ -64,15 +86,10 @@ def run_en(datasets, v_size, retrain_window, t_size, horizon, score, policies, n
                     'horizon': horizon,
                     'score': score
                 }
-                par_val = ParallelValidation(arg, model='EN')
-                res = tqdm(
-                    iterable=p.imap(par_val.run_parallel, policies),
-                    desc=f'Validating series {i}',
-                    total=len(policies)
-                )
-                res = list(res)
-    
-        raw_policy_errs, tran_policy_errs = zip(*res)
+
+                raw_policy_errs = run_en_raw(pool=p, arg=arg, policies=raw_policies, ind=i)
+                tran_policy_errs = run_en_tran(pool=p, arg=arg, policies=tran_policies, ind=i)
+
         raw_policy_errs = [np.mean(e) for e in raw_policy_errs]
         tran_policy_errs = [np.mean(e) for e in tran_policy_errs]
 
@@ -81,12 +98,8 @@ def run_en(datasets, v_size, retrain_window, t_size, horizon, score, policies, n
         best_tran_val_SMAPE_ind = np.argmin(tran_policy_errs)
         best_raw_val_SMAPE = raw_policy_errs[best_raw_val_SMAPE_ind]
         best_tran_val_SMAPE = tran_policy_errs[best_tran_val_SMAPE_ind]
-        best_raw_policy = copy(policies[best_raw_val_SMAPE_ind])
-        best_tran_policy = copy(policies[best_tran_val_SMAPE_ind])
-        del best_raw_policy['thres up']
-        del best_raw_policy['thres down']
-        del best_raw_policy['interp kind']
-        del best_raw_policy['use states']
+        best_raw_policy = copy(raw_policies[best_raw_val_SMAPE_ind])
+        best_tran_policy = copy(tran_policies[best_tran_val_SMAPE_ind])
 
         #
         # test

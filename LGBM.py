@@ -51,9 +51,13 @@ def run_lgbm(datasets, v_size, retrain_window, t_size, horizon, score, policies,
         with warnings.catch_warnings():
             old_settings = np.seterr(all='ignore')
             warnings.filterwarnings(action='ignore', category=UserWarning)
-            for policy in tqdm(policies, desc=f'Validating series {i}'):
+
+            raw_policies = policies['raw']
+            tran_policies = policies['tran']
+
+            # raw
+            for policy in tqdm(raw_policies, desc=f'Raw: validating series {i}'):
                 raw_val_errs = []
-                tran_val_errs = []
 
                 # n_val folds rolling validation
                 for v in range(n_val):
@@ -78,6 +82,18 @@ def run_lgbm(datasets, v_size, retrain_window, t_size, horizon, score, policies,
 
                     y, y_hat = val_y[0], rmodel.predict([val_X])[0]
                     raw_val_errs.append(score(y, y_hat))
+
+                raw_policy_errs.append(np.nanmean(raw_val_errs))
+
+            # tran
+            for policy in tqdm(tran_policies, desc=f'Tran: validating series {i}'):
+                tran_val_errs = []
+
+                # n_val folds rolling validation
+                for v in range(n_val):
+                    train_v = series[:-split+v+1]
+                    train = train_v[:-horizon]
+                    val = train_v[-horizon:]
 
                     # with transformation
                     # @NOTE: Estimation of sigma can be improved!!!
@@ -115,8 +131,9 @@ def run_lgbm(datasets, v_size, retrain_window, t_size, horizon, score, policies,
                         
                     else:
                         tran_val_errs.append(0.999)
-                raw_policy_errs.append(np.nanmean(raw_val_errs))
+
                 tran_policy_errs.append(np.nanmean(tran_val_errs))
+
             np.seterr(**old_settings)
 
         # model selection with all the validation errors
@@ -124,11 +141,8 @@ def run_lgbm(datasets, v_size, retrain_window, t_size, horizon, score, policies,
         best_tran_val_SMAPE_ind = np.argmin(tran_policy_errs)
         best_raw_val_SMAPE = raw_policy_errs[best_raw_val_SMAPE_ind]
         best_tran_val_SMAPE = tran_policy_errs[best_tran_val_SMAPE_ind]
-        best_raw_policy = copy(policies[best_raw_val_SMAPE_ind])
-        best_tran_policy = copy(policies[best_tran_val_SMAPE_ind])
-        del best_raw_policy['thres up']
-        del best_raw_policy['thres down']
-        del best_raw_policy['interp kind']
+        best_raw_policy = copy(raw_policies[best_raw_val_SMAPE_ind])
+        best_tran_policy = copy(tran_policies[best_tran_val_SMAPE_ind])
 
         #
         # test
