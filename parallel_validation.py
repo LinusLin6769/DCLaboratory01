@@ -1,3 +1,5 @@
+from enum import auto
+from pmdarima import auto_arima
 from dc_transformation import DCTransformer
 from sklearn.neural_network import MLPRegressor
 from sklearn.linear_model import LinearRegression
@@ -25,12 +27,71 @@ class ParallelValidation:
             'XGB': self.val_xgb,
             'LGBM': self.val_lgbm,
             'RF': self.val_rf,
-            'LSVR': self.val_lsvr
+            'LSVR': self.val_lsvr,
+            'AutoARIMA': self.val_autoarima
         }
 
     def run_parallel(self, p):
         return self.models[self.model](policy=p, **self.args)
     
+    def val_autoarima(self, policy, series, n_val, retrain_window, split, horizon, score) -> Tuple[List]:
+
+        raw_val_errs = []
+        tran_val_errs = []
+
+        # n_val folds rolling validation
+        for v in range(n_val):
+            train_v = series[:-split+v+1]  #  includes the validation point that should be excluded during transformation
+            train = train_v[:-horizon]
+            val = train_v[-horizon:]
+        
+            # raw
+            if v % retrain_window == 0:
+                rmodel = auto_arima(train, suppress_warnings=True)
+            else:
+                rmodel.update([train[-1]])
+
+            y, y_hat = val[0], rmodel.predict(n_periods=horizon, return_conf_int=False)[0]
+            raw_val_errs.append(score(y, y_hat))
+
+            # with transformation
+            # @NOTE: Estimation of sigma can be improved!!!
+            sigma = np.std(np.diff(np.log(train)))
+            thres = (sigma*policy['thres up'], -sigma*policy['thres down'])
+            t = DCTransformer()
+            t.transform(train, threshold=thres, kind=policy['interp kind'])
+            ttrain = t.tdata1
+
+            if len(ttrain) > 1:
+
+                if policy['use states']:
+                    tstates = t.status
+                    tstates_onehot = data_prep.one_hot(tstates, list(t.STATUS_CODE.keys()))
+                    tX_states = tstates_onehot[:-horizon] # 2d
+                    tval_X_states = tstates_onehot[-horizon] # 1d
+
+                    if v % retrain_window == 0:
+                        tmodel = auto_arima(ttrain, X=tX_states, suppress_warnings=True)
+                    else:
+                        tmodel.update([ttrain[-1]], X=[tX_states[-1]])
+                    
+                    # predict
+                    y, ty_hat = val[0], tmodel.predict(n_periods=horizon, X=[tval_X_states])[0]
+                else:
+                    # without states
+                    if v % retrain_window == 0:
+                        tmodel = auto_arima(ttrain, suppress_warnings=True)
+                    else:
+                        tmodel.update([ttrain[-1]])
+                    # predict
+                    y, ty_hat = val[0], tmodel.predict(n_periods=horizon)[0]
+                
+                tran_val_errs.append(score(y, ty_hat))
+            else:
+                tran_val_errs.append(0.999)
+        
+        return raw_val_errs, tran_val_errs
+
     def val_lsvr(self, policy, series, n_val, retrain_window, split, horizon, score) -> Tuple[List]:
 
         raw_val_errs = []
@@ -82,12 +143,7 @@ class ParallelValidation:
 
                 if v % retrain_window == 0:
 
-                    tmodel = LinearSVR(
-
-                    )
-                    tmodel = LinearSVR(
-
-                    )
+                    tmodel = LinearSVR()
                     tmodel.fit(ttrain_X, ttrain_y.ravel())
 
                 y, ty_hat = val_y[0], tmodel.predict([tval_X])[0]

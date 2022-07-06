@@ -5,7 +5,7 @@
         "file type": "json",
         "file path": "datasets/",
         "cumulate used":0,
-        "use series":1,
+        "use series":38,
         "min length": 1000,
         "max length": 1500
     },

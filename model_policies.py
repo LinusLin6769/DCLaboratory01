@@ -77,7 +77,7 @@ models_weekly_params = {
 models_daily_params = {
     'MLP': { # 3x5=15 policies x36 thresholds x10 val x20 workers = 41 secs
         'n of lags': [7, 14, 21],
-        'strucs': [(30, )],
+        'strucs': [(20, )],
         'max iter': [2000]
     },
     'EN': {  # 3x4x4=48 policies x36 thresholds x10 val x20 workers = 1 sec
