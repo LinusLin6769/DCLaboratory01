@@ -77,7 +77,7 @@ models_weekly_params = {
 models_daily_params = {
     'MLP': { # 3x5=15 policies x36 thresholds x10 val x20 workers = 41 secs
         'n of lags': [7, 14, 21],
-        'strucs': [(20, )],
+        'strucs': [(30, )],
         'max iter': [2000]
     },
     'EN': {  # 3x4x4=48 policies x36 thresholds x10 val x20 workers = 1 sec
@@ -116,7 +116,7 @@ models_daily_params = {
 models_hourly_params = {
     'MLP': { # 3x5=15 policies x36 thresholds x10 val x20 workers = 41 secs
         'n of lags': [12, 24, 36],
-        'strucs': [(30, )],
+        'strucs': [(40, )],
         'max iter': [2000]
     },
     'EN': {  # 3x4x4=48 policies x36 thresholds x10 val x20 workers = 1 sec
@@ -167,6 +167,7 @@ MLP_policies = [
         'thres up': h[0][0],
         'thres down': h[0][1],
         'interp kind': h[0][2],
+        'use states': h[0][3],
         'n lag': h[1],
         'struc': h[2],
         'max iter': h[3]
@@ -178,6 +179,7 @@ EN_policies = [
         'thres up': h[0][0],
         'thres down': h[0][1],
         'interp kind': h[0][2],
+        'use states': h[0][3],
         'n lag': h[1],
         'alpha': h[2],
         'l1 ratio': h[3]
@@ -189,6 +191,7 @@ ETS_policies = [
         'thres up': h[0][0],
         'thres down': h[0][1],
         'interp kind': h[0][2],
+        'use states': h[0][3],
         'auto': h[1]
     } for h in product(t_policies, *models_params['ETS'].values())
 ]
@@ -198,6 +201,7 @@ XGB_policies = [
         'thres up': h[0][0],
         'thres down': h[0][1],
         'interp kind': h[0][2],
+        'use states': h[0][3],
         'n lag': h[1],
         'max depth': h[2],
         'booster': h[3],
@@ -210,6 +214,7 @@ LGBM_policies = [
         'thres up': h[0][0],
         'thres down': h[0][1],
         'interp kind': h[0][2],
+        'use states': h[0][3],
         'n lag': h[1],
         'max depth': h[2],
         'min split gain': h[3],
@@ -222,6 +227,7 @@ RF_policies = [
         'thres up': h[0][0],
         'thres down': h[0][1],
         'interp kind': h[0][2],
+        'use states': h[0][3],
         'n lag': h[1],
         'max depth': h[2],
         'min samples split': h[3],
@@ -235,6 +241,7 @@ LSVR_policies = [
         'thres up': h[0][0],
         'thres down': h[0][1],
         'interp kind': h[0][2],
+        'use states': h[0][3],
         'n lag': h[1]
     } for h in product(t_policies, *models_params['LSVR'].values())
 ]

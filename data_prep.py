@@ -223,3 +223,14 @@ def ts_prep(series: Sequence, nlag: int, horizon: int) -> Tuple[np.array]:
     y = np.array([series[(i+nlag):(i+nlag+horizon)] for i in range(n-horizon-nlag+1)])
 
     return X, y
+
+def one_hot(series: Sequence, classes: Sequence) -> np.array:
+    """
+    Given a 1d array and a list of possible classes, return a 2d array of its one-hot encoded matrix. The dummy variables are created corresponding to the order of the passed possible classes.
+    """
+    res = np.zeros((len(series), len(classes)), dtype=int)
+
+    for i, x in enumerate(series):
+        res[i, classes.index(x)] = 1
+    
+    return res

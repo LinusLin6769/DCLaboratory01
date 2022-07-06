@@ -1,6 +1,6 @@
 from typing import Dict, Callable, List
 from datetime import datetime, timedelta
-from scipy.interpolate import interp1d
+from scipy.interpolate import interp1d, splrep, splev
 import numpy as np
 import warnings
 
@@ -186,6 +186,7 @@ class DCTransformer:
 
         # with inappropriate threshold, the algo might not find any extreme or dc
         if len(y) >= 2:
+
             index_x = list(np.arange(len(self.data)))
 
             interpolate_max_range = marked_x[-1]
@@ -193,13 +194,18 @@ class DCTransformer:
             out_of_range_fill = np.arange(interpolate_max_range+1, index_x_max_range+1)
 
             # generate the interpolated values
-            #
-            # in-range interpolation
-            inter_y = interp1d(marked_x, y, kind=kind)
-
+            if kind == 'splrep':
+                # in-range interpolation
+                inter_y = splrep(marked_x, y, k=3)
+                temp = np.arange(interpolate_max_range+1)
+                transformed_target = splev(temp, inter_y)
+            else:
+                # in-range interpolation
+                inter_y = interp1d(marked_x, y, kind=kind)
+                temp = np.arange(interpolate_max_range+1)
+                transformed_target = inter_y(temp)
+            
             # out-range interpolation (use original data)
-            temp = np.arange(interpolate_max_range+1)
-            transformed_target = inter_y(temp)
             self.tdata1 = np.append(transformed_target, self.data[out_of_range_fill])
         else:
             self.tdata1 = np.array([y])

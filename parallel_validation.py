@@ -67,7 +67,17 @@ class ParallelValidation:
 
             if len(ttrain) > 1:
                 tX, ty = data_prep.ts_prep(ttrain, nlag=policy['n lag'], horizon=horizon)
-                ttrain_X, tval_X = tX, ttrain[-policy['n lag']:]
+
+                if policy['use states']:
+                    tstates = t.status[policy['n lag']-1:]
+                    tstates_onehot = data_prep.one_hot(tstates, list(t.STATUS_CODE.keys()))
+                    tX_states = tstates_onehot[:-horizon]
+                    tval_X_states = tstates_onehot[-horizon]
+
+                    ttrain_X, tval_X = np.append(tX, tX_states, axis=1), np.append(ttrain[-policy['n lag']:], tval_X_states, axis=0)
+                else:
+                    ttrain_X, tval_X = tX, ttrain[-policy['n lag']:]
+
                 ttrain_y, val_y = ty, val
 
                 if v % retrain_window == 0:
@@ -124,7 +134,17 @@ class ParallelValidation:
 
             if len(ttrain) > 1:
                 tX, ty = data_prep.ts_prep(ttrain, nlag=policy['n lag'], horizon=horizon)
-                ttrain_X, tval_X = tX, ttrain[-policy['n lag']:]
+
+                if policy['use states']:
+                    tstates = t.status[policy['n lag']-1:]
+                    tstates_onehot = data_prep.one_hot(tstates, list(t.STATUS_CODE.keys()))
+                    tX_states = tstates_onehot[:-horizon]
+                    tval_X_states = tstates_onehot[-horizon]
+
+                    ttrain_X, tval_X = np.append(tX, tX_states, axis=1), np.append(ttrain[-policy['n lag']:], tval_X_states, axis=0)
+                else:
+                    ttrain_X, tval_X = tX, ttrain[-policy['n lag']:]
+
                 ttrain_y, val_y = ty, val
 
                 if v % retrain_window == 0:
@@ -222,11 +242,24 @@ class ParallelValidation:
 
             if len(ttrain) > 1:
                 tX, ty = data_prep.ts_prep(ttrain, nlag=policy['n lag'], horizon=horizon)
-                ttrain_X, tval_X = tX, ttrain[-policy['n lag']:]
+                if policy['use states']:
+                    tstates = t.status[policy['n lag']-1:]
+                    tstates_onehot = data_prep.one_hot(tstates, list(t.STATUS_CODE.keys()))
+                    tX_states = tstates_onehot[:-horizon]
+                    tval_X_states = tstates_onehot[-horizon]
+                    
+                    ttrain_X, tval_X = np.append(tX, tX_states, axis=1), np.append(ttrain[-policy['n lag']:], tval_X_states, axis=0)
+                else:
+                    ttrain_X, tval_X = tX, ttrain[-policy['n lag']:]
+                
                 ttrain_y, val_y = ty, val
 
                 if v % retrain_window == 0:
-                    tmodel = ElasticNet(alpha=policy['alpha'],l1_ratio=policy['l1 ratio'], random_state=0)
+                    tmodel = ElasticNet(
+                        alpha=policy['alpha'],
+                        l1_ratio=policy['l1 ratio'],
+                        random_state=0
+                    )
                     tmodel.fit(ttrain_X, ttrain_y)
 
                 y, ty_hat = val_y[0], tmodel.predict([tval_X])[0]
@@ -274,7 +307,17 @@ class ParallelValidation:
 
             if len(ttrain) > 1:
                 tX, ty = data_prep.ts_prep(ttrain, nlag=policy['n lag'], horizon=horizon)
-                ttrain_X, tval_X = tX, ttrain[-policy['n lag']:]
+
+                if policy['use states']:
+                    tstates = t.status[policy['n lag']-1:]
+                    tstates_onehot = data_prep.one_hot(tstates, list(t.STATUS_CODE.keys()))
+                    tX_states = tstates_onehot[:-horizon]
+                    tval_X_states = tstates_onehot[-horizon]
+
+                    ttrain_X, tval_X = np.append(tX, tX_states, axis=1), np.append(ttrain[-policy['n lag']:], tval_X_states, axis=0)
+                else:
+                    ttrain_X, tval_X = tX, ttrain[-policy['n lag']:]
+
                 ttrain_y, val_y = ty, val
 
                 if v % retrain_window == 0:
@@ -331,7 +374,17 @@ class ParallelValidation:
 
             if len(ttrain) > 1:
                 tX, ty = data_prep.ts_prep(ttrain, nlag=policy['n lag'], horizon=horizon)
-                ttrain_X, tval_X = tX, ttrain[-policy['n lag']:]
+
+                if policy['use states']:
+                    tstates = t.status[policy['n lag']-1:]
+                    tstates_onehot = data_prep.one_hot(tstates, list(t.STATUS_CODE.keys()))
+                    tX_states = tstates_onehot[:-horizon]
+                    tval_X_states = tstates_onehot[-horizon]
+
+                    ttrain_X, tval_X = np.append(tX, tX_states, axis=1), np.append(ttrain[-policy['n lag']:], tval_X_states, axis=0)
+                else:
+                    ttrain_X, tval_X = tX, ttrain[-policy['n lag']:]
+
                 ttrain_y, val_y = ty, val
 
                 if v % retrain_window == 0:
@@ -386,7 +439,17 @@ class ParallelValidation:
 
             if len(ttrain) > 1:
                 tX, ty = data_prep.ts_prep(ttrain, nlag=policy['n lag'], horizon=horizon)
-                ttrain_X, tval_X = tX, ttrain[-policy['n lag']:]
+
+                if policy['use states']:
+                    tstates = t.status[policy['n lag']-1:]
+                    tstates_onehot = data_prep.one_hot(tstates, list(t.STATUS_CODE.keys()))
+                    tX_states = tstates_onehot[:-horizon]
+                    tval_X_states = tstates_onehot[-horizon]
+
+                    ttrain_X, tval_X = np.append(tX, tX_states, axis=1), np.append(ttrain[-policy['n lag']:], tval_X_states, axis=0)
+                else:
+                    ttrain_X, tval_X = tX, ttrain[-policy['n lag']:]
+
                 ttrain_y, val_y = ty, val
 
                 if v % retrain_window == 0:

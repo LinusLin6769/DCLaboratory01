@@ -89,7 +89,16 @@ def run_lgbm(datasets, v_size, retrain_window, t_size, horizon, score, policies,
 
                     if len(ttrain) > 1:
                         tX, ty = data_prep.ts_prep(ttrain, nlag=policy['n lag'], horizon=horizon)
-                        ttrain_X, tval_X = tX, ttrain[-policy['n lag']:]
+                        if policy['use states']:
+                            tstates = t.status[policy['n lag']-1:]
+                            tstates_onehot = data_prep.one_hot(tstates, list(t.STATUS_CODE.keys()))
+                            tX_states = tstates_onehot[:-horizon]
+                            tval_X_states = tstates_onehot[-horizon]
+                            
+                            ttrain_X, tval_X = np.append(tX, tX_states, axis=1), np.append(ttrain[-policy['n lag']:], tval_X_states, axis=0)
+                        else:
+                            ttrain_X, tval_X = tX, ttrain[-policy['n lag']:]
+
                         ttrain_y, val_y = ty, val
 
                         if v % retrain_window == 0:
@@ -165,7 +174,18 @@ def run_lgbm(datasets, v_size, retrain_window, t_size, horizon, score, policies,
             ttrain = t.tdata1
 
             tX, ty = data_prep.ts_prep(ttrain, nlag=best_tran_policy['n lag'], horizon=horizon)
-            ttrain_X, tval_X = tX, ttrain[-best_tran_policy['n lag']:]
+
+            if best_tran_policy['use states']:
+                tstates = t.status[best_tran_policy['n lag']-1:]
+                tstates_onehot = data_prep.one_hot(tstates, list(t.STATUS_CODE.keys()))
+                tX_states = tstates_onehot[:-horizon]
+                tval_X_states = tstates_onehot[-horizon]
+
+                ttrain_X, tval_X = np.append(tX, tX_states, axis=1), np.append(ttrain[-best_tran_policy['n lag']:], tval_X_states, axis=0)
+
+            else:
+                ttrain_X, tval_X = tX, ttrain[-best_tran_policy['n lag']:]
+
             ttrain_y, val_y = ty, val
 
             if j % retrain_window == 0:
