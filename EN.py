@@ -109,6 +109,9 @@ def run_en(datasets, v_size, retrain_window, t_size, horizon, score, policies, n
         raw_y_hats = []
         tran_y_hats = []
 
+        raw_coeffs = []
+        tran_coeffs = []
+
         with warnings.catch_warnings():
             warnings.filterwarnings(action='ignore', category=skConvWarn)
             for j in trange(n_test, desc=f'Testing series {i}'):
@@ -131,6 +134,8 @@ def run_en(datasets, v_size, retrain_window, t_size, horizon, score, policies, n
                 y, y_hat = val_y[0], rmodel.predict([val_X])[0]
                 raw_test_errs.append(score(y, y_hat))
                 raw_y_hats.append(y_hat)
+                c = list(rmodel.intercept_) + rmodel.coef_.tolist()
+                raw_coeffs.append(c)
 
                 # with transformation
                 # @NOTE: Estimation of sigma can be improved!!!
@@ -161,13 +166,16 @@ def run_en(datasets, v_size, retrain_window, t_size, horizon, score, policies, n
                 y, ty_hat = val_y[0], tmodel.predict([tval_X])[0]
                 tran_test_errs.append(score(y, ty_hat))
                 tran_y_hats.append(ty_hat)
+                c = list(tmodel.intercept_) + tmodel.coef_.tolist()
+                tran_coeffs.append(c)
 
         raw_info[i] = {
             'message': None,  # placeholder for other information
             'test SMAPE': round(np.mean(raw_test_errs), 6),
             'val SMAPE': round(best_raw_val_SMAPE, 6),
             'best model': best_raw_policy,
-            'y hats': raw_y_hats  # probably should put elsewhere
+            'y hats': raw_y_hats,  # probably should put elsewhere
+            'coeffs': raw_coeffs
         }
 
         tran_info[i] = {
@@ -175,7 +183,8 @@ def run_en(datasets, v_size, retrain_window, t_size, horizon, score, policies, n
             'test SMAPE': round(np.mean(tran_test_errs), 6),
             'val SMAPE': round(best_tran_val_SMAPE, 6),
             'best model': best_tran_policy,
-            'y hats': tran_y_hats  # probably should put elsewhere
+            'y hats': tran_y_hats,  # probably should put elsewhere
+            'coeffs': tran_coeffs
         }
     
     return raw_info, tran_info

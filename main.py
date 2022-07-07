@@ -231,27 +231,26 @@ took_time = {k: None for k in models}
 
 # start training the models
 for model in models:
-    # try:
-    go = get_time()
-    raw_info, tran_info = run_funcs[model](
-        datasets, v_size, retrain_window, t_size, horizon, score, all_policies[model], n_workers
-    )
-    # one time series costs about 1 kb in the .json file
-    with open(f'{dir}/{start}/{model}_raw.json', 'x') as file:
-        json.dump(raw_info, file, indent=4)
-    with open(f'{dir}/{start}/{model}_tran.json', 'x') as file:
-        json.dump(tran_info, file, indent=4)
+    try:
+        go = get_time()
+        raw_info, tran_info = run_funcs[model](
+            datasets, v_size, retrain_window, t_size, horizon, score, all_policies[model], n_workers
+        )
+        # one time series costs about 1 kb in the .json file
+        with open(f'{dir}/{start}/{model}_raw.json', 'x') as file:
+            json.dump(raw_info, file, indent=4)
+        with open(f'{dir}/{start}/{model}_tran.json', 'x') as file:
+            json.dump(tran_info, file, indent=4)
 
-    took_time[model] = [go, get_time()]
-    """except Exception as e:
+        took_time[model] = [go, get_time()]
+        print(f'{model} agent has completed successfully.')
+        print(f'{model}: .json info generated.')
+        prompt_time()
+
+    except Exception as e:
         print(f'Exception {e.__class__} occurred in running {model}.')
         print(f'{model}: NO .json info is generated.')
         prompt_time()
-    else:
-
-        print(f'{model} agent has completed successfully.')
-        print(f'{model}: .json info generated.')
-        prompt_time()"""
 
 
 # ---------------------------------------------------------

@@ -1,18 +1,18 @@
 {
     "type of run": "real run",
     "dataset": {
-        "file name": "m4_daily_finance.json",
+        "file name": "m4_daily_macro.json",
         "file type": "json",
         "file path": "datasets/",
         "cumulate used":0,
-        "use series":25,
+        "use series": 60,
         "min length": 1000,
         "max length": 1500
     },
     "transformation config": {
         "xthresholds": [0.01, 1.1, 0.1],
         "interp kind": ["linear"],
-        "use states": [true]
+        "use states": [false]
     },
     "modelling config": {
         "retrain window":10,
@@ -21,7 +21,7 @@
         "forecast horizon": 1,
         "score measure": "SMAPE"
     },
-    "models": ["EN", "RF", "LSVR", "LGBM", "MLP"],
+    "models": ["EN", "MLP", "LSVR", "LGBM", "RF"],
     "execution config": {
         "n of workers": 22
     }
