@@ -1,11 +1,11 @@
 {
     "type of run": "test",
     "dataset": {
-        "file name": "m4_daily_micro.json",
+        "file name": "m4_daily_finance.json",
         "file type": "json",
         "file path": "datasets/",
         "cumulate used":0,
-        "use series": 1,
+        "use series": 100,
         "min length": 1000,
         "max length": 1500
     },
@@ -19,9 +19,10 @@
         "validation size": 0.1,
         "test size": 0.1,
         "forecast horizon": 1,
+        "gap": 22,
         "score measure": "SMAPE"
     },
-    "models": ["LGBM"],
+    "models": ["EN", "MLP", "LSVR", "RF", "LGBM", "ETS"],
     "execution config": {
         "n of workers": 22
     }

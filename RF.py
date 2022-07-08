@@ -34,7 +34,7 @@ def run_rf_raw(pool, arg, policies, ind):
     return list(res)
 
 
-def run_rf(datasets, v_size, retrain_window, t_size, horizon, score, policies, n_workers) -> Tuple[Dict]:
+def run_rf(datasets, v_size, retrain_window, t_size, horizon, gap, score, policies, n_workers) -> Tuple[Dict]:
 
     raw_info = {}
     tran_info = {}
@@ -85,6 +85,7 @@ def run_rf(datasets, v_size, retrain_window, t_size, horizon, score, policies, n
                     'retrain_window': retrain_window,
                     'split': split,
                     'horizon': horizon,
+                    'gap': gap,
                     'score': score
                 }
 
@@ -120,11 +121,11 @@ def run_rf(datasets, v_size, retrain_window, t_size, horizon, score, policies, n
                     train_v = series
                 else:
                     train_v = series[:-n_test+j+1]
-                train = train_v[:-horizon]
+                train = train_v[:-horizon-gap]
                 val = train_v[-horizon:]
 
                 # raw
-                rX, ry = data_prep.ts_prep(train, nlag=best_raw_policy['n lag'], horizon=horizon)
+                rX, ry = data_prep.ts_prep(train, nlag=best_raw_policy['n lag'], horizon=horizon, gap=gap)
                 train_X, val_X = rX, train[-best_raw_policy['n lag']:]
                 train_y, val_y = ry, val
 
@@ -150,7 +151,7 @@ def run_rf(datasets, v_size, retrain_window, t_size, horizon, score, policies, n
                 t.transform(train, threshold=thres, kind=best_tran_policy['interp kind'])
                 ttrain = t.tdata1
 
-                tX, ty = data_prep.ts_prep(ttrain, nlag=best_tran_policy['n lag'], horizon=horizon)
+                tX, ty = data_prep.ts_prep(ttrain, nlag=best_tran_policy['n lag'], horizon=horizon, gap=gap)
 
                 if best_tran_policy['use states']:
                     tstates = t.status[best_tran_policy['n lag']-1:]

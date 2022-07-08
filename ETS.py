@@ -39,7 +39,7 @@ def run_ets_raw(pool, arg, policies, ind):
     return list(res)
 
 
-def run_ets(datasets, v_size, retrain_window, t_size, horizon, score, policies, n_workers) -> Tuple[Dict]:
+def run_ets(datasets, v_size, retrain_window, t_size, horizon, gap, score, policies, n_workers) -> Tuple[Dict]:
 
     raw_info = {}
     tran_info = {}
@@ -91,6 +91,7 @@ def run_ets(datasets, v_size, retrain_window, t_size, horizon, score, policies, 
                     'split': split,
                     'retrain_window': retrain_window,
                     'horizon': horizon,
+                    'gap': gap,
                     'score': score,
                 }
 
@@ -111,7 +112,7 @@ def run_ets(datasets, v_size, retrain_window, t_size, horizon, score, policies, 
         best_tran_policy = copy(tran_policies[best_tran_val_SMAPE_ind])
 
         #
-        # test
+        # test   # @NOTE: NOT COMPLETED YET !!!!!!!!!
         #
         raw_test_errs = []
         tran_test_errs = []
@@ -127,7 +128,7 @@ def run_ets(datasets, v_size, retrain_window, t_size, horizon, score, policies, 
                     train_v = series
                 else:
                     train_v = series[:-n_test+j+1]
-                train = train_v[:-horizon]
+                train = train_v[:-horizon-gap]
                 val = train_v[-horizon:]
 
                 # raw
@@ -137,7 +138,7 @@ def run_ets(datasets, v_size, retrain_window, t_size, horizon, score, policies, 
                 else:
                     rmodel.update(pd.Series(train[-1], index=[len(train)-1]))
 
-                y, y_hat = val[0], float(rmodel.predict(horizon))
+                y, y_hat = val[0], float(rmodel.predict(horizon+gap))
                 raw_test_errs.append(score(y, y_hat))
                 raw_y_hats.append(y_hat)
 
@@ -155,7 +156,7 @@ def run_ets(datasets, v_size, retrain_window, t_size, horizon, score, policies, 
                 else:
                     tmodel.update(pd.Series(ttrain[-1], index=[len(ttrain)-1]))
 
-                y, ty_hat = val[0], float(tmodel.predict(horizon))
+                y, ty_hat = val[0], float(tmodel.predict(horizon+gap))
                 tran_test_errs.append(score(y, ty_hat))
                 tran_y_hats.append(ty_hat)
             np.seterr(**old_settings)  # restore the warning settings

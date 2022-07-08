@@ -1,4 +1,5 @@
 import json
+from multiprocessing.sharedctypes import Value
 import os
 import numpy as np
 import warnings
@@ -13,7 +14,6 @@ def get_time(time_format: str = "%d-%m-%Y--%H-%M-%S") -> str:
 
 def prompt_time(time_format: str = "%d-%m-%Y--%H-%M-%S") -> None:
     print(f'Timestamp: {get_time(time_format)}')
-
 
 # -----------------------------------------------------------
 # Start
@@ -130,6 +130,7 @@ retrain_window = config['modelling config']['retrain window']
 v_size = config['modelling config']['validation size']
 t_size = config['modelling config']['test size']
 horizon = config['modelling config']['forecast horizon']
+gap = config['modelling config']['gap']
 measure = config['modelling config']['score measure']
 models = config['models']
 
@@ -144,6 +145,9 @@ if type(t_size) != int and type(t_size) != float:
 
 if type(horizon) != int:
     raise ValueError('Invalid forecast horizon in config.json')
+
+if type(gap) != int:
+    raise ValueError('Invalid gap in config.json')
 
 
 # -----------------------------------------------------------------------
@@ -234,7 +238,7 @@ for model in models:
     try:
         go = get_time()
         raw_info, tran_info = run_funcs[model](
-            datasets, v_size, retrain_window, t_size, horizon, score, all_policies[model], n_workers
+            datasets, v_size, retrain_window, t_size, horizon, gap, score, all_policies[model], n_workers
         )
         # one time series costs about 1 kb in the .json file
         with open(f'{dir}/{start}/{model}_raw.json', 'x') as file:

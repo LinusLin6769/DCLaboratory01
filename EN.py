@@ -3,7 +3,7 @@ from parallel_validation import ParallelValidation
 from sklearn.linear_model import ElasticNet
 from sklearn.exceptions import ConvergenceWarning as skConvWarn
 from multiprocessing import Pool, Process, Pipe
-from typing import List, Tuple, Dict
+from typing import Any, Callable, List, Sequence, Tuple, Dict, Union
 from itertools import product
 from p_tqdm import p_map
 from tqdm import trange, tqdm
@@ -13,7 +13,12 @@ import warnings
 import numpy as np
 import pandas as pd
 
-def run_en_tran(pool, arg, policies, ind):
+def run_en_tran(
+        pool: Callable,
+        arg: Dict[str, Any],
+        policies:List[Dict],
+        ind: int
+    ) -> List[List[float]]:
 
     par_val = ParallelValidation(arg, model='EN', type='tran')
     res = tqdm(
@@ -23,7 +28,12 @@ def run_en_tran(pool, arg, policies, ind):
 
     return list(res)
 
-def run_en_raw(pool, arg, policies, ind):
+def run_en_raw(
+        pool: Callable,
+        arg: Dict[str, Any],
+        policies: List[Dict],
+        ind: int
+    ) -> List[List[float]]:
 
     par_val = ParallelValidation(arg, model='EN', type='raw')
     res = tqdm(
@@ -33,7 +43,17 @@ def run_en_raw(pool, arg, policies, ind):
 
     return list(res)
 
-def run_en(datasets, v_size, retrain_window, t_size, horizon, score, policies, n_workers) -> Tuple[Dict]:
+def run_en(
+        datasets: Sequence,
+        v_size: Union[int, float],
+        retrain_window: Union[int, float],
+        t_size: Union[int, float],
+        horizon: Union[int, float],
+        gap: int,
+        score: Callable,
+        policies: List[Dict],
+        n_workers: int
+    ) -> Tuple[Dict]:
 
     raw_info = {}
     tran_info = {}
@@ -84,6 +104,7 @@ def run_en(datasets, v_size, retrain_window, t_size, horizon, score, policies, n
                     'retrain_window': retrain_window,
                     'split': split,
                     'horizon': horizon,
+                    'gap': gap,
                     'score': score
                 }
 
@@ -115,15 +136,16 @@ def run_en(datasets, v_size, retrain_window, t_size, horizon, score, policies, n
         with warnings.catch_warnings():
             warnings.filterwarnings(action='ignore', category=skConvWarn)
             for j in trange(n_test, desc=f'Testing series {i}'):
-                if j == n_test-1:
+                if j == n_test-horizon:
                     train_v = series
                 else:
-                    train_v = series[:-n_test+j+1]
-                train = train_v[:-horizon]
+                    train_v = series[:-n_test+j+horizon]
+                
+                train = train_v[:-horizon-gap]
                 val = train_v[-horizon:]
 
                 # raw
-                rX, ry = data_prep.ts_prep(train, nlag=best_raw_policy['n lag'], horizon=horizon)
+                rX, ry = data_prep.ts_prep(train, nlag=best_raw_policy['n lag'], horizon=horizon, gap=gap)
                 train_X, val_X = rX, train[-best_raw_policy['n lag']:]
                 train_y, val_y = ry, val
 
@@ -145,7 +167,7 @@ def run_en(datasets, v_size, retrain_window, t_size, horizon, score, policies, n
                 t.transform(train, threshold=thres, kind=best_tran_policy['interp kind'])
                 ttrain = t.tdata1
 
-                tX, ty = data_prep.ts_prep(ttrain, nlag=best_tran_policy['n lag'], horizon=horizon)
+                tX, ty = data_prep.ts_prep(ttrain, nlag=best_tran_policy['n lag'], horizon=horizon, gap=gap)
 
                 if best_tran_policy['use states']:
                     tstates = t.status[best_tran_policy['n lag']-1:]
