@@ -24,7 +24,7 @@ class ParallelValidation:
         self.models = {
             'raw': {
                 'MLP': self.val_raw_mlp,
-#                 'ETS': self.val_raw_ets,
+                'ETS': self.val_raw_ets,
                 'EN': self.val_raw_en,
 #                 'XGB': self.val_raw_xgb,
 #                 'LGBM': self.val_raw_lgbm,
@@ -34,7 +34,7 @@ class ParallelValidation:
             },
             'tran': {
                 'MLP': self.val_tran_mlp,
-#                 'ETS': self.val_tran_ets,
+                'ETS': self.val_tran_ets,
                 'EN': self.val_tran_en,
 #                 'XGB': self.val_tran_xgb,
 #                 'LGBM': self.val_tran_lgbm,
@@ -401,10 +401,9 @@ class ParallelValidation:
         
         return tran_val_errs
     
-    def val_ets(self, policy, series, n_val, retrain_window, split, horizon, score) -> Tuple[List]:
+    def val_raw_ets(self, policy, series, n_val, retrain_window, split, horizon, score) -> Tuple[List]:
 
         raw_val_errs = []
-        tran_val_errs = []
 
         # n_val folds rolling validation
         for v in range(n_val):
@@ -421,6 +420,19 @@ class ParallelValidation:
 
             y, y_hat = val[0], float(rmodel.predict(horizon))
             raw_val_errs.append(score(y, y_hat))
+        
+        return raw_val_errs
+
+
+    def val_tran_ets(self, policy, series, n_val, retrain_window, split, horizon, score) -> Tuple[List]:
+
+        tran_val_errs = []
+
+        # n_val folds rolling validation
+        for v in range(n_val):
+            train_v = series[:-split+v+1]
+            train = train_v[:-horizon]
+            val = train_v[-horizon:]
 
             # with transformation
             # @NOTE: Estimation of sigma can be improved!!!
@@ -443,7 +455,7 @@ class ParallelValidation:
             else:
                 tran_val_errs.append(0.999)
         
-        return raw_val_errs, tran_val_errs
+        return tran_val_errs
 
     # @NOTE: Not used because the XGboost library has its own parallelism that conflicts with other customised parallel settings.
     def val_xgb(self, policy, series, n_val, retrain_window, split, horizon, score) -> Tuple[List]:

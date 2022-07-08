@@ -18,6 +18,27 @@ import warnings
 import numpy as np
 import pandas as pd
 
+def run_ets_tran(pool, arg, policies, ind):
+
+    par_val = ParallelValidation(arg, model='ETS', type='tran')
+    res = tqdm(
+        iterable=pool.imap(par_val.run_parallel, policies),
+        desc=f'Tran: validating series {ind}',
+        total=len(policies))
+
+    return list(res)
+
+def run_ets_raw(pool, arg, policies, ind):
+
+    par_val = ParallelValidation(arg, model='ETS', type='raw')
+    res = tqdm(
+        iterable=pool.imap(par_val.run_parallel, policies),
+        desc=f'Raw: validating series {ind}',
+        total=len(policies))
+
+    return list(res)
+
+
 def run_ets(datasets, v_size, retrain_window, t_size, horizon, score, policies, n_workers) -> Tuple[Dict]:
 
     raw_info = {}
@@ -51,8 +72,8 @@ def run_ets(datasets, v_size, retrain_window, t_size, horizon, score, policies, 
         n_val = v_size if type(v_size) == int else int(v_size * N)
         retrain_window = retrain_window if type(retrain_window) == int else int(retrain_window * N)
         split = n_val + n_test
-        raw_policy_errs = []
-        tran_policy_errs = []
+        raw_policy_errs = None
+        tran_policy_errs = None
 
         # suppress convergence warning during validation
         with warnings.catch_warnings():
@@ -60,6 +81,9 @@ def run_ets(datasets, v_size, retrain_window, t_size, horizon, score, policies, 
             warnings.filterwarnings(action='ignore', category=statsConvWarn)
             warnings.filterwarnings(action='ignore', category=UserWarning)
             
+            raw_policies= policies['raw']
+            tran_policies = policies['tran']
+
             with Pool(processes=n_workers) as p:
                 arg = {
                     'series': series,
@@ -69,17 +93,12 @@ def run_ets(datasets, v_size, retrain_window, t_size, horizon, score, policies, 
                     'horizon': horizon,
                     'score': score,
                 }
-                par_val = ParallelValidation(arg, model='ETS')
-                res = tqdm(
-                    iterable=p.imap(par_val.run_parallel, policies),
-                    desc=f'Validating series {i}',
-                    total=len(policies)
-                )
-                res = list(res)
+
+                raw_policy_errs = run_ets_raw(pool=p, arg=arg, policies=raw_policies, ind=i)
+                tran_policy_errs = run_ets_tran(pool=p, arg=arg, policies=tran_policies, ind=i)
 
             np.seterr(**old_settings)  # restore the warning settings
-        
-        raw_policy_errs, tran_policy_errs = zip(*res)
+
         raw_policy_errs = [np.mean(e) for e in raw_policy_errs]
         tran_policy_errs = [np.nanmean(e) for e in tran_policy_errs]
         
@@ -88,11 +107,8 @@ def run_ets(datasets, v_size, retrain_window, t_size, horizon, score, policies, 
         best_tran_val_SMAPE_ind = np.argmin(tran_policy_errs)
         best_raw_val_SMAPE = raw_policy_errs[best_raw_val_SMAPE_ind]
         best_tran_val_SMAPE = tran_policy_errs[best_tran_val_SMAPE_ind]
-        best_raw_policy = copy(policies[best_raw_val_SMAPE_ind])
-        best_tran_policy = copy(policies[best_tran_val_SMAPE_ind])
-        del best_raw_policy['thres up']
-        del best_raw_policy['thres down']
-        del best_raw_policy['interp kind']
+        best_raw_policy = copy(raw_policies[best_raw_val_SMAPE_ind])
+        best_tran_policy = copy(tran_policies[best_tran_val_SMAPE_ind])
 
         #
         # test

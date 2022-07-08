@@ -3,10 +3,7 @@
         "0": null
     },
     {
-        "run time": [
-            "28-06-2022--21-18-37",
-            "28-06-2022--21-28-42"
-        ],
+        "run time": ["28-06-2022--21-18-37", "28-06-2022--21-28-42"],
         "config input": {
             "dataset": {
                 "file name": "m3_monthly_dataset.json",
@@ -16,11 +13,7 @@
                 "min length": 130
             },
             "transformation config": {
-                "xthresholds": [
-                    0.01,
-                    1.1,
-                    0.2
-                ]
+                "xthresholds": [0.01, 1.1, 0.2]
             },
             "modelling config": {
                 "validation size": 10,
@@ -28,12 +21,7 @@
                 "forecast horizon": 1,
                 "score measure": "SMAPE"
             },
-            "models": [
-                "MLP",
-                "EN",
-                "ETS",
-                "LGBM"
-            ],
+            "models": ["MLP", "EN", "ETS", "LGBM"],
             "execution config": {
                 "n of workers": 20
             }
@@ -42,102 +30,34 @@
         "Avg. len of series": 141.0,
         "model hyper_params": {
             "MLP": {
-                "n of lags": [
-                    1,
-                    3,
-                    5
-                ],
-                "strucs": [
-                    [
-                        0
-                    ],
-                    [
-                        1
-                    ],
-                    [
-                        3
-                    ],
-                    [
-                        5
-                    ],
-                    [
-                        7
-                    ]
-                ],
-                "max iter": [
-                    500
-                ]
+                "n of lags": [1, 3, 5],
+                "strucs": [[0], [1], [3], [5], [7]],
+                "max iter": [500]
             },
             "EN": {
-                "n of lags": [
-                    1,
-                    3,
-                    5
-                ],
-                "alpha": [
-                    0.1,
-                    1,
-                    10,
-                    100
-                ],
-                "l1 ratio": [
-                    0.01,
-                    0.31,
-                    0.61,
-                    0.91
-                ]
+                "n of lags": [1, 3, 5],
+                "alpha": [0.1, 1, 10, 100],
+                "l1 ratio": [0.01, 0.31, 0.61, 0.91]
             },
             "ETS": {
-                "seasonal periods": [
-                    12
-                ],
-                "trend": [
-                    "add",
-                    "mul"
-                ],
-                "seasonal": [
-                    "add",
-                    "mul"
-                ],
-                "damped trend": [
-                    true,
-                    false
-                ]
+                "seasonal periods": [12],
+                "trend": ["add", "mul"],
+                "seasonal": ["add", "mul"],
+                "damped trend": [true, false]
             },
             "LGBM": {
-                "n of lags": [
-                    1,
-                    3,
-                    5
-                ],
-                "max depth": [
-                    -1,
-                    10,
-                    20,
-                    30
-                ],
-                "min split gain": [
-                    0,
-                    3,
-                    5
-                ],
-                "importance type": [
-                    "split",
-                    "gain"
-                ]
+                "n of lags": [1, 3, 5],
+                "max depth": [-1, 10, 20, 30],
+                "min split gain": [0, 3, 5],
+                "importance type": ["split", "gain"]
             }
         },
         "messages": {
-            "Warning": [
-                "Only 1 series are chosen for this run."
-            ]
+            "Warning": ["Only 1 series are chosen for this run."]
         }
     },
     {
-        "run time": [
-            "28-06-2022--22-13-20",
-            "30-06-2022--01-15-22"
-        ],
+        "run time": ["28-06-2022--22-13-20", "30-06-2022--01-15-22"],
         "config input": {
             "dataset": {
                 "file name": "m3_monthly_dataset.json",
@@ -147,11 +67,7 @@
                 "min length": 130
             },
             "transformation config": {
-                "xthresholds": [
-                    0.01,
-                    1.1,
-                    0.2
-                ]
+                "xthresholds": [0.01, 1.1, 0.2]
             },
             "modelling config": {
                 "validation size": 10,
@@ -159,12 +75,7 @@
                 "forecast horizon": 1,
                 "score measure": "SMAPE"
             },
-            "models": [
-                "MLP",
-                "EN",
-                "ETS",
-                "LGBM"
-            ],
+            "models": ["MLP", "EN", "ETS", "LGBM"],
             "execution config": {
                 "n of workers": 20
             }
@@ -173,97 +84,32 @@
         "Avg. len of series": 140.71428571428572,
         "model hyper_params": {
             "MLP": {
-                "n of lags": [
-                    1,
-                    3,
-                    5
-                ],
-                "strucs": [
-                    [
-                        0
-                    ],
-                    [
-                        1
-                    ],
-                    [
-                        3
-                    ],
-                    [
-                        5
-                    ],
-                    [
-                        7
-                    ]
-                ],
-                "max iter": [
-                    500
-                ]
+                "n of lags": [1, 3, 5],
+                "strucs": [[0], [1], [3], [5], [7]],
+                "max iter": [500]
             },
             "EN": {
-                "n of lags": [
-                    1,
-                    3,
-                    5
-                ],
-                "alpha": [
-                    0.1,
-                    1,
-                    10,
-                    100
-                ],
-                "l1 ratio": [
-                    0.01,
-                    0.31,
-                    0.61,
-                    0.91
-                ]
+                "n of lags": [1, 3, 5],
+                "alpha": [0.1, 1, 10, 100],
+                "l1 ratio": [0.01, 0.31, 0.61, 0.91]
             },
             "ETS": {
-                "seasonal periods": [
-                    12
-                ],
-                "trend": [
-                    "add",
-                    "mul"
-                ],
-                "seasonal": [
-                    "add",
-                    "mul"
-                ],
-                "damped trend": [
-                    true,
-                    false
-                ]
+                "seasonal periods": [12],
+                "trend": ["add", "mul"],
+                "seasonal": ["add", "mul"],
+                "damped trend": [true, false]
             },
             "LGBM": {
-                "n of lags": [
-                    1,
-                    3,
-                    5
-                ],
-                "max depth": [
-                    -1,
-                    10,
-                    20
-                ],
-                "min split gain": [
-                    0,
-                    3,
-                    5
-                ],
-                "importance type": [
-                    "split",
-                    "gain"
-                ]
+                "n of lags": [1, 3, 5],
+                "max depth": [-1, 10, 20],
+                "min split gain": [0, 3, 5],
+                "importance type": ["split", "gain"]
             }
         },
         "messages": {}
     },
     {
-        "run time": [
-            "30-06-2022--19-41-17",
-            "01-07-2022--08-56-24"
-        ],
+        "run time": ["30-06-2022--19-41-17", "01-07-2022--08-56-24"],
         "config input": {
             "type of run": "real run",
             "dataset": {
@@ -276,11 +122,7 @@
                 "max length": 9999
             },
             "transformation config": {
-                "xthresholds": [
-                    0.01,
-                    1.1,
-                    0.1
-                ]
+                "xthresholds": [0.01, 1.1, 0.1]
             },
             "modelling config": {
                 "validation size": 10,
@@ -288,11 +130,7 @@
                 "forecast horizon": 1,
                 "score measure": "SMAPE"
             },
-            "models": [
-                "EN",
-                "MLP",
-                "ETS"
-            ],
+            "models": ["EN", "MLP", "ETS"],
             "execution config": {
                 "n of workers": 20
             }
@@ -300,91 +138,32 @@
         "number of series used": 210,
         "Avg. len of series": 137.14761904761906,
         "took time": {
-            "EN": [
-                "30-06-2022--19-41-35",
-                "30-06-2022--20-02-07"
-            ],
-            "MLP": [
-                "30-06-2022--20-02-07",
-                "01-07-2022--03-41-16"
-            ],
-            "ETS": [
-                "01-07-2022--03-41-16",
-                "01-07-2022--08-56-24"
-            ]
+            "EN": ["30-06-2022--19-41-35", "30-06-2022--20-02-07"],
+            "MLP": ["30-06-2022--20-02-07", "01-07-2022--03-41-16"],
+            "ETS": ["01-07-2022--03-41-16", "01-07-2022--08-56-24"]
         },
         "model hyper_params": {
             "EN": {
-                "n of lags": [
-                    1,
-                    3,
-                    5
-                ],
-                "alpha": [
-                    0.1,
-                    1,
-                    10,
-                    100
-                ],
-                "l1 ratio": [
-                    0.01,
-                    0.31,
-                    0.61,
-                    0.91
-                ]
+                "n of lags": [1, 3, 5],
+                "alpha": [0.1, 1, 10, 100],
+                "l1 ratio": [0.01, 0.31, 0.61, 0.91]
             },
             "MLP": {
-                "n of lags": [
-                    1,
-                    3,
-                    5
-                ],
-                "strucs": [
-                    [
-                        0
-                    ],
-                    [
-                        1
-                    ],
-                    [
-                        3
-                    ],
-                    [
-                        5
-                    ],
-                    [
-                        7
-                    ]
-                ],
-                "max iter": [
-                    500
-                ]
+                "n of lags": [1, 3, 5],
+                "strucs": [[0], [1], [3], [5], [7]],
+                "max iter": [500]
             },
             "ETS": {
-                "seasonal periods": [
-                    12
-                ],
-                "trend": [
-                    "add",
-                    "mul"
-                ],
-                "seasonal": [
-                    "add",
-                    "mul"
-                ],
-                "damped trend": [
-                    true,
-                    false
-                ]
+                "seasonal periods": [12],
+                "trend": ["add", "mul"],
+                "seasonal": ["add", "mul"],
+                "damped trend": [true, false]
             }
         },
         "messages": {}
     },
     {
-        "run time": [
-            "04-07-2022--12-28-43",
-            "04-07-2022--13-05-42"
-        ],
+        "run time": ["04-07-2022--12-28-43", "04-07-2022--13-05-42"],
         "config input": {
             "type of run": "test",
             "dataset": {
@@ -397,11 +176,7 @@
                 "max length": 9999
             },
             "transformation config": {
-                "xthresholds": [
-                    0.01,
-                    1.1,
-                    0.1
-                ]
+                "xthresholds": [0.01, 1.1, 0.1]
             },
             "modelling config": {
                 "retrain window": 10,
@@ -410,14 +185,7 @@
                 "forecast horizon": 1,
                 "score measure": "SMAPE"
             },
-            "models": [
-                "EN",
-                "ETS",
-                "MLP",
-                "RF",
-                "LGBM",
-                "LSVR"
-            ],
+            "models": ["EN", "ETS", "MLP", "RF", "LGBM", "LSVR"],
             "execution config": {
                 "n of workers": 20
             }
@@ -425,128 +193,53 @@
         "number of series used": 3,
         "Avg. len of series": 748.0,
         "took time": {
-            "EN": [
-                "04-07-2022--12-28-48",
-                "04-07-2022--12-31-55"
-            ],
-            "ETS": [
-                "04-07-2022--12-31-55",
-                "04-07-2022--12-35-18"
-            ],
-            "MLP": [
-                "04-07-2022--12-35-18",
-                "04-07-2022--12-42-11"
-            ],
-            "RF": [
-                "04-07-2022--12-42-11",
-                "04-07-2022--12-49-37"
-            ],
-            "LGBM": [
-                "04-07-2022--12-49-37",
-                "04-07-2022--13-04-50"
-            ],
-            "LSVR": [
-                "04-07-2022--13-04-50",
-                "04-07-2022--13-05-42"
-            ]
+            "EN": ["04-07-2022--12-28-48", "04-07-2022--12-31-55"],
+            "ETS": ["04-07-2022--12-31-55", "04-07-2022--12-35-18"],
+            "MLP": ["04-07-2022--12-35-18", "04-07-2022--12-42-11"],
+            "RF": ["04-07-2022--12-42-11", "04-07-2022--12-49-37"],
+            "LGBM": ["04-07-2022--12-49-37", "04-07-2022--13-04-50"],
+            "LSVR": ["04-07-2022--13-04-50", "04-07-2022--13-05-42"]
         },
         "model hyper_params": {
             "EN": {
-                "n of lags": [
-                    12,
-                    24,
-                    36
-                ],
-                "alpha": [
-                    100
-                ],
-                "l1 ratio": [
-                    0.5
-                ]
+                "n of lags": [12, 24, 36],
+                "alpha": [100],
+                "l1 ratio": [0.5]
             },
             "ETS": {
-                "seasonal periods": [
-                    24
-                ],
-                "trend": [
-                    "mul"
-                ],
-                "seasonal": [
-                    "mul"
-                ],
-                "damped trend": [
-                    true
-                ]
+                "seasonal periods": [24],
+                "trend": ["mul"],
+                "seasonal": ["mul"],
+                "damped trend": [true]
             },
             "MLP": {
-                "n of lags": [
-                    12,
-                    24,
-                    36
-                ],
-                "strucs": [
-                    [
-                        30
-                    ]
-                ],
-                "max iter": [
-                    2000
-                ]
+                "n of lags": [12, 24, 36],
+                "strucs": [[30]],
+                "max iter": [2000]
             },
             "RF": {
-                "n of lags": [
-                    12,
-                    24,
-                    36
-                ],
-                "max depth": [
-                    null
-                ],
-                "min samples split": [
-                    0.005
-                ],
-                "min impurity decrease": [
-                    0
-                ],
-                "ccp alpha": [
-                    0
-                ]
+                "n of lags": [12, 24, 36],
+                "max depth": [null],
+                "min samples split": [0.005],
+                "min impurity decrease": [0],
+                "ccp alpha": [0]
             },
             "LGBM": {
-                "n of lags": [
-                    12,
-                    24,
-                    36
-                ],
-                "max depth": [
-                    -1
-                ],
-                "min split gain": [
-                    0
-                ],
-                "importance type": [
-                    "split"
-                ]
+                "n of lags": [12, 24, 36],
+                "max depth": [-1],
+                "min split gain": [0],
+                "importance type": ["split"]
             },
             "LSVR": {
-                "n of lags": [
-                    12,
-                    24,
-                    36
-                ]
+                "n of lags": [12, 24, 36]
             }
         },
         "messages": {
-            "Warning": [
-                "Only 3 series are chosen for this run."
-            ]
+            "Warning": ["Only 3 series are chosen for this run."]
         }
     },
     {
-        "run time": [
-            "04-07-2022--14-00-37",
-            "04-07-2022--15-51-26"
-        ],
+        "run time": ["04-07-2022--14-00-37", "04-07-2022--15-51-26"],
         "config input": {
             "type of run": "test",
             "dataset": {
@@ -559,11 +252,7 @@
                 "max length": 9999
             },
             "transformation config": {
-                "xthresholds": [
-                    0.01,
-                    1.1,
-                    0.1
-                ]
+                "xthresholds": [0.01, 1.1, 0.1]
             },
             "modelling config": {
                 "retrain window": 10,
@@ -572,14 +261,7 @@
                 "forecast horizon": 1,
                 "score measure": "SMAPE"
             },
-            "models": [
-                "EN",
-                "ETS",
-                "MLP",
-                "RF",
-                "LGBM",
-                "LSVR"
-            ],
+            "models": ["EN", "ETS", "MLP", "RF", "LGBM", "LSVR"],
             "execution config": {
                 "n of workers": 20
             }
@@ -587,124 +269,51 @@
         "number of series used": 9,
         "Avg. len of series": 748.0,
         "took time": {
-            "EN": [
-                "04-07-2022--14-00-45",
-                "04-07-2022--14-10-39"
-            ],
-            "ETS": [
-                "04-07-2022--14-10-39",
-                "04-07-2022--14-20-13"
-            ],
-            "MLP": [
-                "04-07-2022--14-20-13",
-                "04-07-2022--14-40-45"
-            ],
-            "RF": [
-                "04-07-2022--14-40-45",
-                "04-07-2022--15-02-59"
-            ],
-            "LGBM": [
-                "04-07-2022--15-02-59",
-                "04-07-2022--15-48-49"
-            ],
-            "LSVR": [
-                "04-07-2022--15-48-49",
-                "04-07-2022--15-51-26"
-            ]
+            "EN": ["04-07-2022--14-00-45", "04-07-2022--14-10-39"],
+            "ETS": ["04-07-2022--14-10-39", "04-07-2022--14-20-13"],
+            "MLP": ["04-07-2022--14-20-13", "04-07-2022--14-40-45"],
+            "RF": ["04-07-2022--14-40-45", "04-07-2022--15-02-59"],
+            "LGBM": ["04-07-2022--15-02-59", "04-07-2022--15-48-49"],
+            "LSVR": ["04-07-2022--15-48-49", "04-07-2022--15-51-26"]
         },
         "model hyper_params": {
             "EN": {
-                "n of lags": [
-                    12,
-                    24,
-                    36
-                ],
-                "alpha": [
-                    100
-                ],
-                "l1 ratio": [
-                    0.5
-                ]
+                "n of lags": [12, 24, 36],
+                "alpha": [100],
+                "l1 ratio": [0.5]
             },
             "ETS": {
-                "seasonal periods": [
-                    24
-                ],
-                "trend": [
-                    "mul"
-                ],
-                "seasonal": [
-                    "mul"
-                ],
-                "damped trend": [
-                    true
-                ]
+                "seasonal periods": [24],
+                "trend": ["mul"],
+                "seasonal": ["mul"],
+                "damped trend": [true]
             },
             "MLP": {
-                "n of lags": [
-                    12,
-                    24,
-                    36
-                ],
-                "strucs": [
-                    [
-                        30
-                    ]
-                ],
-                "max iter": [
-                    2000
-                ]
+                "n of lags": [12, 24, 36],
+                "strucs": [[30]],
+                "max iter": [2000]
             },
             "RF": {
-                "n of lags": [
-                    12,
-                    24,
-                    36
-                ],
-                "max depth": [
-                    null
-                ],
-                "min samples split": [
-                    0.005
-                ],
-                "min impurity decrease": [
-                    0
-                ],
-                "ccp alpha": [
-                    0
-                ]
+                "n of lags": [12, 24, 36],
+                "max depth": [null],
+                "min samples split": [0.005],
+                "min impurity decrease": [0],
+                "ccp alpha": [0]
             },
             "LGBM": {
-                "n of lags": [
-                    12,
-                    24,
-                    36
-                ],
-                "max depth": [
-                    -1
-                ],
-                "min split gain": [
-                    0
-                ],
-                "importance type": [
-                    "split"
-                ]
+                "n of lags": [12, 24, 36],
+                "max depth": [-1],
+                "min split gain": [0],
+                "importance type": ["split"]
             },
             "LSVR": {
-                "n of lags": [
-                    12,
-                    24,
-                    36
-                ]
+                "n of lags": [12, 24, 36]
             }
         },
         "messages": {}
     },
     {
-        "run time": [
-            "04-07-2022--18-41-26",
-            "05-07-2022--15-08-05"
-        ],
+        "run time": ["04-07-2022--18-41-26", "05-07-2022--15-08-05"],
         "config input": {
             "type of run": "real run",
             "dataset": {
@@ -717,11 +326,7 @@
                 "max length": 1500
             },
             "transformation config": {
-                "xthresholds": [
-                    0.01,
-                    1.1,
-                    0.1
-                ]
+                "xthresholds": [0.01, 1.1, 0.1]
             },
             "modelling config": {
                 "retrain window": 10,
@@ -730,14 +335,7 @@
                 "forecast horizon": 1,
                 "score measure": "SMAPE"
             },
-            "models": [
-                "EN",
-                "ETS",
-                "MLP",
-                "RF",
-                "LGBM",
-                "LSVR"
-            ],
+            "models": ["EN", "ETS", "MLP", "RF", "LGBM", "LSVR"],
             "execution config": {
                 "n of workers": 22
             }
@@ -745,126 +343,51 @@
         "number of series used": 38,
         "Avg. len of series": 1246.157894736842,
         "took time": {
-            "EN": [
-                "04-07-2022--18-41-29",
-                "04-07-2022--19-51-02"
-            ],
-            "ETS": [
-                "04-07-2022--19-51-02",
-                "05-07-2022--00-26-41"
-            ],
-            "MLP": [
-                "05-07-2022--00-26-41",
-                "05-07-2022--04-11-02"
-            ],
-            "RF": [
-                "05-07-2022--04-11-02",
-                "05-07-2022--06-59-48"
-            ],
-            "LGBM": [
-                "05-07-2022--06-59-48",
-                "05-07-2022--14-35-46"
-            ],
-            "LSVR": [
-                "05-07-2022--14-35-46",
-                "05-07-2022--15-08-05"
-            ]
+            "EN": ["04-07-2022--18-41-29", "04-07-2022--19-51-02"],
+            "ETS": ["04-07-2022--19-51-02", "05-07-2022--00-26-41"],
+            "MLP": ["05-07-2022--00-26-41", "05-07-2022--04-11-02"],
+            "RF": ["05-07-2022--04-11-02", "05-07-2022--06-59-48"],
+            "LGBM": ["05-07-2022--06-59-48", "05-07-2022--14-35-46"],
+            "LSVR": ["05-07-2022--14-35-46", "05-07-2022--15-08-05"]
         },
         "model hyper_params": {
             "EN": {
-                "n of lags": [
-                    7,
-                    14,
-                    21
-                ],
-                "alpha": [
-                    100
-                ],
-                "l1 ratio": [
-                    0.5
-                ]
+                "n of lags": [7, 14, 21],
+                "alpha": [100],
+                "l1 ratio": [0.5]
             },
             "ETS": {
-                "seasonal periods": [
-                    8,
-                    12,
-                    24
-                ],
-                "trend": [
-                    "mul"
-                ],
-                "seasonal": [
-                    "mul"
-                ],
-                "damped trend": [
-                    true
-                ]
+                "seasonal periods": [8, 12, 24],
+                "trend": ["mul"],
+                "seasonal": ["mul"],
+                "damped trend": [true]
             },
             "MLP": {
-                "n of lags": [
-                    7,
-                    14,
-                    21
-                ],
-                "strucs": [
-                    [
-                        20
-                    ]
-                ],
-                "max iter": [
-                    2000
-                ]
+                "n of lags": [7, 14, 21],
+                "strucs": [[20]],
+                "max iter": [2000]
             },
             "RF": {
-                "n of lags": [
-                    7,
-                    14,
-                    21
-                ],
-                "max depth": [
-                    null
-                ],
-                "min samples split": [
-                    0.005
-                ],
-                "min impurity decrease": [
-                    0
-                ],
-                "ccp alpha": [
-                    0
-                ]
+                "n of lags": [7, 14, 21],
+                "max depth": [null],
+                "min samples split": [0.005],
+                "min impurity decrease": [0],
+                "ccp alpha": [0]
             },
             "LGBM": {
-                "n of lags": [
-                    7,
-                    14,
-                    21
-                ],
-                "max depth": [
-                    -1
-                ],
-                "min split gain": [
-                    0
-                ],
-                "importance type": [
-                    "split"
-                ]
+                "n of lags": [7, 14, 21],
+                "max depth": [-1],
+                "min split gain": [0],
+                "importance type": ["split"]
             },
             "LSVR": {
-                "n of lags": [
-                    12,
-                    24,
-                    36
-                ]
+                "n of lags": [12, 24, 36]
             }
         },
         "messages": {}
     },
     {
-        "run time": [
-            "05-07-2022--19-57-14",
-            "06-07-2022--09-55-05"
-        ],
+        "run time": ["05-07-2022--19-57-14", "06-07-2022--09-55-05"],
         "config input": {
             "type of run": "real run",
             "dataset": {
@@ -877,14 +400,8 @@
                 "max length": 1500
             },
             "transformation config": {
-                "xthresholds": [
-                    0.01,
-                    1.1,
-                    0.1
-                ],
-                "interp kind": [
-                    "cubic"
-                ]
+                "xthresholds": [0.01, 1.1, 0.1],
+                "interp kind": ["cubic"]
             },
             "modelling config": {
                 "retrain window": 10,
@@ -893,14 +410,7 @@
                 "forecast horizon": 1,
                 "score measure": "SMAPE"
             },
-            "models": [
-                "ETS",
-                "EN",
-                "MLP",
-                "RF",
-                "LGBM",
-                "LSVR"
-            ],
+            "models": ["ETS", "EN", "MLP", "RF", "LGBM", "LSVR"],
             "execution config": {
                 "n of workers": 22
             }
@@ -908,115 +418,48 @@
         "number of series used": 30,
         "Avg. len of series": 1237.7,
         "took time": {
-            "ETS": [
-                "05-07-2022--19-57-26",
-                "05-07-2022--21-25-59"
-            ],
-            "EN": [
-                "05-07-2022--21-25-59",
-                "05-07-2022--22-22-33"
-            ],
-            "MLP": [
-                "05-07-2022--22-22-33",
-                "06-07-2022--01-21-38"
-            ],
-            "RF": [
-                "06-07-2022--01-21-38",
-                "06-07-2022--03-33-35"
-            ],
-            "LGBM": [
-                "06-07-2022--03-33-35",
-                "06-07-2022--09-35-20"
-            ],
-            "LSVR": [
-                "06-07-2022--09-35-20",
-                "06-07-2022--09-55-05"
-            ]
+            "ETS": ["05-07-2022--19-57-26", "05-07-2022--21-25-59"],
+            "EN": ["05-07-2022--21-25-59", "05-07-2022--22-22-33"],
+            "MLP": ["05-07-2022--22-22-33", "06-07-2022--01-21-38"],
+            "RF": ["06-07-2022--01-21-38", "06-07-2022--03-33-35"],
+            "LGBM": ["06-07-2022--03-33-35", "06-07-2022--09-35-20"],
+            "LSVR": ["06-07-2022--09-35-20", "06-07-2022--09-55-05"]
         },
         "model hyper_params": {
             "ETS": {
-                "auto": [
-                    true
-                ]
+                "auto": [true]
             },
             "EN": {
-                "n of lags": [
-                    7,
-                    14,
-                    21
-                ],
-                "alpha": [
-                    100
-                ],
-                "l1 ratio": [
-                    0.5
-                ]
+                "n of lags": [7, 14, 21],
+                "alpha": [100],
+                "l1 ratio": [0.5]
             },
             "MLP": {
-                "n of lags": [
-                    7,
-                    14,
-                    21
-                ],
-                "strucs": [
-                    [
-                        20
-                    ]
-                ],
-                "max iter": [
-                    2000
-                ]
+                "n of lags": [7, 14, 21],
+                "strucs": [[20]],
+                "max iter": [2000]
             },
             "RF": {
-                "n of lags": [
-                    7,
-                    14,
-                    21
-                ],
-                "max depth": [
-                    null
-                ],
-                "min samples split": [
-                    0.005
-                ],
-                "min impurity decrease": [
-                    0
-                ],
-                "ccp alpha": [
-                    0
-                ]
+                "n of lags": [7, 14, 21],
+                "max depth": [null],
+                "min samples split": [0.005],
+                "min impurity decrease": [0],
+                "ccp alpha": [0]
             },
             "LGBM": {
-                "n of lags": [
-                    7,
-                    14,
-                    21
-                ],
-                "max depth": [
-                    -1
-                ],
-                "min split gain": [
-                    0
-                ],
-                "importance type": [
-                    "split"
-                ]
+                "n of lags": [7, 14, 21],
+                "max depth": [-1],
+                "min split gain": [0],
+                "importance type": ["split"]
             },
             "LSVR": {
-                "n of lags": [
-                    7,
-                    14,
-                    21
-                ]
+                "n of lags": [7, 14, 21]
             }
         },
         "messages": {}
     },
     {
-        "run time": [
-            "06-07-2022--10-26-59",
-            "06-07-2022--13-08-54"
-        ],
+        "run time": ["06-07-2022--10-26-59", "06-07-2022--13-08-54"],
         "config input": {
             "type of run": "real run",
             "dataset": {
@@ -1029,14 +472,8 @@
                 "max length": 1500
             },
             "transformation config": {
-                "xthresholds": [
-                    0.01,
-                    1.1,
-                    0.1
-                ],
-                "interp kind": [
-                    "cubic"
-                ]
+                "xthresholds": [0.01, 1.1, 0.1],
+                "interp kind": ["cubic"]
             },
             "modelling config": {
                 "retrain window": 10,
@@ -1045,14 +482,7 @@
                 "forecast horizon": 1,
                 "score measure": "SMAPE"
             },
-            "models": [
-                "ETS",
-                "EN",
-                "MLP",
-                "RF",
-                "LGBM",
-                "LSVR"
-            ],
+            "models": ["ETS", "EN", "MLP", "RF", "LGBM", "LSVR"],
             "execution config": {
                 "n of workers": 22
             }
@@ -1060,115 +490,48 @@
         "number of series used": 5,
         "Avg. len of series": 1343.2,
         "took time": {
-            "ETS": [
-                "06-07-2022--10-27-04",
-                "06-07-2022--10-43-29"
-            ],
-            "EN": [
-                "06-07-2022--10-43-29",
-                "06-07-2022--10-54-15"
-            ],
-            "MLP": [
-                "06-07-2022--10-54-15",
-                "06-07-2022--11-29-49"
-            ],
-            "RF": [
-                "06-07-2022--11-29-49",
-                "06-07-2022--11-56-09"
-            ],
-            "LGBM": [
-                "06-07-2022--11-56-09",
-                "06-07-2022--13-05-03"
-            ],
-            "LSVR": [
-                "06-07-2022--13-05-03",
-                "06-07-2022--13-08-54"
-            ]
+            "ETS": ["06-07-2022--10-27-04", "06-07-2022--10-43-29"],
+            "EN": ["06-07-2022--10-43-29", "06-07-2022--10-54-15"],
+            "MLP": ["06-07-2022--10-54-15", "06-07-2022--11-29-49"],
+            "RF": ["06-07-2022--11-29-49", "06-07-2022--11-56-09"],
+            "LGBM": ["06-07-2022--11-56-09", "06-07-2022--13-05-03"],
+            "LSVR": ["06-07-2022--13-05-03", "06-07-2022--13-08-54"]
         },
         "model hyper_params": {
             "ETS": {
-                "auto": [
-                    true
-                ]
+                "auto": [true]
             },
             "EN": {
-                "n of lags": [
-                    7,
-                    14,
-                    21
-                ],
-                "alpha": [
-                    100
-                ],
-                "l1 ratio": [
-                    0.5
-                ]
+                "n of lags": [7, 14, 21],
+                "alpha": [100],
+                "l1 ratio": [0.5]
             },
             "MLP": {
-                "n of lags": [
-                    7,
-                    14,
-                    21
-                ],
-                "strucs": [
-                    [
-                        20
-                    ]
-                ],
-                "max iter": [
-                    2000
-                ]
+                "n of lags": [7, 14, 21],
+                "strucs": [[20]],
+                "max iter": [2000]
             },
             "RF": {
-                "n of lags": [
-                    7,
-                    14,
-                    21
-                ],
-                "max depth": [
-                    null
-                ],
-                "min samples split": [
-                    0.005
-                ],
-                "min impurity decrease": [
-                    0
-                ],
-                "ccp alpha": [
-                    0
-                ]
+                "n of lags": [7, 14, 21],
+                "max depth": [null],
+                "min samples split": [0.005],
+                "min impurity decrease": [0],
+                "ccp alpha": [0]
             },
             "LGBM": {
-                "n of lags": [
-                    7,
-                    14,
-                    21
-                ],
-                "max depth": [
-                    -1
-                ],
-                "min split gain": [
-                    0
-                ],
-                "importance type": [
-                    "split"
-                ]
+                "n of lags": [7, 14, 21],
+                "max depth": [-1],
+                "min split gain": [0],
+                "importance type": ["split"]
             },
             "LSVR": {
-                "n of lags": [
-                    7,
-                    14,
-                    21
-                ]
+                "n of lags": [7, 14, 21]
             }
         },
         "messages": {}
     },
     {
-        "run time": [
-            "06-07-2022--22-15-16",
-            "07-07-2022--04-26-34"
-        ],
+        "run time": ["06-07-2022--22-15-16", "07-07-2022--04-26-34"],
         "config input": {
             "type of run": "real run",
             "dataset": {
@@ -1181,17 +544,9 @@
                 "max length": 1500
             },
             "transformation config": {
-                "xthresholds": [
-                    0.01,
-                    1.1,
-                    0.1
-                ],
-                "interp kind": [
-                    "linear"
-                ],
-                "use states": [
-                    true
-                ]
+                "xthresholds": [0.01, 1.1, 0.1],
+                "interp kind": ["linear"],
+                "use states": [true]
             },
             "modelling config": {
                 "retrain window": 10,
@@ -1200,13 +555,7 @@
                 "forecast horizon": 1,
                 "score measure": "SMAPE"
             },
-            "models": [
-                "EN",
-                "RF",
-                "LSVR",
-                "LGBM",
-                "MLP"
-            ],
+            "models": ["EN", "RF", "LSVR", "LGBM", "MLP"],
             "execution config": {
                 "n of workers": 22
             }
@@ -1214,106 +563,44 @@
         "number of series used": 25,
         "Avg. len of series": 1222.76,
         "took time": {
-            "EN": [
-                "06-07-2022--22-15-24",
-                "06-07-2022--22-55-18"
-            ],
-            "RF": [
-                "06-07-2022--22-55-18",
-                "06-07-2022--23-57-58"
-            ],
-            "LSVR": [
-                "06-07-2022--23-57-58",
-                "07-07-2022--00-08-00"
-            ],
-            "LGBM": [
-                "07-07-2022--00-08-00",
-                "07-07-2022--03-06-54"
-            ],
-            "MLP": [
-                "07-07-2022--03-06-54",
-                "07-07-2022--04-26-34"
-            ]
+            "EN": ["06-07-2022--22-15-24", "06-07-2022--22-55-18"],
+            "RF": ["06-07-2022--22-55-18", "06-07-2022--23-57-58"],
+            "LSVR": ["06-07-2022--23-57-58", "07-07-2022--00-08-00"],
+            "LGBM": ["07-07-2022--00-08-00", "07-07-2022--03-06-54"],
+            "MLP": ["07-07-2022--03-06-54", "07-07-2022--04-26-34"]
         },
         "model hyper_params": {
             "EN": {
-                "n of lags": [
-                    7,
-                    14,
-                    21
-                ],
-                "alpha": [
-                    100
-                ],
-                "l1 ratio": [
-                    0.5
-                ]
+                "n of lags": [7, 14, 21],
+                "alpha": [100],
+                "l1 ratio": [0.5]
             },
             "RF": {
-                "n of lags": [
-                    7,
-                    14,
-                    21
-                ],
-                "max depth": [
-                    null
-                ],
-                "min samples split": [
-                    0.005
-                ],
-                "min impurity decrease": [
-                    0
-                ],
-                "ccp alpha": [
-                    0
-                ]
+                "n of lags": [7, 14, 21],
+                "max depth": [null],
+                "min samples split": [0.005],
+                "min impurity decrease": [0],
+                "ccp alpha": [0]
             },
             "LSVR": {
-                "n of lags": [
-                    7,
-                    14,
-                    21
-                ]
+                "n of lags": [7, 14, 21]
             },
             "LGBM": {
-                "n of lags": [
-                    7,
-                    14,
-                    21
-                ],
-                "max depth": [
-                    -1
-                ],
-                "min split gain": [
-                    0
-                ],
-                "importance type": [
-                    "split"
-                ]
+                "n of lags": [7, 14, 21],
+                "max depth": [-1],
+                "min split gain": [0],
+                "importance type": ["split"]
             },
             "MLP": {
-                "n of lags": [
-                    7,
-                    14,
-                    21
-                ],
-                "strucs": [
-                    [
-                        20
-                    ]
-                ],
-                "max iter": [
-                    2000
-                ]
+                "n of lags": [7, 14, 21],
+                "strucs": [[20]],
+                "max iter": [2000]
             }
         },
         "messages": {}
     },
     {
-        "run time": [
-            "07-07-2022--10-38-11",
-            "07-07-2022--12-02-51"
-        ],
+        "run time": ["07-07-2022--10-38-11", "07-07-2022--12-02-51"],
         "config input": {
             "type of run": "real run",
             "dataset": {
@@ -1326,17 +613,9 @@
                 "max length": 1500
             },
             "transformation config": {
-                "xthresholds": [
-                    0.01,
-                    1.1,
-                    0.1
-                ],
-                "interp kind": [
-                    "linear"
-                ],
-                "use states": [
-                    true
-                ]
+                "xthresholds": [0.01, 1.1, 0.1],
+                "interp kind": ["linear"],
+                "use states": [true]
             },
             "modelling config": {
                 "retrain window": 10,
@@ -1345,13 +624,7 @@
                 "forecast horizon": 1,
                 "score measure": "SMAPE"
             },
-            "models": [
-                "EN",
-                "RF",
-                "LSVR",
-                "LGBM",
-                "MLP"
-            ],
+            "models": ["EN", "RF", "LSVR", "LGBM", "MLP"],
             "execution config": {
                 "n of workers": 22
             }
@@ -1359,97 +632,107 @@
         "number of series used": 5,
         "Avg. len of series": 1312.4,
         "took time": {
-            "EN": [
-                "07-07-2022--10-38-14",
-                "07-07-2022--10-47-05"
-            ],
-            "RF": [
-                "07-07-2022--10-47-05",
-                "07-07-2022--11-01-25"
-            ],
-            "LSVR": [
-                "07-07-2022--11-01-25",
-                "07-07-2022--11-03-46"
-            ],
-            "LGBM": [
-                "07-07-2022--11-03-46",
-                "07-07-2022--11-44-35"
-            ],
-            "MLP": [
-                "07-07-2022--11-44-35",
-                "07-07-2022--12-02-51"
-            ]
+            "EN": ["07-07-2022--10-38-14", "07-07-2022--10-47-05"],
+            "RF": ["07-07-2022--10-47-05", "07-07-2022--11-01-25"],
+            "LSVR": ["07-07-2022--11-01-25", "07-07-2022--11-03-46"],
+            "LGBM": ["07-07-2022--11-03-46", "07-07-2022--11-44-35"],
+            "MLP": ["07-07-2022--11-44-35", "07-07-2022--12-02-51"]
         },
         "model hyper_params": {
             "EN": {
-                "n of lags": [
-                    7,
-                    14,
-                    21
-                ],
-                "alpha": [
-                    100
-                ],
-                "l1 ratio": [
-                    0.5
-                ]
+                "n of lags": [7, 14, 21],
+                "alpha": [100],
+                "l1 ratio": [0.5]
             },
             "RF": {
-                "n of lags": [
-                    7,
-                    14,
-                    21
-                ],
-                "max depth": [
-                    null
-                ],
-                "min samples split": [
-                    0.005
-                ],
-                "min impurity decrease": [
-                    0
-                ],
-                "ccp alpha": [
-                    0
-                ]
+                "n of lags": [7, 14, 21],
+                "max depth": [null],
+                "min samples split": [0.005],
+                "min impurity decrease": [0],
+                "ccp alpha": [0]
             },
             "LSVR": {
-                "n of lags": [
-                    7,
-                    14,
-                    21
-                ]
+                "n of lags": [7, 14, 21]
             },
             "LGBM": {
-                "n of lags": [
-                    7,
-                    14,
-                    21
-                ],
-                "max depth": [
-                    -1
-                ],
-                "min split gain": [
-                    0
-                ],
-                "importance type": [
-                    "split"
-                ]
+                "n of lags": [7, 14, 21],
+                "max depth": [-1],
+                "min split gain": [0],
+                "importance type": ["split"]
             },
             "MLP": {
-                "n of lags": [
-                    7,
-                    14,
-                    21
-                ],
-                "strucs": [
-                    [
-                        20
-                    ]
-                ],
-                "max iter": [
-                    2000
-                ]
+                "n of lags": [7, 14, 21],
+                "strucs": [[20]],
+                "max iter": [2000]
+            }
+        },
+        "messages": {}
+    },
+    {
+        "run time": ["07-07-2022--20-00-26", "08-07-2022--05-06-57"],
+        "config input": {
+            "type of run": "real run",
+            "dataset": {
+                "file name": "m4_daily_macro.json",
+                "file type": "json",
+                "file path": "datasets/",
+                "cumulate used": 0,
+                "use series": 52,
+                "min length": 1000,
+                "max length": 1500
+            },
+            "transformation config": {
+                "xthresholds": [0.01, 1.1, 0.1],
+                "interp kind": ["linear"],
+                "use states": [false]
+            },
+            "modelling config": {
+                "retrain window": 10,
+                "validation size": 0.1,
+                "test size": 0.1,
+                "forecast horizon": 1,
+                "score measure": "SMAPE"
+            },
+            "models": ["EN", "MLP", "LSVR", "LGBM", "RF"],
+            "execution config": {
+                "n of workers": 22
+            }
+        },
+        "number of series used": 52,
+        "Avg. len of series": 1019.7307692307693,
+        "took time": {
+            "EN": ["07-07-2022--20-00-44", "07-07-2022--20-49-01"],
+            "MLP": ["07-07-2022--20-49-01", "07-07-2022--22-48-43"],
+            "LSVR": ["07-07-2022--22-48-43", "07-07-2022--23-02-29"],
+            "LGBM": ["07-07-2022--23-02-29", "08-07-2022--03-39-59"],
+            "RF": ["08-07-2022--03-39-59", "08-07-2022--05-06-57"]
+        },
+        "model hyper_params": {
+            "EN": {
+                "n of lags": [7, 14, 21],
+                "alpha": [100],
+                "l1 ratio": [0.5]
+            },
+            "MLP": {
+                "n of lags": [7, 14, 21],
+                "strucs": [[20]],
+                "max iter": [2000]
+            },
+            "LSVR": {
+                "n of lags": [7, 14, 21]
+            },
+            "LGBM": {
+                "n of lags": [7, 14, 21],
+                "max depth": [-1],
+                "min split gain": [0],
+                "importance type": ["split"]
+            },
+            "RF": {
+                "n of lags": [7, 14, 21],
+                "max depth": [null],
+                "min samples split": [0.005],
+                "min impurity decrease": [0],
+                "ccp alpha": [0]
             }
         },
         "messages": {}

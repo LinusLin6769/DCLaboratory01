@@ -1,11 +1,11 @@
 {
-    "type of run": "real run",
+    "type of run": "test",
     "dataset": {
-        "file name": "m4_daily_macro.json",
+        "file name": "m4_daily_micro.json",
         "file type": "json",
         "file path": "datasets/",
         "cumulate used":0,
-        "use series": 60,
+        "use series": 1,
         "min length": 1000,
         "max length": 1500
     },
@@ -21,7 +21,7 @@
         "forecast horizon": 1,
         "score measure": "SMAPE"
     },
-    "models": ["EN", "MLP", "LSVR", "LGBM", "RF"],
+    "models": ["LGBM"],
     "execution config": {
         "n of workers": 22
     }
