@@ -1,0 +1,99 @@
+{
+    "run time": [
+        "07-07-2022--15-01-46",
+        "07-07-2022--15-10-54"
+    ],
+    "config input": {
+        "type of run": "test",
+        "dataset": {
+            "file name": "m4_daily_finance.json",
+            "file type": "json",
+            "file path": "datasets/",
+            "cumulate used": 0,
+            "use series": 1,
+            "min length": 1000,
+            "max length": 1500
+        },
+        "transformation config": {
+            "xthresholds": [
+                0.01,
+                1.1,
+                0.1
+            ],
+            "interp kind": [
+                "linear"
+            ],
+            "use states": [
+                true
+            ]
+        },
+        "modelling config": {
+            "retrain window": 10,
+            "validation size": 0.1,
+            "test size": 0.1,
+            "forecast horizon": 1,
+            "score measure": "SMAPE"
+        },
+        "models": [
+            "RF",
+            "LGBM"
+        ],
+        "execution config": {
+            "n of workers": 22
+        }
+    },
+    "number of series used": 1,
+    "Avg. len of series": 1189.0,
+    "took time": {
+        "RF": [
+            "07-07-2022--15-01-51",
+            "07-07-2022--15-04-07"
+        ],
+        "LGBM": [
+            "07-07-2022--15-04-07",
+            "07-07-2022--15-10-54"
+        ]
+    },
+    "model hyper_params": {
+        "RF": {
+            "n of lags": [
+                7,
+                14,
+                21
+            ],
+            "max depth": [
+                null
+            ],
+            "min samples split": [
+                0.005
+            ],
+            "min impurity decrease": [
+                0
+            ],
+            "ccp alpha": [
+                0
+            ]
+        },
+        "LGBM": {
+            "n of lags": [
+                7,
+                14,
+                21
+            ],
+            "max depth": [
+                -1
+            ],
+            "min split gain": [
+                0
+            ],
+            "importance type": [
+                "split"
+            ]
+        }
+    },
+    "messages": {
+        "Warning": [
+            "Only 1 series are chosen for this run."
+        ]
+    }
+}

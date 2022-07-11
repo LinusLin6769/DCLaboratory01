@@ -162,7 +162,15 @@ elif 'hourly' in file_name.lower():
     models_params = models_hourly_params
 
 # create policy sets
-MLP_policies = [
+raw_MLP_policies = [
+    {
+        'n lag': h[0],
+        'struc': h[1],
+        'max iter': h[2]
+    } for h in product(*models_params['MLP'].values())
+]
+
+tran_MLP_policies = [
     {
         'thres up': h[0][0],
         'thres down': h[0][1],
@@ -174,7 +182,15 @@ MLP_policies = [
     } for h in product(t_policies, *models_params['MLP'].values())
 ]
 
-EN_policies = [
+raw_EN_policies = [
+    {
+        'n lag': h[0],
+        'alpha': h[1],
+        'l1 ratio': h[2]
+    } for h in product(*models_params['EN'].values())
+]
+
+tran_EN_policies = [
     {
         'thres up': h[0][0],
         'thres down': h[0][1],
@@ -186,7 +202,13 @@ EN_policies = [
     } for h in product(t_policies, *models_params['EN'].values())
 ]
 
-ETS_policies = [
+raw_ETS_policies = [
+    {
+        'auto': h[0]
+    } for h in product(*models_params['ETS'].values())
+]
+
+tran_ETS_policies = [
     {
         'thres up': h[0][0],
         'thres down': h[0][1],
@@ -196,7 +218,16 @@ ETS_policies = [
     } for h in product(t_policies, *models_params['ETS'].values())
 ]
 
-XGB_policies = [
+raw_XGB_policies = [
+    {
+        'n lag': h[0],
+        'max depth': h[1],
+        'booster': h[2],
+        'subsample ratio': h[3]
+    } for h in product(*models_params['XGB'].values())
+]
+
+tran_XGB_policies = [
     {
         'thres up': h[0][0],
         'thres down': h[0][1],
@@ -209,7 +240,16 @@ XGB_policies = [
     } for h in product(t_policies, *models_params['XGB'].values())
 ]
 
-LGBM_policies = [
+raw_LGBM_policies = [
+    {
+        'n lag': h[0],
+        'max depth': h[1],
+        'min split gain': h[2],
+        'importance type': h[3]
+    } for h in product(*models_params['LGBM'].values())
+]
+
+tran_LGBM_policies = [
     {
         'thres up': h[0][0],
         'thres down': h[0][1],
@@ -222,7 +262,17 @@ LGBM_policies = [
     } for h in product(t_policies, *models_params['LGBM'].values())
 ]
 
-RF_policies = [
+raw_RF_policies = [
+    {
+        'n lag': h[0],
+        'max depth': h[1],
+        'min samples split': h[2],
+        'min impurity decrease': h[3],
+        'ccp alpha': h[4]
+    } for h in product(*models_params['RF'].values())
+]
+
+tran_RF_policies = [
     {
         'thres up': h[0][0],
         'thres down': h[0][1],
@@ -236,7 +286,13 @@ RF_policies = [
     } for h in product(t_policies, *models_params['RF'].values())
 ]
 
-LSVR_policies = [
+raw_LSVR_policies = [
+    {
+        'n lag': h[0]
+    } for h in product(*models_params['LSVR'].values())
+]
+
+tran_LSVR_policies = [
     {
         'thres up': h[0][0],
         'thres down': h[0][1],
@@ -249,11 +305,32 @@ LSVR_policies = [
 AutoARIMA_policies = [{}]
 
 all_policies = {
-    'MLP': MLP_policies,
-    'EN': EN_policies,
-    'ETS': ETS_policies,
-    'LGBM': LGBM_policies,
-    'XGB': XGB_policies,
-    'RF': RF_policies,
-    'LSVR': LSVR_policies
+    'MLP': {
+        'raw': raw_MLP_policies,
+        'tran': tran_MLP_policies
+    },
+    'EN': {
+        'raw': raw_EN_policies,
+        'tran': tran_EN_policies
+    },
+    'ETS': {
+        'raw': raw_ETS_policies,
+        'tran': tran_ETS_policies
+    },
+    'LGBM': {
+        'raw': raw_LGBM_policies,
+        'tran': tran_LGBM_policies
+    },
+    'XGB': {
+        'raw': raw_XGB_policies,
+        'tran': tran_XGB_policies
+    },
+    'RF': {
+        'raw': raw_RF_policies,
+        'tran': tran_RF_policies
+    },
+    'LSVR': {
+        'raw': raw_LSVR_policies,
+        'tran': tran_LSVR_policies,
+    }
 }

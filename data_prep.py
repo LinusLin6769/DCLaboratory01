@@ -211,16 +211,16 @@ def add_lagged_feature(df: pd.DataFrame, cols: List[str], n: List[int]) -> pd.Da
 
     return df
 
-def ts_prep(series: Sequence, nlag: int, horizon: int) -> Tuple[np.array]:
-    """
-    Given a 1d array, convert it into two matrices for the supervised regression task basing on the number of lags and the predicting horizon.
-    """
+def ts_prep(series: Sequence, nlag: int, horizon: int, gap: int) -> Tuple[np.array]:
+
+#    Given a 1d array, convert it into two matrices for the supervised regression task basing on the number of lags, the predicting horizon and the size of the gap.
+
     series = np.array(series)
     if series.ndim != 1: raise ValueError('Data should be 1 dimension.')
 
     n = len(series)
-    X = np.array([series[i:(i+nlag)] for i in range(n-nlag+1-horizon)])
-    y = np.array([series[(i+nlag):(i+nlag+horizon)] for i in range(n-horizon-nlag+1)])
+    X = np.array([series[i:(i+nlag)] for i in range(n-nlag+1-horizon-gap)])
+    y = np.array([series[(i+nlag+gap):(i+nlag+gap+horizon)] for i in range(n-horizon-nlag+1-gap)])
 
     return X, y
 

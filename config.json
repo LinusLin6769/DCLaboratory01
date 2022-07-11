@@ -1,27 +1,28 @@
 {
-    "type of run": "test",
+    "type of run": "real run",
     "dataset": {
-        "file name": "m4_daily_finance.json",
+        "file name": "m4_daily_micro.json",
         "file type": "json",
         "file path": "datasets/",
-        "cumulate used":0,
-        "use series":38,
+        "cumulate used":25,
+        "use series": 5,
         "min length": 1000,
         "max length": 1500
     },
     "transformation config": {
         "xthresholds": [0.01, 1.1, 0.1],
         "interp kind": ["linear"],
-        "use states": [true]
+        "use states": [false]
     },
     "modelling config": {
         "retrain window":10,
         "validation size": 0.1,
         "test size": 0.1,
         "forecast horizon": 1,
+        "gap": 5,
         "score measure": "SMAPE"
     },
-    "models": ["EN", "MLP", "RF", "LGBM", "LSVR"],
+    "models": ["EN", "MLP", "LSVR", "RF", "LGBM", "ETS"],
     "execution config": {
         "n of workers": 22
     }

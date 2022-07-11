@@ -13,7 +13,7 @@ import warnings
 import numpy as np
 import pandas as pd
 
-def run_xgb(datasets, v_size, retrain_window, t_size, horizon, score, policies, n_workers) -> Tuple[Dict]:
+def run_xgb(datasets, v_size, retrain_window, t_size, horizon, gap, score, policies, n_workers) -> Tuple[Dict]:
     raw_info = {}
     tran_info = {}
 
@@ -61,11 +61,11 @@ def run_xgb(datasets, v_size, retrain_window, t_size, horizon, score, policies, 
                 # n_val folds rolling validation
                 for v in range(n_val):
                     train_v = series[:-split+v+1]
-                    train = train_v[:-horizon]
+                    train = train_v[:-horizon-gap]
                     val = train_v[-horizon:]
 
                     # raw
-                    rX, ry = data_prep.ts_prep(train, nlag=policy['n lag'], horizon=horizon)
+                    rX, ry = data_prep.ts_prep(train, nlag=policy['n lag'], horizon=horizon, gap=gap)
                     train_X, val_X = rX, train[-policy['n lag']:]
                     train_y, val_y = ry, val
                     
@@ -91,7 +91,7 @@ def run_xgb(datasets, v_size, retrain_window, t_size, horizon, score, policies, 
                     ttrain = t.tdata1
 
                     if len(ttrain) > 1:
-                        tX, ty = data_prep.ts_prep(ttrain, nlag=policy['n lag'], horizon=horizon)
+                        tX, ty = data_prep.ts_prep(ttrain, nlag=policy['n lag'], horizon=horizon, gap=gap)
                         ttrain_X, tval_X = tX, ttrain[-policy['n lag']:]
                         ttrain_y, val_y = ty, val
 
@@ -138,11 +138,11 @@ def run_xgb(datasets, v_size, retrain_window, t_size, horizon, score, policies, 
                 train_v = series
             else:
                 train_v = series[:-n_test+j+1]
-            train = train_v[:-horizon]
+            train = train_v[:-horizon-gap]
             val = train_v[-horizon:]
 
             # raw
-            rX, ry = data_prep.ts_prep(train, nlag=best_raw_policy['n lag'], horizon=horizon)
+            rX, ry = data_prep.ts_prep(train, nlag=best_raw_policy['n lag'], horizon=horizon, gap=gap)
             train_X, val_X = rX, train[-best_raw_policy['n lag']:]
             train_y, val_y = ry, val
             
@@ -167,7 +167,7 @@ def run_xgb(datasets, v_size, retrain_window, t_size, horizon, score, policies, 
             t.transform(train, threshold=thres, kind=best_tran_policy['interp kind'])
             ttrain = t.tdata1
 
-            tX, ty = data_prep.ts_prep(ttrain, nlag=best_tran_policy['n lag'], horizon=horizon)
+            tX, ty = data_prep.ts_prep(ttrain, nlag=best_tran_policy['n lag'], horizon=horizon, gap=gap)
 
             if best_tran_policy['use states']:
                 tstates = t.status[best_tran_policy['n lag']-1:]

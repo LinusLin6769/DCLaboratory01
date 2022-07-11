@@ -1,6 +1,9 @@
 [
     {
-        "run time": ["06-07-2022--14-01-21", "06-07-2022--14-09-53"],
+        "run time": [
+            "06-07-2022--14-01-21",
+            "06-07-2022--14-09-53"
+        ],
         "config input": {
             "type of run": "test",
             "dataset": {
@@ -13,9 +16,17 @@
                 "max length": 1500
             },
             "transformation config": {
-                "xthresholds": [0.01, 1.1, 0.1],
-                "interp kind": ["cubic"],
-                "use states": [true]
+                "xthresholds": [
+                    0.01,
+                    1.1,
+                    0.1
+                ],
+                "interp kind": [
+                    "cubic"
+                ],
+                "use states": [
+                    true
+                ]
             },
             "modelling config": {
                 "retrain window": 30,
@@ -24,7 +35,14 @@
                 "forecast horizon": 1,
                 "score measure": "SMAPE"
             },
-            "models": ["ETS", "EN", "MLP", "RF", "LGBM", "LSVR"],
+            "models": [
+                "ETS",
+                "EN",
+                "MLP",
+                "RF",
+                "LGBM",
+                "LSVR"
+            ],
             "execution config": {
                 "n of workers": 22
             }
@@ -32,7 +50,10 @@
         "number of series used": 1,
         "Avg. len of series": 1189.0,
         "took time": {
-            "ETS": ["06-07-2022--14-01-32", "06-07-2022--14-04-02"],
+            "ETS": [
+                "06-07-2022--14-01-32",
+                "06-07-2022--14-04-02"
+            ],
             "EN": null,
             "MLP": null,
             "RF": null,
@@ -41,41 +62,92 @@
         },
         "model hyper_params": {
             "ETS": {
-                "auto": [true]
+                "auto": [
+                    true
+                ]
             },
             "EN": {
-                "n of lags": [7, 14, 21],
-                "alpha": [100],
-                "l1 ratio": [0.5]
+                "n of lags": [
+                    7,
+                    14,
+                    21
+                ],
+                "alpha": [
+                    100
+                ],
+                "l1 ratio": [
+                    0.5
+                ]
             },
             "MLP": {
-                "n of lags": [7, 14, 21],
-                "strucs": [[20]],
-                "max iter": [2000]
+                "n of lags": [
+                    7,
+                    14,
+                    21
+                ],
+                "strucs": [
+                    [
+                        20
+                    ]
+                ],
+                "max iter": [
+                    2000
+                ]
             },
             "RF": {
-                "n of lags": [7, 14, 21],
-                "max depth": [null],
-                "min samples split": [0.005],
-                "min impurity decrease": [0],
-                "ccp alpha": [0]
+                "n of lags": [
+                    7,
+                    14,
+                    21
+                ],
+                "max depth": [
+                    null
+                ],
+                "min samples split": [
+                    0.005
+                ],
+                "min impurity decrease": [
+                    0
+                ],
+                "ccp alpha": [
+                    0
+                ]
             },
             "LGBM": {
-                "n of lags": [7, 14, 21],
-                "max depth": [-1],
-                "min split gain": [0],
-                "importance type": ["split"]
+                "n of lags": [
+                    7,
+                    14,
+                    21
+                ],
+                "max depth": [
+                    -1
+                ],
+                "min split gain": [
+                    0
+                ],
+                "importance type": [
+                    "split"
+                ]
             },
             "LSVR": {
-                "n of lags": [7, 14, 21]
+                "n of lags": [
+                    7,
+                    14,
+                    21
+                ]
             }
         },
         "messages": {
-            "Warning": ["Only 1 series are chosen for this run."]
+            "Warning": [
+                "Only 1 series are chosen for this run."
+            ]
         }
     },
     {
-        "run time": ["06-07-2022--15-37-17", "06-07-2022--15-48-36"],
+        "run time": [
+            "06-07-2022--15-37-17",
+            "06-07-2022--15-48-36"
+        ],
         "config input": {
             "type of run": "test",
             "dataset": {
@@ -88,9 +160,17 @@
                 "max length": 1500
             },
             "transformation config": {
-                "xthresholds": [0.01, 1.1, 0.1],
-                "interp kind": ["cubic"],
-                "use states": [true]
+                "xthresholds": [
+                    0.01,
+                    1.1,
+                    0.1
+                ],
+                "interp kind": [
+                    "cubic"
+                ],
+                "use states": [
+                    true
+                ]
             },
             "modelling config": {
                 "retrain window": 30,
@@ -99,7 +179,13 @@
                 "forecast horizon": 1,
                 "score measure": "SMAPE"
             },
-            "models": ["EN", "MLP", "RF", "LGBM", "LSVR"],
+            "models": [
+                "EN",
+                "MLP",
+                "RF",
+                "LGBM",
+                "LSVR"
+            ],
             "execution config": {
                 "n of workers": 22
             }
@@ -107,42 +193,1211 @@
         "number of series used": 1,
         "Avg. len of series": 1189.0,
         "took time": {
-            "EN": ["06-07-2022--15-37-22", "06-07-2022--15-38-22"],
-            "MLP": ["06-07-2022--15-38-22", "06-07-2022--15-40-28"],
-            "RF": ["06-07-2022--15-40-28", "06-07-2022--15-42-11"],
-            "LGBM": ["06-07-2022--15-42-11", "06-07-2022--15-48-16"],
-            "LSVR": ["06-07-2022--15-48-16", "06-07-2022--15-48-36"]
+            "EN": [
+                "06-07-2022--15-37-22",
+                "06-07-2022--15-38-22"
+            ],
+            "MLP": [
+                "06-07-2022--15-38-22",
+                "06-07-2022--15-40-28"
+            ],
+            "RF": [
+                "06-07-2022--15-40-28",
+                "06-07-2022--15-42-11"
+            ],
+            "LGBM": [
+                "06-07-2022--15-42-11",
+                "06-07-2022--15-48-16"
+            ],
+            "LSVR": [
+                "06-07-2022--15-48-16",
+                "06-07-2022--15-48-36"
+            ]
         },
         "model hyper_params": {
             "EN": {
-                "n of lags": [7, 14, 21],
-                "alpha": [100],
-                "l1 ratio": [0.5]
+                "n of lags": [
+                    7,
+                    14,
+                    21
+                ],
+                "alpha": [
+                    100
+                ],
+                "l1 ratio": [
+                    0.5
+                ]
             },
             "MLP": {
-                "n of lags": [7, 14, 21],
-                "strucs": [[20]],
-                "max iter": [2000]
+                "n of lags": [
+                    7,
+                    14,
+                    21
+                ],
+                "strucs": [
+                    [
+                        20
+                    ]
+                ],
+                "max iter": [
+                    2000
+                ]
             },
             "RF": {
-                "n of lags": [7, 14, 21],
-                "max depth": [null],
-                "min samples split": [0.005],
-                "min impurity decrease": [0],
-                "ccp alpha": [0]
+                "n of lags": [
+                    7,
+                    14,
+                    21
+                ],
+                "max depth": [
+                    null
+                ],
+                "min samples split": [
+                    0.005
+                ],
+                "min impurity decrease": [
+                    0
+                ],
+                "ccp alpha": [
+                    0
+                ]
             },
             "LGBM": {
-                "n of lags": [7, 14, 21],
-                "max depth": [-1],
-                "min split gain": [0],
-                "importance type": ["split"]
+                "n of lags": [
+                    7,
+                    14,
+                    21
+                ],
+                "max depth": [
+                    -1
+                ],
+                "min split gain": [
+                    0
+                ],
+                "importance type": [
+                    "split"
+                ]
             },
             "LSVR": {
-                "n of lags": [7, 14, 21]
+                "n of lags": [
+                    7,
+                    14,
+                    21
+                ]
             }
         },
         "messages": {
-            "Warning": ["Only 1 series are chosen for this run."]
+            "Warning": [
+                "Only 1 series are chosen for this run."
+            ]
+        }
+    },
+    {
+        "run time": [
+            "06-07-2022--19-40-13",
+            "06-07-2022--19-40-19"
+        ],
+        "config input": {
+            "type of run": "test",
+            "dataset": {
+                "file name": "m4_daily_finance.json",
+                "file type": "json",
+                "file path": "datasets/",
+                "cumulate used": 0,
+                "use series": 1,
+                "min length": 1000,
+                "max length": 1500
+            },
+            "transformation config": {
+                "xthresholds": [
+                    0.01,
+                    1.1,
+                    0.1
+                ],
+                "interp kind": [
+                    "linear"
+                ],
+                "use states": [
+                    true
+                ]
+            },
+            "modelling config": {
+                "retrain window": 10,
+                "validation size": 0.1,
+                "test size": 0.1,
+                "forecast horizon": 1,
+                "score measure": "SMAPE"
+            },
+            "models": [
+                "LSVR"
+            ],
+            "execution config": {
+                "n of workers": 22
+            }
+        },
+        "number of series used": 1,
+        "Avg. len of series": 1189.0,
+        "took time": {
+            "LSVR": null
+        },
+        "model hyper_params": {
+            "LSVR": {
+                "n of lags": [
+                    7,
+                    14,
+                    21
+                ]
+            }
+        },
+        "messages": {
+            "Warning": [
+                "Only 1 series are chosen for this run."
+            ]
+        }
+    },
+    {
+        "run time": [
+            "06-07-2022--19-54-57",
+            "06-07-2022--19-55-24"
+        ],
+        "config input": {
+            "type of run": "test",
+            "dataset": {
+                "file name": "m4_daily_finance.json",
+                "file type": "json",
+                "file path": "datasets/",
+                "cumulate used": 0,
+                "use series": 1,
+                "min length": 1000,
+                "max length": 1500
+            },
+            "transformation config": {
+                "xthresholds": [
+                    0.01,
+                    1.1,
+                    0.1
+                ],
+                "interp kind": [
+                    "linear"
+                ],
+                "use states": [
+                    true
+                ]
+            },
+            "modelling config": {
+                "retrain window": 10,
+                "validation size": 0.1,
+                "test size": 0.1,
+                "forecast horizon": 1,
+                "score measure": "SMAPE"
+            },
+            "models": [
+                "LSVR"
+            ],
+            "execution config": {
+                "n of workers": 22
+            }
+        },
+        "number of series used": 1,
+        "Avg. len of series": 1189.0,
+        "took time": {
+            "LSVR": [
+                "06-07-2022--19-55-02",
+                "06-07-2022--19-55-24"
+            ]
+        },
+        "model hyper_params": {
+            "LSVR": {
+                "n of lags": [
+                    7,
+                    14,
+                    21
+                ]
+            }
+        },
+        "messages": {
+            "Warning": [
+                "Only 1 series are chosen for this run."
+            ]
+        }
+    },
+    {
+        "run time": [
+            "06-07-2022--20-42-59",
+            "06-07-2022--21-01-04"
+        ],
+        "config input": {
+            "type of run": "test",
+            "dataset": {
+                "file name": "m4_daily_finance.json",
+                "file type": "json",
+                "file path": "datasets/",
+                "cumulate used": 0,
+                "use series": 2,
+                "min length": 1000,
+                "max length": 1500
+            },
+            "transformation config": {
+                "xthresholds": [
+                    0.01,
+                    1.1,
+                    0.1
+                ],
+                "interp kind": [
+                    "linear"
+                ],
+                "use states": [
+                    true
+                ]
+            },
+            "modelling config": {
+                "retrain window": 10,
+                "validation size": 0.1,
+                "test size": 0.1,
+                "forecast horizon": 1,
+                "score measure": "SMAPE"
+            },
+            "models": [
+                "LGBM",
+                "MLP"
+            ],
+            "execution config": {
+                "n of workers": 22
+            }
+        },
+        "number of series used": 2,
+        "Avg. len of series": 1124.0,
+        "took time": {
+            "LGBM": [
+                "06-07-2022--20-43-04",
+                "06-07-2022--20-55-29"
+            ],
+            "MLP": [
+                "06-07-2022--20-55-29",
+                "06-07-2022--21-01-04"
+            ]
+        },
+        "model hyper_params": {
+            "LGBM": {
+                "n of lags": [
+                    7,
+                    14,
+                    21
+                ],
+                "max depth": [
+                    -1
+                ],
+                "min split gain": [
+                    0
+                ],
+                "importance type": [
+                    "split"
+                ]
+            },
+            "MLP": {
+                "n of lags": [
+                    7,
+                    14,
+                    21
+                ],
+                "strucs": [
+                    [
+                        20
+                    ]
+                ],
+                "max iter": [
+                    2000
+                ]
+            }
+        },
+        "messages": {
+            "Warning": [
+                "Only 2 series are chosen for this run."
+            ]
+        }
+    },
+    {
+        "run time": [
+            "07-07-2022--15-01-46",
+            "07-07-2022--15-10-54"
+        ],
+        "config input": {
+            "type of run": "test",
+            "dataset": {
+                "file name": "m4_daily_finance.json",
+                "file type": "json",
+                "file path": "datasets/",
+                "cumulate used": 0,
+                "use series": 1,
+                "min length": 1000,
+                "max length": 1500
+            },
+            "transformation config": {
+                "xthresholds": [
+                    0.01,
+                    1.1,
+                    0.1
+                ],
+                "interp kind": [
+                    "linear"
+                ],
+                "use states": [
+                    true
+                ]
+            },
+            "modelling config": {
+                "retrain window": 10,
+                "validation size": 0.1,
+                "test size": 0.1,
+                "forecast horizon": 1,
+                "score measure": "SMAPE"
+            },
+            "models": [
+                "RF",
+                "LGBM"
+            ],
+            "execution config": {
+                "n of workers": 22
+            }
+        },
+        "number of series used": 1,
+        "Avg. len of series": 1189.0,
+        "took time": {
+            "RF": [
+                "07-07-2022--15-01-51",
+                "07-07-2022--15-04-07"
+            ],
+            "LGBM": [
+                "07-07-2022--15-04-07",
+                "07-07-2022--15-10-54"
+            ]
+        },
+        "model hyper_params": {
+            "RF": {
+                "n of lags": [
+                    7,
+                    14,
+                    21
+                ],
+                "max depth": [
+                    null
+                ],
+                "min samples split": [
+                    0.005
+                ],
+                "min impurity decrease": [
+                    0
+                ],
+                "ccp alpha": [
+                    0
+                ]
+            },
+            "LGBM": {
+                "n of lags": [
+                    7,
+                    14,
+                    21
+                ],
+                "max depth": [
+                    -1
+                ],
+                "min split gain": [
+                    0
+                ],
+                "importance type": [
+                    "split"
+                ]
+            }
+        },
+        "messages": {
+            "Warning": [
+                "Only 1 series are chosen for this run."
+            ]
+        }
+    },
+    {
+        "run time": [
+            "07-07-2022--15-13-03",
+            "07-07-2022--16-06-14"
+        ],
+        "config input": {
+            "type of run": "test",
+            "dataset": {
+                "file name": "m4_daily_finance.json",
+                "file type": "json",
+                "file path": "datasets/",
+                "cumulate used": 1,
+                "use series": 5,
+                "min length": 1000,
+                "max length": 1500
+            },
+            "transformation config": {
+                "xthresholds": [
+                    0.01,
+                    1.1,
+                    0.1
+                ],
+                "interp kind": [
+                    "linear"
+                ],
+                "use states": [
+                    true
+                ]
+            },
+            "modelling config": {
+                "retrain window": 10,
+                "validation size": 0.1,
+                "test size": 0.1,
+                "forecast horizon": 1,
+                "score measure": "SMAPE"
+            },
+            "models": [
+                "RF",
+                "LGBM"
+            ],
+            "execution config": {
+                "n of workers": 22
+            }
+        },
+        "number of series used": 5,
+        "Avg. len of series": 1297.4,
+        "took time": {
+            "RF": [
+                "07-07-2022--15-13-07",
+                "07-07-2022--15-26-55"
+            ],
+            "LGBM": [
+                "07-07-2022--15-26-55",
+                "07-07-2022--16-06-14"
+            ]
+        },
+        "model hyper_params": {
+            "RF": {
+                "n of lags": [
+                    7,
+                    14,
+                    21
+                ],
+                "max depth": [
+                    null
+                ],
+                "min samples split": [
+                    0.005
+                ],
+                "min impurity decrease": [
+                    0
+                ],
+                "ccp alpha": [
+                    0
+                ]
+            },
+            "LGBM": {
+                "n of lags": [
+                    7,
+                    14,
+                    21
+                ],
+                "max depth": [
+                    -1
+                ],
+                "min split gain": [
+                    0
+                ],
+                "importance type": [
+                    "split"
+                ]
+            }
+        },
+        "messages": {}
+    },
+    {
+        "run time": [
+            "07-07-2022--16-35-39",
+            "07-07-2022--16-40-25"
+        ],
+        "config input": {
+            "type of run": "test",
+            "dataset": {
+                "file name": "m4_daily_finance.json",
+                "file type": "json",
+                "file path": "datasets/",
+                "cumulate used": 0,
+                "use series": 3,
+                "min length": 1000,
+                "max length": 1500
+            },
+            "transformation config": {
+                "xthresholds": [
+                    0.01,
+                    1.1,
+                    0.1
+                ],
+                "interp kind": [
+                    "linear"
+                ],
+                "use states": [
+                    true
+                ]
+            },
+            "modelling config": {
+                "retrain window": 10,
+                "validation size": 0.1,
+                "test size": 0.1,
+                "forecast horizon": 1,
+                "score measure": "SMAPE"
+            },
+            "models": [
+                "EN"
+            ],
+            "execution config": {
+                "n of workers": 22
+            }
+        },
+        "number of series used": 3,
+        "Avg. len of series": 1233.3333333333333,
+        "took time": {
+            "EN": null
+        },
+        "model hyper_params": {
+            "EN": {
+                "n of lags": [
+                    7,
+                    14,
+                    21
+                ],
+                "alpha": [
+                    100
+                ],
+                "l1 ratio": [
+                    0.5
+                ]
+            }
+        },
+        "messages": {
+            "Warning": [
+                "Only 3 series are chosen for this run."
+            ]
+        }
+    },
+    {
+        "run time": [
+            "07-07-2022--19-34-24",
+            "07-07-2022--19-36-01"
+        ],
+        "config input": {
+            "type of run": "test",
+            "dataset": {
+                "file name": "m4_daily_finance.json",
+                "file type": "json",
+                "file path": "datasets/",
+                "cumulate used": 0,
+                "use series": 1,
+                "min length": 1000,
+                "max length": 1500
+            },
+            "transformation config": {
+                "xthresholds": [
+                    0.01,
+                    1.1,
+                    0.1
+                ],
+                "interp kind": [
+                    "linear"
+                ],
+                "use states": [
+                    true
+                ]
+            },
+            "modelling config": {
+                "retrain window": 10,
+                "validation size": 0.1,
+                "test size": 0.1,
+                "forecast horizon": 1,
+                "score measure": "SMAPE"
+            },
+            "models": [
+                "EN"
+            ],
+            "execution config": {
+                "n of workers": 22
+            }
+        },
+        "number of series used": 1,
+        "Avg. len of series": 1189.0,
+        "took time": {
+            "EN": [
+                "07-07-2022--19-34-29",
+                "07-07-2022--19-36-01"
+            ]
+        },
+        "model hyper_params": {
+            "EN": {
+                "n of lags": [
+                    7,
+                    14,
+                    21
+                ],
+                "alpha": [
+                    100
+                ],
+                "l1 ratio": [
+                    0.5
+                ]
+            }
+        },
+        "messages": {
+            "Warning": [
+                "Only 1 series are chosen for this run."
+            ]
+        }
+    },
+    {
+        "run time": [
+            "07-07-2022--19-40-47",
+            "07-07-2022--19-42-23"
+        ],
+        "config input": {
+            "type of run": "test",
+            "dataset": {
+                "file name": "m4_daily_finance.json",
+                "file type": "json",
+                "file path": "datasets/",
+                "cumulate used": 0,
+                "use series": 1,
+                "min length": 1000,
+                "max length": 1500
+            },
+            "transformation config": {
+                "xthresholds": [
+                    0.01,
+                    1.1,
+                    0.1
+                ],
+                "interp kind": [
+                    "linear"
+                ],
+                "use states": [
+                    true
+                ]
+            },
+            "modelling config": {
+                "retrain window": 10,
+                "validation size": 0.1,
+                "test size": 0.1,
+                "forecast horizon": 1,
+                "score measure": "SMAPE"
+            },
+            "models": [
+                "EN"
+            ],
+            "execution config": {
+                "n of workers": 22
+            }
+        },
+        "number of series used": 1,
+        "Avg. len of series": 1189.0,
+        "took time": {
+            "EN": [
+                "07-07-2022--19-40-51",
+                "07-07-2022--19-42-23"
+            ]
+        },
+        "model hyper_params": {
+            "EN": {
+                "n of lags": [
+                    7,
+                    14,
+                    21
+                ],
+                "alpha": [
+                    100
+                ],
+                "l1 ratio": [
+                    0.5
+                ]
+            }
+        },
+        "messages": {
+            "Warning": [
+                "Only 1 series are chosen for this run."
+            ]
+        }
+    },
+    {
+        "run time": [
+            "07-07-2022--19-43-05",
+            "07-07-2022--19-44-16"
+        ],
+        "config input": {
+            "type of run": "test",
+            "dataset": {
+                "file name": "m4_daily_finance.json",
+                "file type": "json",
+                "file path": "datasets/",
+                "cumulate used": 0,
+                "use series": 1,
+                "min length": 1000,
+                "max length": 1500
+            },
+            "transformation config": {
+                "xthresholds": [
+                    0.01,
+                    1.1,
+                    0.1
+                ],
+                "interp kind": [
+                    "linear"
+                ],
+                "use states": [
+                    false
+                ]
+            },
+            "modelling config": {
+                "retrain window": 10,
+                "validation size": 0.1,
+                "test size": 0.1,
+                "forecast horizon": 1,
+                "score measure": "SMAPE"
+            },
+            "models": [
+                "EN"
+            ],
+            "execution config": {
+                "n of workers": 22
+            }
+        },
+        "number of series used": 1,
+        "Avg. len of series": 1189.0,
+        "took time": {
+            "EN": [
+                "07-07-2022--19-43-09",
+                "07-07-2022--19-44-16"
+            ]
+        },
+        "model hyper_params": {
+            "EN": {
+                "n of lags": [
+                    7,
+                    14,
+                    21
+                ],
+                "alpha": [
+                    100
+                ],
+                "l1 ratio": [
+                    0.5
+                ]
+            }
+        },
+        "messages": {
+            "Warning": [
+                "Only 1 series are chosen for this run."
+            ]
+        }
+    },
+    {
+        "run time": [
+            "08-07-2022--11-36-11",
+            "08-07-2022--11-37-27"
+        ],
+        "config input": {
+            "type of run": "test",
+            "dataset": {
+                "file name": "m4_daily_micro.json",
+                "file type": "json",
+                "file path": "datasets/",
+                "cumulate used": 0,
+                "use series": 1,
+                "min length": 1000,
+                "max length": 1500
+            },
+            "transformation config": {
+                "xthresholds": [
+                    0.01,
+                    1.1,
+                    0.1
+                ],
+                "interp kind": [
+                    "linear"
+                ],
+                "use states": [
+                    false
+                ]
+            },
+            "modelling config": {
+                "retrain window": 10,
+                "validation size": 0.1,
+                "test size": 0.1,
+                "forecast horizon": 1,
+                "score measure": "SMAPE"
+            },
+            "models": [
+                "ETS"
+            ],
+            "execution config": {
+                "n of workers": 22
+            }
+        },
+        "number of series used": 1,
+        "Avg. len of series": 1225.0,
+        "took time": {
+            "ETS": null
+        },
+        "model hyper_params": {
+            "ETS": {
+                "auto": [
+                    true
+                ]
+            }
+        },
+        "messages": {
+            "Warning": [
+                "Only 1 series are chosen for this run."
+            ]
+        }
+    },
+    {
+        "run time": [
+            "08-07-2022--11-38-23",
+            "08-07-2022--11-39-53"
+        ],
+        "config input": {
+            "type of run": "test",
+            "dataset": {
+                "file name": "m4_daily_micro.json",
+                "file type": "json",
+                "file path": "datasets/",
+                "cumulate used": 0,
+                "use series": 1,
+                "min length": 1000,
+                "max length": 1500
+            },
+            "transformation config": {
+                "xthresholds": [
+                    0.01,
+                    1.1,
+                    0.1
+                ],
+                "interp kind": [
+                    "linear"
+                ],
+                "use states": [
+                    false
+                ]
+            },
+            "modelling config": {
+                "retrain window": 10,
+                "validation size": 0.1,
+                "test size": 0.1,
+                "forecast horizon": 1,
+                "score measure": "SMAPE"
+            },
+            "models": [
+                "ETS"
+            ],
+            "execution config": {
+                "n of workers": 22
+            }
+        },
+        "number of series used": 1,
+        "Avg. len of series": 1225.0,
+        "took time": {
+            "ETS": [
+                "08-07-2022--11-38-26",
+                "08-07-2022--11-39-53"
+            ]
+        },
+        "model hyper_params": {
+            "ETS": {
+                "auto": [
+                    true
+                ]
+            }
+        },
+        "messages": {
+            "Warning": [
+                "Only 1 series are chosen for this run."
+            ]
+        }
+    },
+    {
+        "run time": [
+            "08-07-2022--17-37-42",
+            "08-07-2022--17-50-54"
+        ],
+        "config input": {
+            "type of run": "test",
+            "dataset": {
+                "file name": "m4_daily_micro.json",
+                "file type": "json",
+                "file path": "datasets/",
+                "cumulate used": 0,
+                "use series": 1,
+                "min length": 1000,
+                "max length": 1500
+            },
+            "transformation config": {
+                "xthresholds": [
+                    0.01,
+                    1.1,
+                    0.1
+                ],
+                "interp kind": [
+                    "linear"
+                ],
+                "use states": [
+                    false
+                ]
+            },
+            "modelling config": {
+                "retrain window": 10,
+                "validation size": 0.1,
+                "test size": 0.1,
+                "forecast horizon": 1,
+                "gap": 0,
+                "score measure": "SMAPE"
+            },
+            "models": [
+                "EN",
+                "MLP",
+                "LSVR",
+                "RF",
+                "LGBM"
+            ],
+            "execution config": {
+                "n of workers": 22
+            }
+        },
+        "number of series used": 1,
+        "Avg. len of series": 1225.0,
+        "took time": {
+            "EN": [
+                "08-07-2022--17-37-51",
+                "08-07-2022--17-39-00"
+            ],
+            "MLP": [
+                "08-07-2022--17-39-00",
+                "08-07-2022--17-41-15"
+            ],
+            "LSVR": [
+                "08-07-2022--17-41-15",
+                "08-07-2022--17-41-37"
+            ],
+            "RF": [
+                "08-07-2022--17-41-37",
+                "08-07-2022--17-44-01"
+            ],
+            "LGBM": [
+                "08-07-2022--17-44-01",
+                "08-07-2022--17-50-54"
+            ]
+        },
+        "model hyper_params": {
+            "EN": {
+                "n of lags": [
+                    7,
+                    14,
+                    21
+                ],
+                "alpha": [
+                    100
+                ],
+                "l1 ratio": [
+                    0.5
+                ]
+            },
+            "MLP": {
+                "n of lags": [
+                    7,
+                    14,
+                    21
+                ],
+                "strucs": [
+                    [
+                        20
+                    ]
+                ],
+                "max iter": [
+                    2000
+                ]
+            },
+            "LSVR": {
+                "n of lags": [
+                    7,
+                    14,
+                    21
+                ]
+            },
+            "RF": {
+                "n of lags": [
+                    7,
+                    14,
+                    21
+                ],
+                "max depth": [
+                    null
+                ],
+                "min samples split": [
+                    0.005
+                ],
+                "min impurity decrease": [
+                    0
+                ],
+                "ccp alpha": [
+                    0
+                ]
+            },
+            "LGBM": {
+                "n of lags": [
+                    7,
+                    14,
+                    21
+                ],
+                "max depth": [
+                    -1
+                ],
+                "min split gain": [
+                    0
+                ],
+                "importance type": [
+                    "split"
+                ]
+            }
+        },
+        "messages": {
+            "Warning": [
+                "Only 1 series are chosen for this run."
+            ]
+        }
+    },
+    {
+        "run time": [
+            "08-07-2022--17-56-09",
+            "08-07-2022--17-57-38"
+        ],
+        "config input": {
+            "type of run": "test",
+            "dataset": {
+                "file name": "m4_daily_micro.json",
+                "file type": "json",
+                "file path": "datasets/",
+                "cumulate used": 0,
+                "use series": 1,
+                "min length": 1000,
+                "max length": 1500
+            },
+            "transformation config": {
+                "xthresholds": [
+                    0.01,
+                    1.1,
+                    0.1
+                ],
+                "interp kind": [
+                    "linear"
+                ],
+                "use states": [
+                    false
+                ]
+            },
+            "modelling config": {
+                "retrain window": 10,
+                "validation size": 0.1,
+                "test size": 0.1,
+                "forecast horizon": 1,
+                "gap": 0,
+                "score measure": "SMAPE"
+            },
+            "models": [
+                "ETS"
+            ],
+            "execution config": {
+                "n of workers": 22
+            }
+        },
+        "number of series used": 1,
+        "Avg. len of series": 1225.0,
+        "took time": {
+            "ETS": [
+                "08-07-2022--17-56-12",
+                "08-07-2022--17-57-38"
+            ]
+        },
+        "model hyper_params": {
+            "ETS": {
+                "auto": [
+                    true
+                ]
+            }
+        },
+        "messages": {
+            "Warning": [
+                "Only 1 series are chosen for this run."
+            ]
+        }
+    },
+    {
+        "run time": [
+            "08-07-2022--18-24-26",
+            "08-07-2022--18-25-55"
+        ],
+        "config input": {
+            "type of run": "test",
+            "dataset": {
+                "file name": "m4_daily_micro.json",
+                "file type": "json",
+                "file path": "datasets/",
+                "cumulate used": 0,
+                "use series": 1,
+                "min length": 1000,
+                "max length": 1500
+            },
+            "transformation config": {
+                "xthresholds": [
+                    0.01,
+                    1.1,
+                    0.1
+                ],
+                "interp kind": [
+                    "linear"
+                ],
+                "use states": [
+                    false
+                ]
+            },
+            "modelling config": {
+                "retrain window": 10,
+                "validation size": 0.1,
+                "test size": 0.1,
+                "forecast horizon": 1,
+                "gap": 5,
+                "score measure": "SMAPE"
+            },
+            "models": [
+                "ETS"
+            ],
+            "execution config": {
+                "n of workers": 22
+            }
+        },
+        "number of series used": 1,
+        "Avg. len of series": 1225.0,
+        "took time": {
+            "ETS": [
+                "08-07-2022--18-24-30",
+                "08-07-2022--18-25-55"
+            ]
+        },
+        "model hyper_params": {
+            "ETS": {
+                "auto": [
+                    true
+                ]
+            }
+        },
+        "messages": {
+            "Warning": [
+                "Only 1 series are chosen for this run."
+            ]
         }
     }
 ]

@@ -14,9 +14,26 @@ import warnings
 import numpy as np
 import pandas as pd
 
+def run_lsvr_tran(pool, arg, policies, ind):
 
+    par_val = ParallelValidation(arg, model='LSVR', type='tran')
+    res = tqdm(
+        iterable=pool.imap(par_val.run_parallel, policies),
+        desc=f'Tran: validating series {ind}',
+        total=len(policies))
 
-def run_lsvr(datasets, v_size, retrain_window, t_size, horizon, score, policies, n_workers) -> Tuple[Dict]:
+    return list(res)
+
+def run_lsvr_raw(pool, arg, policies, ind):
+    par_val = ParallelValidation(arg, model='LSVR', type='raw')
+    res = tqdm(
+        iterable=pool.imap(par_val.run_parallel, policies),
+        desc=f'Raw: validating series {ind}',
+        total=len(policies))
+
+    return list(res)
+
+def run_lsvr(datasets, v_size, retrain_window, t_size, horizon, gap, score, policies, n_workers) -> Tuple[Dict]:
     raw_info = {}
     tran_info = {}
 
@@ -54,6 +71,9 @@ def run_lsvr(datasets, v_size, retrain_window, t_size, horizon, score, policies,
             warnings.filterwarnings(action='ignore', category=skConvWarn)
             warnings.filterwarnings(action='ignore', category=UserWarning)
             
+            raw_policies = policies['raw']
+            tran_policies = policies['tran']
+
             with Pool(processes=n_workers) as p:
                 arg = {
                     'series': series,
@@ -61,16 +81,13 @@ def run_lsvr(datasets, v_size, retrain_window, t_size, horizon, score, policies,
                     'retrain_window': retrain_window,
                     'split': split,
                     'horizon': horizon,
+                    'gap': gap,
                     'score': score
                 }
-                par_val = ParallelValidation(arg, model='LSVR')
-                res = tqdm(
-                    iterable=p.imap(par_val.run_parallel, policies),
-                    desc=f'Validating series {i}',
-                    total=len(policies))
-                res = list(res)
-        
-        raw_policy_errs, tran_policy_errs = zip(*res)
+
+                raw_policy_errs = run_lsvr_raw(pool=p, arg=arg, policies=raw_policies, ind=i)
+                tran_policy_errs = run_lsvr_tran(pool=p, arg=arg, policies=tran_policies, ind=i)
+
         raw_policy_errs = [np.mean(e) for e in raw_policy_errs]
         tran_policy_errs = [np.mean(e) for e in tran_policy_errs]
         
@@ -79,12 +96,9 @@ def run_lsvr(datasets, v_size, retrain_window, t_size, horizon, score, policies,
         best_tran_val_SMAPE_ind = np.argmin(tran_policy_errs)
         best_raw_val_SMAPE = raw_policy_errs[best_raw_val_SMAPE_ind]
         best_tran_val_SMAPE = tran_policy_errs[best_tran_val_SMAPE_ind]
-        best_raw_policy = copy(policies[best_raw_val_SMAPE_ind])
-        best_tran_policy = copy(policies[best_tran_val_SMAPE_ind])
-        del best_raw_policy['thres up']
-        del best_raw_policy['thres down']
-        del best_raw_policy['interp kind']
-
+        best_raw_policy = copy(raw_policies[best_raw_val_SMAPE_ind])
+        best_tran_policy = copy(tran_policies[best_tran_val_SMAPE_ind])
+        
         #
         # test
         #
@@ -100,19 +114,17 @@ def run_lsvr(datasets, v_size, retrain_window, t_size, horizon, score, policies,
                     train_v = series
                 else:
                     train_v = series[:-n_test+j+1]
-                train = train_v[:-horizon]
+                train = train_v[:-horizon-gap]
                 val = train_v[-horizon:]
 
                 # raw
-                rX, ry = data_prep.ts_prep(train, nlag=best_raw_policy['n lag'], horizon=horizon)
+                rX, ry = data_prep.ts_prep(train, nlag=best_raw_policy['n lag'], horizon=horizon, gap=gap)
                 train_X, val_X = rX, train[-best_raw_policy['n lag']:]
                 train_y, val_y = ry, val
                 
                 if j % retrain_window == 0:
 
-                    rmodel = LinearSVR(
-
-                    )
+                    rmodel = LinearSVR()
                     rmodel.fit(train_X, train_y.ravel())
 
                 y, y_hat = val_y[0], rmodel.predict([val_X])[0]
@@ -127,7 +139,7 @@ def run_lsvr(datasets, v_size, retrain_window, t_size, horizon, score, policies,
                 t.transform(train, threshold=thres, kind=best_tran_policy['interp kind'])
                 ttrain = t.tdata1
 
-                tX, ty = data_prep.ts_prep(ttrain, nlag=best_tran_policy['n lag'], horizon=horizon)
+                tX, ty = data_prep.ts_prep(ttrain, nlag=best_tran_policy['n lag'], horizon=horizon, gap=gap)
                 
                 if best_tran_policy['use states']:
                     tstates = t.status[best_tran_policy['n lag']-1:]
@@ -143,9 +155,7 @@ def run_lsvr(datasets, v_size, retrain_window, t_size, horizon, score, policies,
 
                 if j % retrain_window == 0:
 
-                    tmodel = LinearSVR(
-
-                    )
+                    tmodel = LinearSVR()
                     tmodel.fit(ttrain_X, ttrain_y.ravel())
 
                 y, ty_hat = val_y[0], tmodel.predict([tval_X])[0]
