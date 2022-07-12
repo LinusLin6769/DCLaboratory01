@@ -121,6 +121,7 @@ t_config = config['transformation config']
 xthresholds = [round(x, 3) for x in np.arange(*t_config['xthresholds'])]
 interp_kind = t_config['interp kind']
 use_states = t_config['use states']
+target_transform = t_config['target transformation']
 
 # transformation policies
 t_policies = list(product(xthresholds, xthresholds, interp_kind, use_states))
@@ -235,27 +236,27 @@ took_time = {k: None for k in models}
 
 # start training the models
 for model in models:
-    try:
-        go = get_time()
-        raw_info, tran_info = run_funcs[model](
-            datasets, v_size, retrain_window, t_size, horizon, gap, score, all_policies[model], n_workers
-        )
-        # one time series costs about 1 kb in the .json file
-        with open(f'{dir}/{start}/{model}_raw.json', 'x') as file:
-            json.dump(raw_info, file, indent=4)
-        with open(f'{dir}/{start}/{model}_tran.json', 'x') as file:
-            json.dump(tran_info, file, indent=4)
+    # try:
+    go = get_time()
+    raw_info, tran_info = run_funcs[model](
+        datasets, target_transform, v_size, retrain_window, t_size, horizon, gap, score, all_policies[model], n_workers
+    )
+    # one time series costs about 1 kb in the .json file
+    with open(f'{dir}/{start}/{model}_raw.json', 'x') as file:
+        json.dump(raw_info, file, indent=4)
+    with open(f'{dir}/{start}/{model}_tran.json', 'x') as file:
+        json.dump(tran_info, file, indent=4)
 
-        took_time[model] = [go, get_time()]
-        print(f'{model} agent has completed successfully.')
-        print(f'{model}: .json info generated.')
-        prompt_time()
+    took_time[model] = [go, get_time()]
+    print(f'{model} agent has completed successfully.')
+    print(f'{model}: .json info generated.')
+    prompt_time()
 
-    except Exception as e:
+    """except Exception as e:
         print(f'Exception {e.__class__} occurred in running {model}.')
         print(f'{model}: NO .json info is generated.')
         prompt_time()
-
+"""
 
 # ---------------------------------------------------------
 # Process and log the information regarding the run.

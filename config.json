@@ -4,15 +4,16 @@
         "file name": "m4_daily_finance.json",
         "file type": "json",
         "file path": "datasets/",
-        "cumulate used":30,
-        "use series": 50,
+        "cumulate used":0,
+        "use series": 20,
         "min length": 1000,
         "max length": 1500
     },
     "transformation config": {
-        "xthresholds": [0.01, 1.1, 0.1],
-        "interp kind": ["linear"],
-        "use states": [true]
+        "xthresholds": [0.01, 2.1, 0.2],
+        "interp kind": ["linear", "akima"],
+        "use states": [true],
+        "target transformation": "log-return"
     },
     "modelling config": {
         "retrain window":10,
@@ -22,7 +23,7 @@
         "gap": 0,
         "score measure": "SMAPE"
     },
-    "models": ["EN", "MLP", "LSVR", "RF", "LGBM"],
+    "models": ["EN", "MLP", "LSVR", "RF", "LGBM", "ETS"],
     "execution config": {
         "n of workers": 24
     }

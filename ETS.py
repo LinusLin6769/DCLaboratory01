@@ -1,6 +1,7 @@
 # from __main__ import datasets, v_size, t_size, horizon, score
 # from __main__ import ETS_policies as policies
 from dc_transformation import DCTransformer
+from target_transformation import TargetTransformation
 from sktime.forecasting.ets import AutoETS
 from statsmodels.tools.sm_exceptions import InterpolationWarning
 from statsmodels.tools.sm_exceptions import ConvergenceWarning as statsConvWarn
@@ -39,7 +40,7 @@ def run_ets_raw(pool, arg, policies, ind):
     return list(res)
 
 
-def run_ets(datasets, v_size, retrain_window, t_size, horizon, gap, score, policies, n_workers) -> Tuple[Dict]:
+def run_ets(datasets, ttype, v_size, retrain_window, t_size, horizon, gap, score, policies, n_workers) -> Tuple[Dict]:
 
     raw_info = {}
     tran_info = {}
@@ -87,6 +88,7 @@ def run_ets(datasets, v_size, retrain_window, t_size, horizon, gap, score, polic
             with Pool(processes=n_workers) as p:
                 arg = {
                     'series': series,
+                    'ttype': ttype,
                     'n_val': n_val,
                     'split': split,
                     'retrain_window': retrain_window,
@@ -112,7 +114,7 @@ def run_ets(datasets, v_size, retrain_window, t_size, horizon, gap, score, polic
         best_tran_policy = copy(tran_policies[best_tran_val_SMAPE_ind])
 
         #
-        # test   # @NOTE: NOT COMPLETED YET !!!!!!!!!
+        # test
         #
         raw_test_errs = []
         tran_test_errs = []
@@ -130,6 +132,10 @@ def run_ets(datasets, v_size, retrain_window, t_size, horizon, gap, score, polic
                     train_v = series[:-n_test+j+1]
                 train = train_v[:-horizon-gap]
                 val = train_v[-horizon:]
+                
+                # target transformation
+                tt = TargetTransformation(type=ttype)
+                train = tt.transform(train)                
 
                 # raw
                 if j % retrain_window == 0:
@@ -138,9 +144,19 @@ def run_ets(datasets, v_size, retrain_window, t_size, horizon, gap, score, polic
                 else:
                     rmodel.update(pd.Series(train[-1], index=[len(train)-1]))
 
-                y, y_hat = val[0], float(rmodel.predict(horizon+gap))
+                # prediction
+                y_hat_temp = float(rmodel.predict(horizon+gap))
+
+                # back transformation
+                y_hat = tt.back_transform(train.tolist() + [y_hat_temp])[-horizon]
+                
+                # validation
+                y = val[0]
+
                 raw_test_errs.append(score(y, y_hat))
                 raw_y_hats.append(y_hat)
+
+                train = train_v[:-horizon-gap]
 
                 # with transformation
                 # @NOTE: Estimation of sigma can be improved!!!
@@ -150,13 +166,22 @@ def run_ets(datasets, v_size, retrain_window, t_size, horizon, gap, score, polic
                 t.transform(train, threshold=thres, kind=best_tran_policy['interp kind'])
                 ttrain = t.tdata1
 
+                # target transformation
+                tt = TargetTransformation(type=ttype)
+                ttrain = tt.transform(ttrain)
+
                 if j % retrain_window == 0:
                     tmodel = AutoETS(auto=best_tran_policy['auto'])
                     tmodel.fit(pd.Series(ttrain))
                 else:
                     tmodel.update(pd.Series(ttrain[-1], index=[len(ttrain)-1]))
 
-                y, ty_hat = val[0], float(tmodel.predict(horizon+gap))
+                ty_hat_temp = float(tmodel.predict(horizon+gap))
+                
+                ty_hat = tt.back_transform(ttrain.tolist() + [ty_hat_temp])[-horizon]
+
+                y = val[0]
+
                 tran_test_errs.append(score(y, ty_hat))
                 tran_y_hats.append(ty_hat)
             np.seterr(**old_settings)  # restore the warning settings

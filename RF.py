@@ -1,4 +1,5 @@
 from dc_transformation import DCTransformer
+from target_transformation import TargetTransformation
 from parallel_validation import ParallelValidation
 from sklearn.linear_model import ElasticNet
 from sklearn.ensemble import RandomForestRegressor
@@ -34,7 +35,7 @@ def run_rf_raw(pool, arg, policies, ind):
     return list(res)
 
 
-def run_rf(datasets, v_size, retrain_window, t_size, horizon, gap, score, policies, n_workers) -> Tuple[Dict]:
+def run_rf(datasets, ttype, v_size, retrain_window, t_size, horizon, gap, score, policies, n_workers) -> Tuple[Dict]:
 
     raw_info = {}
     tran_info = {}
@@ -81,6 +82,7 @@ def run_rf(datasets, v_size, retrain_window, t_size, horizon, gap, score, polici
             with Pool(processes=n_workers) as p:
                 arg = {
                     'series': series,
+                    'ttype': ttype,
                     'n_val': n_val,
                     'retrain_window': retrain_window,
                     'split': split,
@@ -124,6 +126,10 @@ def run_rf(datasets, v_size, retrain_window, t_size, horizon, gap, score, polici
                 train = train_v[:-horizon-gap]
                 val = train_v[-horizon:]
 
+                # target transformation
+                tt = TargetTransformation(type=ttype)
+                train = tt.transform(train)
+
                 # raw
                 rX, ry = data_prep.ts_prep(train, nlag=best_raw_policy['n lag'], horizon=horizon, gap=gap)
                 train_X, val_X = rX, train[-best_raw_policy['n lag']:]
@@ -138,10 +144,20 @@ def run_rf(datasets, v_size, retrain_window, t_size, horizon, gap, score, polici
                     )
                     rmodel.fit(train_X, train_y.ravel())
 
-                y, y_hat = val_y[0], rmodel.predict([val_X])[0]
+                # prediction
+                y_hat_temp = rmodel.predict([val_X])[0]
+
+                # back transformation
+                y_hat = tt.back_transform(train.tolist() + [y_hat_temp])[-horizon]
+                
+                # validation
+                y = val_y[0]
+
                 raw_test_errs.append(score(y, y_hat))
                 raw_y_hats.append(y_hat)
                 raw_feature_importances.append(rmodel.feature_importances_.tolist())
+
+                train = train_v[:-horizon-gap]
 
                 # with transformation
                 # @NOTE: Estimation of sigma can be improved!!!
@@ -150,6 +166,10 @@ def run_rf(datasets, v_size, retrain_window, t_size, horizon, gap, score, polici
                 t = DCTransformer()
                 t.transform(train, threshold=thres, kind=best_tran_policy['interp kind'])
                 ttrain = t.tdata1
+
+                # target transformation
+                tt = TargetTransformation(type=ttype)
+                ttrain = tt.transform(ttrain)
 
                 tX, ty = data_prep.ts_prep(ttrain, nlag=best_tran_policy['n lag'], horizon=horizon, gap=gap)
 
@@ -174,7 +194,12 @@ def run_rf(datasets, v_size, retrain_window, t_size, horizon, gap, score, polici
                     )
                     tmodel.fit(ttrain_X, ttrain_y.ravel())
 
-                y, ty_hat = val_y[0], tmodel.predict([tval_X])[0]
+                ty_hat_temp = tmodel.predict([tval_X])[0]
+                
+                ty_hat = tt.back_transform(ttrain.tolist() + [ty_hat_temp])[-horizon]
+
+                y = val_y[0]
+
                 tran_test_errs.append(score(y, ty_hat))
                 tran_y_hats.append(ty_hat)
                 tran_feature_importances.append(tmodel.feature_importances_.tolist())

@@ -1,6 +1,6 @@
 from typing import Dict, Callable, List
 from datetime import datetime, timedelta
-from scipy.interpolate import interp1d, splrep, splev
+from scipy.interpolate import interp1d, splrep, splev, Akima1DInterpolator
 import numpy as np
 import warnings
 
@@ -199,6 +199,10 @@ class DCTransformer:
                 inter_y = splrep(marked_x, y, k=3)
                 temp = np.arange(interpolate_max_range+1)
                 transformed_target = splev(temp, inter_y)
+            elif kind == 'akima':
+                inter_y = Akima1DInterpolator(marked_x, y)
+                temp = np.arange(interpolate_max_range+1)
+                transformed_target = inter_y(temp)
             else:
                 # in-range interpolation
                 inter_y = interp1d(marked_x, y, kind=kind)
@@ -230,7 +234,10 @@ class DCTransformer:
 
     def transform(self, data, threshold=None, kind='linear') -> None:
         self.data = np.array(data)
-        self.sigma = round(np.std(np.diff(np.log(self.data))), 6)  # standard deviation of log-return
+        try:
+            self.sigma = round(np.std(np.diff(np.log(self.data))), 6)  # standard deviation of log-return
+        except:
+            self.sigma = None
 
         if self.data.ndim != 1: raise ValueError('Data should be of 1 dimension.')
 

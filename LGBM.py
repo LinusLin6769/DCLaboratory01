@@ -1,4 +1,5 @@
 from dc_transformation import DCTransformer
+from target_transformation import TargetTransformation
 from parallel_validation import ParallelValidation
 from typing import Callable, List, Sequence, Tuple, Dict, Union
 from itertools import product
@@ -13,6 +14,7 @@ import pandas as pd
 
 def run_lgbm(
         datasets: Sequence,  # 1d array
+        ttype: str,
         v_size: Union[int, float],
         retrain_window: Union[int, float],
         t_size: Union[int, float],
@@ -76,6 +78,10 @@ def run_lgbm(
                     train = train_v[:-horizon-gap]
                     val = train_v[-horizon:]
 
+                    # target transformation
+                    tt = TargetTransformation(type=ttype)
+                    train = tt.transform(train)
+
                     # raw
                     rX, ry = data_prep.ts_prep(train, nlag=policy['n lag'], horizon=horizon, gap=gap)
                     train_X, val_X = rX, train[-policy['n lag']:]
@@ -91,7 +97,15 @@ def run_lgbm(
                         )
                         rmodel.fit(train_X, train_y.ravel())
 
-                    y, y_hat = val_y[0], rmodel.predict([val_X])[0]
+                    # prediction
+                    y_hat_temp = rmodel.predict([val_X])[0]
+
+                    # back transformation
+                    y_hat = tt.back_transform(train.tolist() + [y_hat_temp])[-horizon]
+                    
+                    # validation
+                    y = val_y[0]
+
                     raw_val_errs.append(score(y, y_hat))
 
                 raw_policy_errs.append(np.nanmean(raw_val_errs))
@@ -113,6 +127,10 @@ def run_lgbm(
                     t = DCTransformer()
                     t.transform(train, threshold=thres, kind=policy['interp kind'])
                     ttrain = t.tdata1
+
+                    # target transformation
+                    tt = TargetTransformation(type=ttype)
+                    ttrain = tt.transform(ttrain)
 
                     if len(ttrain) > 1:
                         tX, ty = data_prep.ts_prep(ttrain, nlag=policy['n lag'], horizon=horizon, gap=gap)
@@ -137,7 +155,13 @@ def run_lgbm(
                             random_state=0
                             )
                             tmodel.fit(ttrain_X, ttrain_y.ravel())
-                        y, ty_hat = val_y[0], tmodel.predict([tval_X])[0]
+
+                        ty_hat_temp = tmodel.predict([tval_X])[0]
+                        
+                        ty_hat = tt.back_transform(ttrain.tolist() + [ty_hat_temp])[-horizon]
+
+                        y = val_y[0]
+
                         tran_val_errs.append(score(y, ty_hat))
                         
                     else:
@@ -174,6 +198,10 @@ def run_lgbm(
             train = train_v[:-horizon-gap]
             val = train_v[-horizon:]
 
+            # target transformation
+            tt = TargetTransformation(type=ttype)
+            train = tt.transform(train)
+
             # raw
             rX, ry = data_prep.ts_prep(train, nlag=best_raw_policy['n lag'], horizon=horizon, gap=gap)
             train_X, val_X = rX, train[-best_raw_policy['n lag']:]
@@ -188,10 +216,20 @@ def run_lgbm(
                 )
                 rmodel.fit(train_X, train_y.ravel())
 
-            y, y_hat = val_y[0], rmodel.predict([val_X])[0]
+            # prediction
+            y_hat_temp = rmodel.predict([val_X])[0]
+
+            # back transformation
+            y_hat = tt.back_transform(train.tolist() + [y_hat_temp])[-horizon]
+            
+            # validation
+            y = val_y[0]
+
             raw_test_errs.append(score(y, y_hat))
             raw_y_hats.append(y_hat)
             raw_feature_importances.append(rmodel.feature_importances_.tolist())
+
+            train = train_v[:-horizon-gap]
 
             # with transformation
             """Transformation has to be improved!!!"""
@@ -200,6 +238,10 @@ def run_lgbm(
             t = DCTransformer()
             t.transform(train, threshold=thres, kind=best_tran_policy['interp kind'])
             ttrain = t.tdata1
+
+            # target transformation
+            tt = TargetTransformation(type=ttype)
+            ttrain = tt.transform(ttrain)
 
             tX, ty = data_prep.ts_prep(ttrain, nlag=best_tran_policy['n lag'], horizon=horizon, gap=gap)
 
@@ -224,7 +266,13 @@ def run_lgbm(
                     random_state=0
                 )
                 tmodel.fit(ttrain_X, ttrain_y.ravel())
-            y, ty_hat = val_y[0], tmodel.predict([tval_X])[0]
+
+            ty_hat_temp = tmodel.predict([tval_X])[0]
+            
+            ty_hat = tt.back_transform(ttrain.tolist() + [ty_hat_temp])[-horizon]
+
+            y = val_y[0]
+
             tran_test_errs.append(score(y, ty_hat))
             tran_y_hats.append(ty_hat)
             tran_feature_importances.append(tmodel.feature_importances_.tolist())

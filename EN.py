@@ -1,4 +1,5 @@
 from dc_transformation import DCTransformer
+from target_transformation import TargetTransformation
 from parallel_validation import ParallelValidation
 from sklearn.linear_model import ElasticNet
 from sklearn.exceptions import ConvergenceWarning as skConvWarn
@@ -45,6 +46,7 @@ def run_en_raw(
 
 def run_en(
         datasets: Sequence,
+        ttype: str,
         v_size: Union[int, float],
         retrain_window: Union[int, float],
         t_size: Union[int, float],
@@ -100,6 +102,7 @@ def run_en(
             with Pool(processes=n_workers) as p:
                 arg = {
                     'series': series,
+                    'ttype': ttype,
                     'n_val': n_val,
                     'retrain_window': retrain_window,
                     'split': split,
@@ -144,6 +147,10 @@ def run_en(
                 train = train_v[:-horizon-gap]
                 val = train_v[-horizon:]
 
+                # target transformation
+                tt = TargetTransformation(type=ttype)
+                train = tt.transform(train)
+
                 # raw
                 rX, ry = data_prep.ts_prep(train, nlag=best_raw_policy['n lag'], horizon=horizon, gap=gap)
                 train_X, val_X = rX, train[-best_raw_policy['n lag']:]
@@ -153,11 +160,21 @@ def run_en(
                     rmodel = ElasticNet(alpha=best_raw_policy['alpha'], l1_ratio=best_raw_policy['l1 ratio'], random_state=0)
                     rmodel.fit(train_X, train_y)
 
-                y, y_hat = val_y[0], rmodel.predict([val_X])[0]
+                # prediction
+                y_hat_temp = rmodel.predict([val_X])[0]
+
+                # back transformation
+                y_hat = tt.back_transform(train.tolist() + [y_hat_temp])[-horizon]
+                
+                # validation
+                y = val_y[0]
+
                 raw_test_errs.append(score(y, y_hat))
                 raw_y_hats.append(y_hat)
                 c = list(rmodel.intercept_) + rmodel.coef_.tolist()
                 raw_coeffs.append(c)
+
+                train = train_v[:-horizon-gap]
 
                 # with transformation
                 # @NOTE: Estimation of sigma can be improved!!!
@@ -166,6 +183,10 @@ def run_en(
                 t = DCTransformer()
                 t.transform(train, threshold=thres, kind=best_tran_policy['interp kind'])
                 ttrain = t.tdata1
+
+                # target transformation
+                tt = TargetTransformation(type=ttype)
+                ttrain = tt.transform(ttrain)
 
                 tX, ty = data_prep.ts_prep(ttrain, nlag=best_tran_policy['n lag'], horizon=horizon, gap=gap)
 
@@ -185,7 +206,13 @@ def run_en(
                     tmodel = ElasticNet(alpha=best_tran_policy['alpha'],l1_ratio=best_tran_policy['l1 ratio'], random_state=0)
                     tmodel.fit(ttrain_X, ttrain_y)
 
-                y, ty_hat = val_y[0], tmodel.predict([tval_X])[0]
+
+                ty_hat_temp = tmodel.predict([tval_X])[0]
+                
+                ty_hat = tt.back_transform(ttrain.tolist() + [ty_hat_temp])[-horizon]
+
+                y = val_y[0]
+
                 tran_test_errs.append(score(y, ty_hat))
                 tran_y_hats.append(ty_hat)
                 c = list(tmodel.intercept_) + tmodel.coef_.tolist()

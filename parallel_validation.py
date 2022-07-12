@@ -1,4 +1,3 @@
-from enum import auto
 from pmdarima import auto_arima
 from dc_transformation import DCTransformer
 from sklearn.neural_network import MLPRegressor
@@ -8,6 +7,7 @@ from statsmodels.tsa.api import ExponentialSmoothing
 from sktime.forecasting.ets import AutoETS
 from sklearn.linear_model import ElasticNet
 from sklearn.ensemble import RandomForestRegressor
+from target_transformation import TargetTransformation
 import xgboost as xgb
 import lightgbm as lgbm
 from typing import Any, Callable, List, Sequence, Tuple, Dict
@@ -50,6 +50,7 @@ class ParallelValidation:
     def val_raw_lsvr(self,
             policy: Dict[str, Any],
             series: Sequence,
+            ttype: str,
             n_val: int,
             retrain_window: int,
             split: int,
@@ -66,6 +67,10 @@ class ParallelValidation:
             train = train_v[:-horizon-gap]
             val = train_v[-horizon:]
         
+            # target transformation
+            tt = TargetTransformation(type=ttype)
+            train = tt.transform(train)
+
             # raw
             rX, ry = data_prep.ts_prep(train, nlag=policy['n lag'], horizon=horizon, gap=gap)
             train_X, val_X = rX, train[-policy['n lag']:]
@@ -76,7 +81,15 @@ class ParallelValidation:
                 rmodel = LinearSVR()
                 rmodel.fit(train_X, train_y.ravel())
 
-            y, y_hat = val_y[0], rmodel.predict([val_X])[0]
+            # prediction
+            y_hat_temp = rmodel.predict([val_X])[0]
+
+            # back transformation
+            y_hat = tt.back_transform(train.tolist() + [y_hat_temp])[-horizon]
+            
+            # validation
+            y = val_y[0]
+
             raw_val_errs.append(score(y, y_hat))
 
         return raw_val_errs
@@ -84,6 +97,7 @@ class ParallelValidation:
     def val_tran_lsvr(self,
             policy: Dict[str, Any],
             series: Sequence,
+            ttype: str,
             n_val: int,
             retrain_window: int,
             split: int,
@@ -107,6 +121,10 @@ class ParallelValidation:
             t = DCTransformer()
             t.transform(train, threshold=thres, kind=policy['interp kind'])
             ttrain = t.tdata1
+
+            # target transformation
+            tt = TargetTransformation(type=ttype)
+            ttrain = tt.transform(ttrain)
 
             if len(ttrain) > 1:
                 tX, ty = data_prep.ts_prep(ttrain, nlag=policy['n lag'], horizon=horizon, gap=gap)
@@ -128,14 +146,19 @@ class ParallelValidation:
                     tmodel = LinearSVR()
                     tmodel.fit(ttrain_X, ttrain_y.ravel())
 
-                y, ty_hat = val_y[0], tmodel.predict([tval_X])[0]
+                ty_hat_temp = tmodel.predict([tval_X])[0]
+                
+                ty_hat = tt.back_transform(ttrain.tolist() + [ty_hat_temp])[-horizon]
+
+                y = val_y[0]
+
                 tran_val_errs.append(score(y, ty_hat))
             else:
                 tran_val_errs.append(0.999)
         
         return tran_val_errs
 
-    def val_raw_mlp(self, policy, series, n_val, retrain_window, split, horizon, gap, score) -> Tuple[List]:
+    def val_raw_mlp(self, policy, series, ttype, n_val, retrain_window, split, horizon, gap, score) -> Tuple[List]:
 
         raw_val_errs = []
 
@@ -144,6 +167,10 @@ class ParallelValidation:
             train_v = series[:-split+v+1]  #  includes the validation point that should be excluded during transformation
             train = train_v[:-horizon-gap]
             val = train_v[-horizon:]
+
+            # target transformation
+            tt = TargetTransformation(type=ttype)
+            train = tt.transform(train)
         
             # raw
             rX, ry = data_prep.ts_prep(train, nlag=policy['n lag'], horizon=horizon, gap=gap)
@@ -158,12 +185,20 @@ class ParallelValidation:
                     rmodel = MLPRegressor(hidden_layer_sizes=policy['struc'], max_iter=policy['max iter'], random_state=1)
                 rmodel.fit(train_X, train_y.ravel())
 
-            y, y_hat = val_y[0], rmodel.predict([val_X])[0]
+            # prediction
+            y_hat_temp = rmodel.predict([val_X])[0]
+
+            # back transformation
+            y_hat = tt.back_transform(train.tolist() + [y_hat_temp])[-horizon]
+            
+            # validation
+            y = val_y[0]
+
             raw_val_errs.append(score(y, y_hat))
         
         return raw_val_errs
 
-    def val_tran_mlp(self, policy, series, n_val, retrain_window, split, horizon, gap, score) -> Tuple[List]:
+    def val_tran_mlp(self, policy, series, ttype, n_val, retrain_window, split, horizon, gap, score) -> Tuple[List]:
 
         tran_val_errs = []
 
@@ -180,6 +215,10 @@ class ParallelValidation:
             t = DCTransformer()
             t.transform(train, threshold=thres, kind=policy['interp kind'])
             ttrain = t.tdata1
+
+            # target transformation
+            tt = TargetTransformation(type=ttype)
+            ttrain = tt.transform(ttrain)
 
             if len(ttrain) > 1:
                 tX, ty = data_prep.ts_prep(ttrain, nlag=policy['n lag'], horizon=horizon, gap=gap)
@@ -204,14 +243,19 @@ class ParallelValidation:
                         tmodel = MLPRegressor(hidden_layer_sizes=policy['struc'], max_iter=policy['max iter'], random_state=1)
                     tmodel.fit(ttrain_X, ttrain_y.ravel())
 
-                y, ty_hat = val_y[0], tmodel.predict([tval_X])[0]
+                ty_hat_temp = tmodel.predict([tval_X])[0]
+                
+                ty_hat = tt.back_transform(ttrain.tolist() + [ty_hat_temp])[-horizon]
+
+                y = val_y[0]
+
                 tran_val_errs.append(score(y, ty_hat))
             else:
                 tran_val_errs.append(0.999)
         
         return tran_val_errs
 
-    def val_raw_en(self, policy, series, n_val, retrain_window, split, horizon, gap, score) -> Tuple[List]:
+    def val_raw_en(self, policy, series, ttype, n_val, retrain_window, split, horizon, gap, score) -> Tuple[List]:
 
         raw_val_errs = []
 
@@ -220,6 +264,10 @@ class ParallelValidation:
             train_v = series[:-split+v+1]
             train = train_v[:-horizon-gap]
             val = train_v[-horizon:]
+
+            # target transformation
+            tt = TargetTransformation(type=ttype)
+            train = tt.transform(train)
 
             # raw
             rX, ry = data_prep.ts_prep(train, nlag=policy['n lag'], horizon=horizon, gap=gap)
@@ -233,12 +281,19 @@ class ParallelValidation:
                     random_state=0)
                 rmodel.fit(train_X, train_y)
 
-            y, y_hat = val_y[0], rmodel.predict([val_X])[0]
+            # prediction
+            y_hat_temp = rmodel.predict([val_X])[0]
+
+            # back transformation
+            y_hat = tt.back_transform(train.tolist() + [y_hat_temp])[-horizon]
+            
+            # validation
+            y = val_y[0]
             raw_val_errs.append(score(y, y_hat))
         
         return raw_val_errs
 
-    def val_tran_en(self, policy, series, n_val, retrain_window, split, horizon, gap, score) -> Tuple[List]:
+    def val_tran_en(self, policy, series, ttype, n_val, retrain_window, split, horizon, gap, score) -> Tuple[List]:
 
         tran_val_errs = []
 
@@ -255,6 +310,10 @@ class ParallelValidation:
             t = DCTransformer()
             t.transform(train, threshold=thres, kind=policy['interp kind'])
             ttrain = t.tdata1
+
+            # target transformation
+            tt = TargetTransformation(type=ttype)
+            ttrain = tt.transform(ttrain)
 
             if len(ttrain) > 1:
                 tX, ty = data_prep.ts_prep(ttrain, nlag=policy['n lag'], horizon=horizon, gap=gap)
@@ -278,14 +337,18 @@ class ParallelValidation:
                     )
                     tmodel.fit(ttrain_X, ttrain_y)
 
-                y, ty_hat = val_y[0], tmodel.predict([tval_X])[0]
+                ty_hat_temp = tmodel.predict([tval_X])[0]
+                
+                ty_hat = tt.back_transform(ttrain.tolist() + [ty_hat_temp])[-horizon]
+
+                y = val_y[0]
                 tran_val_errs.append(score(y, ty_hat))
             else:
                 tran_val_errs.append(0.999)
         
         return tran_val_errs
 
-    def val_raw_rf(self, policy, series, n_val, retrain_window, split, horizon, gap, score) -> Tuple[List]:
+    def val_raw_rf(self, policy, series, ttype, n_val, retrain_window, split, horizon, gap, score) -> Tuple[List]:
 
         raw_val_errs = []
 
@@ -294,6 +357,10 @@ class ParallelValidation:
             train_v = series[:-split+v+1]
             train = train_v[:-horizon-gap]
             val = train_v[-horizon:]
+
+            # target transformation
+            tt = TargetTransformation(type=ttype)
+            train = tt.transform(train)
 
             # raw
             rX, ry = data_prep.ts_prep(train, nlag=policy['n lag'], horizon=horizon, gap=gap)
@@ -309,12 +376,21 @@ class ParallelValidation:
                 )
                 rmodel.fit(train_X, train_y.ravel())
 
-            y, y_hat = val_y[0], rmodel.predict([val_X])[0]
+            # prediction
+            y_hat_temp = rmodel.predict([val_X])[0]
+
+            # back transformation
+            y_hat = tt.back_transform(train.tolist() + [y_hat_temp])[-horizon]
+            
+            # validation
+            y = val_y[0]
+            raw_val_errs.append(score(y, y_hat))
+
             raw_val_errs.append(score(y, y_hat))
         
         return raw_val_errs
 
-    def val_tran_rf(self, policy, series, n_val, retrain_window, split, horizon, gap, score) -> Tuple[List]:
+    def val_tran_rf(self, policy, series, ttype, n_val, retrain_window, split, horizon, gap, score) -> Tuple[List]:
 
         tran_val_errs = []
 
@@ -331,6 +407,10 @@ class ParallelValidation:
             t = DCTransformer()
             t.transform(train, threshold=thres, kind=policy['interp kind'])
             ttrain = t.tdata1
+
+            # target transformation
+            tt = TargetTransformation(type=ttype)
+            ttrain = tt.transform(ttrain)
 
             if len(ttrain) > 1:
                 tX, ty = data_prep.ts_prep(ttrain, nlag=policy['n lag'], horizon=horizon, gap=gap)
@@ -356,14 +436,19 @@ class ParallelValidation:
                     )
                     tmodel.fit(ttrain_X, ttrain_y.ravel())
 
-                y, ty_hat = val_y[0], tmodel.predict([tval_X])[0]
+                ty_hat_temp = tmodel.predict([tval_X])[0]
+                
+                ty_hat = tt.back_transform(ttrain.tolist() + [ty_hat_temp])[-horizon]
+
+                y = val_y[0]
+
                 tran_val_errs.append(score(y, ty_hat))
             else:
                 tran_val_errs.append(0.999)
         
         return tran_val_errs
     
-    def val_raw_ets(self, policy, series, n_val, retrain_window, split, horizon, gap, score) -> Tuple[List]:
+    def val_raw_ets(self, policy, series, ttype, n_val, retrain_window, split, horizon, gap, score) -> Tuple[List]:
 
         raw_val_errs = []
 
@@ -372,7 +457,11 @@ class ParallelValidation:
             train_v = series[:-split+v+1]
             train = train_v[:-horizon-gap]
             val = train_v[-horizon:]
-                
+
+            # target transformation
+            tt = TargetTransformation(type=ttype)
+            train = tt.transform(train)
+
             # raw
             if v % retrain_window == 0:
                 rmodel = AutoETS(auto=policy['auto'])
@@ -380,13 +469,21 @@ class ParallelValidation:
             else:
                 rmodel.update(pd.Series(train[-1], index=[len(train)-1]))
 
-            y, y_hat = val[0], float(rmodel.predict(horizon+gap))
+            # prediction
+            y_hat_temp = float(rmodel.predict(horizon+gap))
+
+            # back transformation
+            y_hat = tt.back_transform(train.tolist() + [y_hat_temp])[-horizon]
+            
+            # validation
+            y = val[0]
+
             raw_val_errs.append(score(y, y_hat))
         
         return raw_val_errs
 
 
-    def val_tran_ets(self, policy, series, n_val, retrain_window, split, horizon, gap, score) -> Tuple[List]:
+    def val_tran_ets(self, policy, series, ttype, n_val, retrain_window, split, horizon, gap, score) -> Tuple[List]:
 
         tran_val_errs = []
 
@@ -404,6 +501,10 @@ class ParallelValidation:
             t.transform(train, threshold=thres, kind=policy['interp kind'])
             ttrain = t.tdata1
 
+            # target transformation
+            tt = TargetTransformation(type=ttype)
+            ttrain = tt.transform(ttrain)
+
             if len(ttrain) > 1:
 
                 if v % retrain_window == 0:
@@ -412,7 +513,12 @@ class ParallelValidation:
                 else:
                     tmodel.update(pd.Series(ttrain[-1], index=[len(ttrain)-1]))
 
-                y, ty_hat = val[0], float(tmodel.predict(horizon+gap))
+                ty_hat_temp = float(tmodel.predict(horizon+gap))
+                
+                ty_hat = tt.back_transform(ttrain.tolist() + [ty_hat_temp])[-horizon]
+
+                y = val[0]
+
                 tran_val_errs.append(score(y, ty_hat))
             else:
                 tran_val_errs.append(0.999)
