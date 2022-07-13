@@ -34,7 +34,7 @@ class TargetTransformation:
 
     def _log_return(self, series) -> np.array:
         transformed = np.diff(np.log(series)).tolist()
-        return np.array([transformed[0]] + transformed)
+        return np.array([0] + transformed)
 
     def _back_log_return(self, series) -> np.array:
         return np.exp(np.cumsum(series)) * self.y0
