@@ -1,11 +1,11 @@
 {
-    "type of run": "real run",
+    "type of run": "test",
     "dataset": {
         "file name": "m4_daily_finance.json",
         "file type": "json",
         "file path": "datasets/",
-        "cumulate used":20,
-        "use series": 20,
+        "cumulate used": 0,
+        "use series": 1,
         "min length": 1000,
         "max length": 1500
     },
@@ -23,7 +23,7 @@
         "gap": 0,
         "score measure": "SMAPE"
     },
-    "models": ["EN", "MLP", "LSVR", "RF", "LGBM", "ETS"],
+    "models": ["ETS", "LGBM"],
     "execution config": {
         "n of workers": 22
     }

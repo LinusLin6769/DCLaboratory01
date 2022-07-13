@@ -1,0 +1,87 @@
+{
+    "run time": [
+        "13-07-2022--13-30-12",
+        "13-07-2022--13-38-51"
+    ],
+    "config input": {
+        "type of run": "test",
+        "dataset": {
+            "file name": "m4_daily_finance.json",
+            "file type": "json",
+            "file path": "datasets/",
+            "cumulate used": 0,
+            "use series": 1,
+            "min length": 1000,
+            "max length": 1500
+        },
+        "transformation config": {
+            "xthresholds": [
+                0.01,
+                2.1,
+                0.2
+            ],
+            "interp kind": [
+                "akima"
+            ],
+            "use states": [
+                true
+            ],
+            "target transformation": "log-return"
+        },
+        "modelling config": {
+            "retrain window": 10,
+            "validation size": 0.1,
+            "test size": 0.1,
+            "forecast horizon": 1,
+            "gap": 0,
+            "score measure": "SMAPE"
+        },
+        "models": [
+            "ETS",
+            "LGBM"
+        ],
+        "execution config": {
+            "n of workers": 22
+        }
+    },
+    "number of series used": 1,
+    "Avg. len of series": 1189.0,
+    "took time": {
+        "ETS": [
+            "13-07-2022--13-30-16",
+            "13-07-2022--13-31-40"
+        ],
+        "LGBM": [
+            "13-07-2022--13-31-40",
+            "13-07-2022--13-38-51"
+        ]
+    },
+    "model hyper_params": {
+        "ETS": {
+            "auto": [
+                true
+            ]
+        },
+        "LGBM": {
+            "n of lags": [
+                7,
+                14,
+                21
+            ],
+            "max depth": [
+                -1
+            ],
+            "min split gain": [
+                0
+            ],
+            "importance type": [
+                "split"
+            ]
+        }
+    },
+    "messages": {
+        "Warning": [
+            "Only 1 series are chosen for this run."
+        ]
+    }
+}

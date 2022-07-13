@@ -213,33 +213,41 @@ run_info = {}
 if not os.path.exists(f'{dir}/{start}/'):
     os.mkdir(f'{dir}/{start}/')
 
-from MLP import run_mlp
-from EN import run_en
+from run_model import RunModel # This class runs EN, MLP, LSVR, and RF
 from ETS import run_ets
 from LGBM import run_lgbm
-from XGB import run_xgb
-from RF import run_rf
-from LSVR import run_lsvr
-
-run_funcs = {
-    'MLP': run_mlp,
-    'EN': run_en,
-    'ETS': run_ets,
-    'LGBM': run_lgbm,
-    'XGB': run_xgb,
-     'RF': run_rf,
-    'LSVR': run_lsvr
-}
 
 took_time = {k: None for k in models}
 
 # start training the models
 for model in models:
     # try:
+    args = {
+        'model': model,
+        'datasets': datasets,
+        'ttype': target_transform,
+        'v_size': v_size,
+        'retrain_window': retrain_window,
+        't_size': t_size,
+        'horizon': horizon,
+        'gap': gap,
+        'score': score,
+        'policies': all_policies[model],
+        'n_workers': n_workers
+    }
     go = get_time()
-    raw_info, tran_info = run_funcs[model](
-        datasets, target_transform, v_size, retrain_window, t_size, horizon, gap, score, all_policies[model], n_workers
-    )
+    
+    # model switch
+    if model == 'ETS':
+        del args['model']
+        raw_info, tran_info = run_ets(**args)
+    elif model == 'LGBM':
+        del args['model']
+        raw_info, tran_info = run_lgbm(**args)
+    else:
+        run = RunModel(**args)
+        raw_info, tran_info = run.run_model()
+
     # one time series costs about 1 kb in the .json file
     with open(f'{dir}/{start}/{model}_raw.json', 'x') as file:
         json.dump(raw_info, file, indent=4)
