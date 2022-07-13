@@ -23,25 +23,39 @@ class ParallelValidation:
 
         self.classes = {
             'skl regressors': ['EN', 'MLP', 'LSVR', 'RF'],
-            'sktime forecasters': ['ETS']}
+            'sktime forecasters': ['ETS'],
+            'manual forecasters': ['MA']}
 
     def run_parallel(self, p: List[Dict]) -> List[float]:
         if self.model in self.classes['skl regressors']:
             if self.type == 'raw':
                 return self.skl_val_raw(policy=p, **self.args)
-                # return self.models[self.type][self.model](policy=p, **self.args)
+
             elif self.type == 'tran':
                 return self.skl_val_tran(policy=p, **self.args)
+            
             else:
                 raise ValueError('Invalid model type. Should be either raw or tran.')
+        
         elif self.model == 'ETS':
             if self.type == 'raw':
                 return self.val_raw_ets(policy=p, **self.args)
+        
             elif self.type == 'tran':
                 return self.val_tran_ets(policy=p, **self.args)
+        
             else:
                 raise ValueError('Invalid model type. Should be either raw or tran')
 
+        elif self.model == 'MA':
+            if self.type == 'raw':
+                return self.val_raw_ma(policy=p, **self.args)
+        
+            elif self.type == 'tran':
+                return self.val_tran_ma(policy=p, **self.args)
+        
+            else:
+                raise ValueError('Invalid model type. Should be either raw or tran')
 
     def skl_val_raw(self,
             policy: Dict[str, Any],
@@ -273,6 +287,73 @@ class ParallelValidation:
                     tmodel.update(pd.Series(ttrain[-1], index=[len(ttrain)-1]))
 
                 ty_hat_temp = float(tmodel.predict(horizon+gap))
+                
+                ty_hat = tt.back_transform(ttrain.tolist() + [ty_hat_temp])[-horizon]
+
+                y = val[0]
+
+                tran_val_errs.append(score(y, ty_hat))
+            else:
+                tran_val_errs.append(0.999)
+        
+        return tran_val_errs
+    
+    def val_raw_ma(self, policy, series, ttype, n_val, retrain_window, split, horizon, gap, score) -> Tuple[List]:
+
+        raw_val_errs = []
+
+        # n_val folds rolling validation
+        for v in range(n_val):
+            train_v = series[:-split+v+1]
+            train = train_v[:-horizon-gap]
+            val = train_v[-horizon:]
+
+            # target transformation
+            tt = TargetTransformation(type=ttype)
+            train = tt.transform(train)
+
+            # raw
+
+            # prediction
+            y_hat_temp = np.mean(train[-policy['q']:])
+
+            # back transformation
+            y_hat = tt.back_transform(train.tolist() + [y_hat_temp])[-horizon]
+            
+            # validation
+            y = val[0]
+
+            raw_val_errs.append(score(y, y_hat))
+        
+        return raw_val_errs
+
+
+    def val_tran_ma(self, policy, series, ttype, n_val, retrain_window, split, horizon, gap, score) -> Tuple[List]:
+
+        tran_val_errs = []
+
+        # n_val folds rolling validation
+        for v in range(n_val):
+            train_v = series[:-split+v+1]
+            train = train_v[:-horizon-gap]
+            val = train_v[-horizon:]
+
+            # with transformation
+            # @NOTE: Estimation of sigma can be improved!!!
+            sigma = np.std(np.diff(np.log(train)))
+            thres = (sigma*policy['thres up'], -sigma*policy['thres down'])
+            t = DCTransformer()
+            t.transform(train, threshold=thres, kind=policy['interp kind'])
+            ttrain = t.tdata1
+
+            # target transformation
+            tt = TargetTransformation(type=ttype)
+            ttrain = tt.transform(ttrain)
+
+            if len(ttrain) > 1:
+                
+                # prediction
+                ty_hat_temp = np.mean(ttrain[-policy['q']:])
                 
                 ty_hat = tt.back_transform(ttrain.tolist() + [ty_hat_temp])[-horizon]
 

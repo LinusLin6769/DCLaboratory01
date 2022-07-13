@@ -1,3 +1,4 @@
+from ast import arg
 import json
 import os
 import numpy as np
@@ -216,6 +217,7 @@ if not os.path.exists(f'{dir}/{start}/'):
 from run_model import RunModel # This class runs EN, MLP, LSVR, and RF
 from ETS import run_ets
 from LGBM import run_lgbm
+from MA import run_ma
 
 took_time = {k: None for k in models}
 
@@ -241,9 +243,15 @@ for model in models:
     if model == 'ETS':
         del args['model']
         raw_info, tran_info = run_ets(**args)
+
     elif model == 'LGBM':
         del args['model']
         raw_info, tran_info = run_lgbm(**args)
+    
+    elif model == 'MA':
+        del args['model']
+        raw_info, tran_info = run_ma(**args)
+    
     else:
         run = RunModel(**args)
         raw_info, tran_info = run.run_model()

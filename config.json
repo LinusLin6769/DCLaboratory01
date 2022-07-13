@@ -23,7 +23,7 @@
         "gap": 0,
         "score measure": "SMAPE"
     },
-    "models": ["ETS", "LGBM"],
+    "models": ["MA"],
     "execution config": {
         "n of workers": 22
     }
