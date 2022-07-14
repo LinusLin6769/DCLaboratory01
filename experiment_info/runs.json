@@ -2526,5 +2526,234 @@
             }
         },
         "messages": {}
+    },
+    {
+        "run time": [
+            "13-07-2022--18-20-12",
+            "14-07-2022--06-20-08"
+        ],
+        "config input": {
+            "type of run": "real run",
+            "dataset": {
+                "file name": "m4_daily_finance.json",
+                "file type": "json",
+                "file path": "datasets/",
+                "cumulate used": 0,
+                "use series": 50,
+                "min length": 1000,
+                "max length": 1500
+            },
+            "transformation config": {
+                "xthresholds": [
+                    0.01,
+                    2.1,
+                    0.2
+                ],
+                "interp kind": [
+                    "akima"
+                ],
+                "use states": [
+                    true
+                ],
+                "target transformation": "log-return"
+            },
+            "modelling config": {
+                "retrain window": 10,
+                "validation size": 0.1,
+                "test size": 0.1,
+                "forecast horizon": 1,
+                "gap": 0,
+                "score measure": "SMAPE"
+            },
+            "models": [
+                "MA",
+                "EN",
+                "MLP",
+                "LSVR",
+                "RF",
+                "LGBM",
+                "ETS"
+            ],
+            "execution config": {
+                "n of workers": 22
+            }
+        },
+        "number of series used": 50,
+        "Avg. len of series": 1218.54,
+        "took time": {
+            "MA": [
+                "13-07-2022--18-20-15",
+                "13-07-2022--18-22-15"
+            ],
+            "EN": [
+                "13-07-2022--18-22-15",
+                "13-07-2022--19-34-35"
+            ],
+            "MLP": [
+                "13-07-2022--19-34-35",
+                "13-07-2022--19-50-11"
+            ],
+            "LSVR": [
+                "13-07-2022--19-50-11",
+                "13-07-2022--20-07-22"
+            ],
+            "RF": [
+                "13-07-2022--20-07-22",
+                "13-07-2022--22-58-19"
+            ],
+            "LGBM": [
+                "13-07-2022--22-58-19",
+                "14-07-2022--05-10-11"
+            ],
+            "ETS": [
+                "14-07-2022--05-10-11",
+                "14-07-2022--06-20-08"
+            ]
+        },
+        "model hyper_params": {
+            "MA": {
+                "q": [
+                    1
+                ]
+            },
+            "EN": {
+                "n of lags": [
+                    7,
+                    14,
+                    21
+                ],
+                "alpha": [
+                    100
+                ],
+                "l1 ratio": [
+                    0.5
+                ]
+            },
+            "MLP": {
+                "n of lags": [
+                    7,
+                    14,
+                    21
+                ],
+                "strucs": [
+                    [
+                        20
+                    ]
+                ],
+                "max iter": [
+                    2000
+                ]
+            },
+            "LSVR": {
+                "n of lags": [
+                    7,
+                    14,
+                    21
+                ]
+            },
+            "RF": {
+                "n of lags": [
+                    7,
+                    14,
+                    21
+                ],
+                "max depth": [
+                    null
+                ],
+                "min samples split": [
+                    0.005
+                ],
+                "min impurity decrease": [
+                    0
+                ],
+                "ccp alpha": [
+                    0
+                ]
+            },
+            "LGBM": {
+                "n of lags": [
+                    7,
+                    14,
+                    21
+                ],
+                "max depth": [
+                    -1
+                ],
+                "min split gain": [
+                    0
+                ],
+                "importance type": [
+                    "split"
+                ]
+            },
+            "ETS": {
+                "auto": [
+                    true
+                ]
+            }
+        },
+        "messages": {}
+    },
+    {
+        "run time": [
+            "14-07-2022--10-28-15",
+            "14-07-2022--10-30-13"
+        ],
+        "config input": {
+            "type of run": "real run",
+            "dataset": {
+                "file name": "m4_daily_finance.json",
+                "file type": "json",
+                "file path": "datasets/",
+                "cumulate used": 0,
+                "use series": 50,
+                "min length": 1000,
+                "max length": 1500
+            },
+            "transformation config": {
+                "xthresholds": [
+                    0.01,
+                    2.1,
+                    0.2
+                ],
+                "interp kind": [
+                    "akima"
+                ],
+                "use states": [
+                    true
+                ],
+                "target transformation": "none"
+            },
+            "modelling config": {
+                "retrain window": 10,
+                "validation size": 0.1,
+                "test size": 0.1,
+                "forecast horizon": 1,
+                "gap": 0,
+                "score measure": "SMAPE"
+            },
+            "models": [
+                "MA"
+            ],
+            "execution config": {
+                "n of workers": 22
+            }
+        },
+        "number of series used": 50,
+        "Avg. len of series": 1218.54,
+        "took time": {
+            "MA": [
+                "14-07-2022--10-28-18",
+                "14-07-2022--10-30-13"
+            ]
+        },
+        "model hyper_params": {
+            "MA": {
+                "q": [
+                    1
+                ]
+            }
+        },
+        "messages": {}
     }
 ]

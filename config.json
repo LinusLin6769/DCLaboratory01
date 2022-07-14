@@ -1,11 +1,11 @@
 {
-    "type of run": "test",
+    "type of run": "real run",
     "dataset": {
         "file name": "m4_daily_finance.json",
         "file type": "json",
         "file path": "datasets/",
         "cumulate used": 0,
-        "use series": 1,
+        "use series": 50,
         "min length": 1000,
         "max length": 1500
     },
@@ -13,10 +13,10 @@
         "xthresholds": [0.01, 2.1, 0.2],
         "interp kind": ["akima"],
         "use states": [true],
-        "target transformation": "log-return"
+        "target transformation": "none"
     },
     "modelling config": {
-        "retrain window":10,
+        "retrain window": 10,
         "validation size": 0.1,
         "test size": 0.1,
         "forecast horizon": 1,
