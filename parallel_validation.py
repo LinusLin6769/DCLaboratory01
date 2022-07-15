@@ -21,33 +21,43 @@ class ParallelValidation:
         self.model = model
         self.type = type
 
-        self.models = {
-            'raw': {
-                'MLP': self.val_raw_mlp,
-                'ETS': self.val_raw_ets,
-                'EN': self.val_raw_en,
-#                 'XGB': self.val_raw_xgb,
-#                 'LGBM': self.val_raw_lgbm,
-                'RF': self.val_raw_rf,
-                'LSVR': self.val_raw_lsvr,
-#                 'AutoARIMA': self.val_raw_autoarima
-            },
-            'tran': {
-                'MLP': self.val_tran_mlp,
-                'ETS': self.val_tran_ets,
-                'EN': self.val_tran_en,
-#                 'XGB': self.val_tran_xgb,
-#                 'LGBM': self.val_tran_lgbm,
-                'RF': self.val_tran_rf,
-                'LSVR': self.val_tran_lsvr,
-#                 'AutoARIMA': self.val_tran_autoarima
-            }
-        }
+        self.classes = {
+            'skl regressors': ['EN', 'MLP', 'LSVR', 'RF'],
+            'sktime forecasters': ['ETS'],
+            'manual forecasters': ['MA']}
 
     def run_parallel(self, p: List[Dict]) -> List[float]:
-        return self.models[self.type][self.model](policy=p, **self.args)
+        if self.model in self.classes['skl regressors']:
+            if self.type == 'raw':
+                return self.skl_val_raw(policy=p, **self.args)
 
-    def val_raw_lsvr(self,
+            elif self.type == 'tran':
+                return self.skl_val_tran(policy=p, **self.args)
+            
+            else:
+                raise ValueError('Invalid model type. Should be either raw or tran.')
+        
+        elif self.model == 'ETS':
+            if self.type == 'raw':
+                return self.val_raw_ets(policy=p, **self.args)
+        
+            elif self.type == 'tran':
+                return self.val_tran_ets(policy=p, **self.args)
+        
+            else:
+                raise ValueError('Invalid model type. Should be either raw or tran')
+
+        elif self.model == 'MA':
+            if self.type == 'raw':
+                return self.val_raw_ma(policy=p, **self.args)
+        
+            elif self.type == 'tran':
+                return self.val_tran_ma(policy=p, **self.args)
+        
+            else:
+                raise ValueError('Invalid model type. Should be either raw or tran')
+
+    def skl_val_raw(self,
             policy: Dict[str, Any],
             series: Sequence,
             ttype: str,
@@ -77,365 +87,128 @@ class ParallelValidation:
             train_y, val_y = ry, val
 
             if v % retrain_window == 0:
-
-                rmodel = LinearSVR()
-                rmodel.fit(train_X, train_y.ravel())
-
-            # prediction
-            y_hat_temp = rmodel.predict([val_X])[0]
-
-            # back transformation
-            y_hat = tt.back_transform(train.tolist() + [y_hat_temp])[-horizon]
-            
-            # validation
-            y = val_y[0]
-
-            raw_val_errs.append(score(y, y_hat))
-
-        return raw_val_errs
-    
-    def val_tran_lsvr(self,
-            policy: Dict[str, Any],
-            series: Sequence,
-            ttype: str,
-            n_val: int,
-            retrain_window: int,
-            split: int,
-            horizon: int,
-            gap: int,
-            score: Callable
-        ) -> Tuple[List]:
-        
-        tran_val_errs = []
-
-        # n_val folds rolling validation
-        for v in range(n_val):
-            train_v = series[:-split+v+1]  #  includes the validation point that should be excluded during transformation
-            train = train_v[:-horizon-gap]
-            val = train_v[-horizon:]
-
-            # with transformation
-            # @NOTE: Estimation of sigma can be improved!!!
-            sigma = np.std(np.diff(np.log(train)))
-            thres = (sigma*policy['thres up'], -sigma*policy['thres down'])
-            t = DCTransformer()
-            t.transform(train, threshold=thres, kind=policy['interp kind'])
-            ttrain = t.tdata1
-
-            # target transformation
-            tt = TargetTransformation(type=ttype)
-            ttrain = tt.transform(ttrain)
-
-            if len(ttrain) > 1:
-                tX, ty = data_prep.ts_prep(ttrain, nlag=policy['n lag'], horizon=horizon, gap=gap)
-
-                if policy['use states']:
-                    tstates = t.status[policy['n lag']-1:]
-                    tstates_onehot = data_prep.one_hot(tstates, list(t.STATUS_CODE.keys()))
-                    tX_states = tstates_onehot[:-horizon]
-                    tval_X_states = tstates_onehot[-horizon]
-
-                    ttrain_X, tval_X = np.append(tX, tX_states, axis=1), np.append(ttrain[-policy['n lag']:], tval_X_states, axis=0)
-                else:
-                    ttrain_X, tval_X = tX, ttrain[-policy['n lag']:]
-
-                ttrain_y, val_y = ty, val
-
-                if v % retrain_window == 0:
-
-                    tmodel = LinearSVR()
-                    tmodel.fit(ttrain_X, ttrain_y.ravel())
-
-                ty_hat_temp = tmodel.predict([tval_X])[0]
                 
-                ty_hat = tt.back_transform(ttrain.tolist() + [ty_hat_temp])[-horizon]
-
-                y = val_y[0]
-
-                tran_val_errs.append(score(y, ty_hat))
-            else:
-                tran_val_errs.append(0.999)
-        
-        return tran_val_errs
-
-    def val_raw_mlp(self, policy, series, ttype, n_val, retrain_window, split, horizon, gap, score) -> Tuple[List]:
-
-        raw_val_errs = []
-
-        # n_val folds rolling validation
-        for v in range(n_val):
-            train_v = series[:-split+v+1]  #  includes the validation point that should be excluded during transformation
-            train = train_v[:-horizon-gap]
-            val = train_v[-horizon:]
-
-            # target transformation
-            tt = TargetTransformation(type=ttype)
-            train = tt.transform(train)
-        
-            # raw
-            rX, ry = data_prep.ts_prep(train, nlag=policy['n lag'], horizon=horizon, gap=gap)
-            train_X, val_X = rX, train[-policy['n lag']:]
-            train_y, val_y = ry, val
-
-            if v % retrain_window == 0:
-                # converge to linear regression if no hidden layer
-                if policy['struc'] == (0, ):
-                    rmodel = LinearRegression()
-                else:
-                    rmodel = MLPRegressor(hidden_layer_sizes=policy['struc'], max_iter=policy['max iter'], random_state=1)
-                rmodel.fit(train_X, train_y.ravel())
-
-            # prediction
-            y_hat_temp = rmodel.predict([val_X])[0]
-
-            # back transformation
-            y_hat = tt.back_transform(train.tolist() + [y_hat_temp])[-horizon]
-            
-            # validation
-            y = val_y[0]
-
-            raw_val_errs.append(score(y, y_hat))
-        
-        return raw_val_errs
-
-    def val_tran_mlp(self, policy, series, ttype, n_val, retrain_window, split, horizon, gap, score) -> Tuple[List]:
-
-        tran_val_errs = []
-
-        # n_val folds rolling validation
-        for v in range(n_val):
-            train_v = series[:-split+v+1]  #  includes the validation point that should be excluded during transformation
-            train = train_v[:-horizon-gap]
-            val = train_v[-horizon:]
-
-            # with transformation
-            # @NOTE: Estimation of sigma can be improved!!!
-            sigma = np.std(np.diff(np.log(train)))
-            thres = (sigma*policy['thres up'], -sigma*policy['thres down'])
-            t = DCTransformer()
-            t.transform(train, threshold=thres, kind=policy['interp kind'])
-            ttrain = t.tdata1
-
-            # target transformation
-            tt = TargetTransformation(type=ttype)
-            ttrain = tt.transform(ttrain)
-
-            if len(ttrain) > 1:
-                tX, ty = data_prep.ts_prep(ttrain, nlag=policy['n lag'], horizon=horizon, gap=gap)
-
-                if policy['use states']:
-                    tstates = t.status[policy['n lag']-1:]
-                    tstates_onehot = data_prep.one_hot(tstates, list(t.STATUS_CODE.keys()))
-                    tX_states = tstates_onehot[:-horizon]
-                    tval_X_states = tstates_onehot[-horizon]
-
-                    ttrain_X, tval_X = np.append(tX, tX_states, axis=1), np.append(ttrain[-policy['n lag']:], tval_X_states, axis=0)
-                else:
-                    ttrain_X, tval_X = tX, ttrain[-policy['n lag']:]
-
-                ttrain_y, val_y = ty, val
-
-                if v % retrain_window == 0:
-                    # coverge to linear regression if no hidden layer
-                    if policy['struc'] == (0, ):
-                        tmodel = LinearRegression()
-                    else:
-                        tmodel = MLPRegressor(hidden_layer_sizes=policy['struc'], max_iter=policy['max iter'], random_state=1)
-                    tmodel.fit(ttrain_X, ttrain_y.ravel())
-
-                ty_hat_temp = tmodel.predict([tval_X])[0]
-                
-                ty_hat = tt.back_transform(ttrain.tolist() + [ty_hat_temp])[-horizon]
-
-                y = val_y[0]
-
-                tran_val_errs.append(score(y, ty_hat))
-            else:
-                tran_val_errs.append(0.999)
-        
-        return tran_val_errs
-
-    def val_raw_en(self, policy, series, ttype, n_val, retrain_window, split, horizon, gap, score) -> Tuple[List]:
-
-        raw_val_errs = []
-
-        # n_val folds rolling validation
-        for v in range(n_val):
-            train_v = series[:-split+v+1]
-            train = train_v[:-horizon-gap]
-            val = train_v[-horizon:]
-
-            # target transformation
-            tt = TargetTransformation(type=ttype)
-            train = tt.transform(train)
-
-            # raw
-            rX, ry = data_prep.ts_prep(train, nlag=policy['n lag'], horizon=horizon, gap=gap)
-            train_X, val_X = rX, train[-policy['n lag']:]
-            train_y, val_y = ry, val
-            
-            if v % retrain_window == 0:
-                rmodel = ElasticNet(
-                    alpha=policy['alpha'],
-                    l1_ratio=policy['l1 ratio'],
-                    random_state=0)
-                rmodel.fit(train_X, train_y)
-
-            # prediction
-            y_hat_temp = rmodel.predict([val_X])[0]
-
-            # back transformation
-            y_hat = tt.back_transform(train.tolist() + [y_hat_temp])[-horizon]
-            
-            # validation
-            y = val_y[0]
-            raw_val_errs.append(score(y, y_hat))
-        
-        return raw_val_errs
-
-    def val_tran_en(self, policy, series, ttype, n_val, retrain_window, split, horizon, gap, score) -> Tuple[List]:
-
-        tran_val_errs = []
-
-        # n_val folds rolling validation
-        for v in range(n_val):
-            train_v = series[:-split+v+1]
-            train = train_v[:-horizon-gap]
-            val = train_v[-horizon:]
-
-            # with transformation
-            # @NOTE: Estimation of sigma can be improved!!!
-            sigma = np.std(np.diff(np.log(train)))
-            thres = (sigma*policy['thres up'], -sigma*policy['thres down'])
-            t = DCTransformer()
-            t.transform(train, threshold=thres, kind=policy['interp kind'])
-            ttrain = t.tdata1
-
-            # target transformation
-            tt = TargetTransformation(type=ttype)
-            ttrain = tt.transform(ttrain)
-
-            if len(ttrain) > 1:
-                tX, ty = data_prep.ts_prep(ttrain, nlag=policy['n lag'], horizon=horizon, gap=gap)
-                if policy['use states']:
-                    tstates = t.status[policy['n lag']-1:]
-                    tstates_onehot = data_prep.one_hot(tstates, list(t.STATUS_CODE.keys()))
-                    tX_states = tstates_onehot[:-horizon]
-                    tval_X_states = tstates_onehot[-horizon]
-                    
-                    ttrain_X, tval_X = np.append(tX, tX_states, axis=1), np.append(ttrain[-policy['n lag']:], tval_X_states, axis=0)
-                else:
-                    ttrain_X, tval_X = tX, ttrain[-policy['n lag']:]
-                
-                ttrain_y, val_y = ty, val
-
-                if v % retrain_window == 0:
-                    tmodel = ElasticNet(
+                # model switcher
+                if self.model == 'EN':
+                    rmodel = ElasticNet(
                         alpha=policy['alpha'],
                         l1_ratio=policy['l1 ratio'],
-                        random_state=0
-                    )
-                    tmodel.fit(ttrain_X, ttrain_y)
+                        random_state=0)
+                    rmodel.fit(train_X, train_y)
 
-                ty_hat_temp = tmodel.predict([tval_X])[0]
-                
-                ty_hat = tt.back_transform(ttrain.tolist() + [ty_hat_temp])[-horizon]
+                elif self.model == 'MLP':
+                    # converge to linear regression if no hidden layer
+                    if policy['struc'] == (0, ):
+                        rmodel = LinearRegression()
+                    else:
+                        rmodel = MLPRegressor(hidden_layer_sizes=policy['struc'], max_iter=policy['max iter'], random_state=1)
+                    rmodel.fit(train_X, train_y.ravel())
 
-                y = val_y[0]
-                tran_val_errs.append(score(y, ty_hat))
-            else:
-                tran_val_errs.append(0.999)
-        
-        return tran_val_errs
+                elif self.model == 'LSVR':
+                    rmodel = LinearSVR()
+                    rmodel.fit(train_X, train_y.ravel())
 
-    def val_raw_rf(self, policy, series, ttype, n_val, retrain_window, split, horizon, gap, score) -> Tuple[List]:
-
-        raw_val_errs = []
-
-        # n_val folds rolling validation
-        for v in range(n_val):
-            train_v = series[:-split+v+1]
-            train = train_v[:-horizon-gap]
-            val = train_v[-horizon:]
-
-            # target transformation
-            tt = TargetTransformation(type=ttype)
-            train = tt.transform(train)
-
-            # raw
-            rX, ry = data_prep.ts_prep(train, nlag=policy['n lag'], horizon=horizon, gap=gap)
-            train_X, val_X = rX, train[-policy['n lag']:]
-            train_y, val_y = ry, val
-            
-            if v % retrain_window == 0:
-                rmodel = RandomForestRegressor(
-                    max_depth=policy['max depth'],
-                    min_samples_split=policy['min samples split'],
-                    min_impurity_decrease=policy['min impurity decrease'],
-                    ccp_alpha=policy['ccp alpha']
-                )
-                rmodel.fit(train_X, train_y.ravel())
-
-            # prediction
-            y_hat_temp = rmodel.predict([val_X])[0]
-
-            # back transformation
-            y_hat = tt.back_transform(train.tolist() + [y_hat_temp])[-horizon]
-            
-            # validation
-            y = val_y[0]
-            raw_val_errs.append(score(y, y_hat))
-
-            raw_val_errs.append(score(y, y_hat))
-        
-        return raw_val_errs
-
-    def val_tran_rf(self, policy, series, ttype, n_val, retrain_window, split, horizon, gap, score) -> Tuple[List]:
-
-        tran_val_errs = []
-
-        # n_val folds rolling validation
-        for v in range(n_val):
-            train_v = series[:-split+v+1]
-            train = train_v[:-horizon-gap]
-            val = train_v[-horizon:]
-
-            # with transformation
-            # @NOTE: Estimation of sigma can be improved!!!
-            sigma = np.std(np.diff(np.log(train)))
-            thres = (sigma*policy['thres up'], -sigma*policy['thres down'])
-            t = DCTransformer()
-            t.transform(train, threshold=thres, kind=policy['interp kind'])
-            ttrain = t.tdata1
-
-            # target transformation
-            tt = TargetTransformation(type=ttype)
-            ttrain = tt.transform(ttrain)
-
-            if len(ttrain) > 1:
-                tX, ty = data_prep.ts_prep(ttrain, nlag=policy['n lag'], horizon=horizon, gap=gap)
-
-                if policy['use states']:
-                    tstates = t.status[policy['n lag']-1:]
-                    tstates_onehot = data_prep.one_hot(tstates, list(t.STATUS_CODE.keys()))
-                    tX_states = tstates_onehot[:-horizon]
-                    tval_X_states = tstates_onehot[-horizon]
-
-                    ttrain_X, tval_X = np.append(tX, tX_states, axis=1), np.append(ttrain[-policy['n lag']:], tval_X_states, axis=0)
-                else:
-                    ttrain_X, tval_X = tX, ttrain[-policy['n lag']:]
-
-                ttrain_y, val_y = ty, val
-
-                if v % retrain_window == 0:
-                    tmodel = RandomForestRegressor(
+                elif self.model == 'RF':
+                    rmodel = RandomForestRegressor(
                         max_depth=policy['max depth'],
                         min_samples_split=policy['min samples split'],
                         min_impurity_decrease=policy['min impurity decrease'],
                         ccp_alpha=policy['ccp alpha']
                     )
-                    tmodel.fit(ttrain_X, ttrain_y.ravel())
+                    rmodel.fit(train_X, train_y.ravel())
 
+            # prediction, the models here share the same syntax in predicting
+            y_hat_temp = rmodel.predict([val_X])[0]
+
+            # back transformation
+            y_hat = tt.back_transform(train.tolist() + [y_hat_temp])[-horizon]
+            
+            # validation
+            y = val_y[0]
+
+            raw_val_errs.append(score(y, y_hat))
+
+        return raw_val_errs
+
+    def skl_val_tran(self,
+            policy: Dict[str, Any],
+            series: Sequence,
+            ttype: str,
+            n_val: int,
+            retrain_window: int,
+            split: int,
+            horizon: int,
+            gap: int,
+            score: Callable
+        ) -> Tuple[List]:
+        
+        tran_val_errs = []
+
+        # n_val folds rolling validation
+        for v in range(n_val):
+            train_v = series[:-split+v+1]  #  includes the validation point that should be excluded during transformation
+            train = train_v[:-horizon-gap]
+            val = train_v[-horizon:]
+
+            # with transformation
+            # @NOTE: Estimation of sigma can be improved!!!
+            sigma = np.std(np.diff(np.log(train)))
+            thres = (sigma*policy['thres up'], -sigma*policy['thres down'])
+            t = DCTransformer()
+            t.transform(train, threshold=thres, kind=policy['interp kind'])
+            ttrain = t.tdata1
+
+            # target transformation
+            tt = TargetTransformation(type=ttype)
+            ttrain = tt.transform(ttrain)
+
+            if len(ttrain) > 1:
+                tX, ty = data_prep.ts_prep(ttrain, nlag=policy['n lag'], horizon=horizon, gap=gap)
+
+                if policy['use states']:
+                    tstates = t.status[policy['n lag']-1:]
+                    tstates_onehot = data_prep.one_hot(tstates, list(t.STATUS_CODE.keys()))
+                    tX_states = tstates_onehot[:-horizon]
+                    tval_X_states = tstates_onehot[-horizon]
+
+                    ttrain_X, tval_X = np.append(tX, tX_states, axis=1), np.append(ttrain[-policy['n lag']:], tval_X_states, axis=0)
+                else:
+                    ttrain_X, tval_X = tX, ttrain[-policy['n lag']:]
+
+                ttrain_y, val_y = ty, val
+
+                if v % retrain_window == 0:
+                    # model switch
+                    if self.model == 'EN':
+                        tmodel = ElasticNet(
+                            alpha=policy['alpha'],
+                            l1_ratio=policy['l1 ratio'],
+                            random_state=0
+                        )
+                        tmodel.fit(ttrain_X, ttrain_y)
+
+                    elif self.model == 'MLP':
+                        # coverge to linear regression if no hidden layer
+                        if policy['struc'] == (0, ):
+                            tmodel = LinearRegression()
+                        else:
+                            tmodel = MLPRegressor(hidden_layer_sizes=policy['struc'], max_iter=policy['max iter'], random_state=1)
+                        tmodel.fit(ttrain_X, ttrain_y.ravel())
+
+                    elif self.model == 'LSVR':
+                        tmodel = LinearSVR()
+                        tmodel.fit(ttrain_X, ttrain_y.ravel())
+
+                    elif self.model == 'RF':
+                        tmodel = RandomForestRegressor(
+                            max_depth=policy['max depth'],
+                            min_samples_split=policy['min samples split'],
+                            min_impurity_decrease=policy['min impurity decrease'],
+                            ccp_alpha=policy['ccp alpha']
+                        )
+                        tmodel.fit(ttrain_X, ttrain_y.ravel())
+
+                # prediction
                 ty_hat_temp = tmodel.predict([tval_X])[0]
                 
                 ty_hat = tt.back_transform(ttrain.tolist() + [ty_hat_temp])[-horizon]
@@ -514,6 +287,73 @@ class ParallelValidation:
                     tmodel.update(pd.Series(ttrain[-1], index=[len(ttrain)-1]))
 
                 ty_hat_temp = float(tmodel.predict(horizon+gap))
+                
+                ty_hat = tt.back_transform(ttrain.tolist() + [ty_hat_temp])[-horizon]
+
+                y = val[0]
+
+                tran_val_errs.append(score(y, ty_hat))
+            else:
+                tran_val_errs.append(0.999)
+        
+        return tran_val_errs
+    
+    def val_raw_ma(self, policy, series, ttype, n_val, retrain_window, split, horizon, gap, score) -> Tuple[List]:
+
+        raw_val_errs = []
+
+        # n_val folds rolling validation
+        for v in range(n_val):
+            train_v = series[:-split+v+1]
+            train = train_v[:-horizon-gap]
+            val = train_v[-horizon:]
+
+            # target transformation
+            tt = TargetTransformation(type=ttype)
+            train = tt.transform(train)
+
+            # raw
+
+            # prediction
+            y_hat_temp = np.mean(train[-policy['q']:])
+
+            # back transformation
+            y_hat = tt.back_transform(train.tolist() + [y_hat_temp])[-horizon]
+            
+            # validation
+            y = val[0]
+
+            raw_val_errs.append(score(y, y_hat))
+        
+        return raw_val_errs
+
+
+    def val_tran_ma(self, policy, series, ttype, n_val, retrain_window, split, horizon, gap, score) -> Tuple[List]:
+
+        tran_val_errs = []
+
+        # n_val folds rolling validation
+        for v in range(n_val):
+            train_v = series[:-split+v+1]
+            train = train_v[:-horizon-gap]
+            val = train_v[-horizon:]
+
+            # with transformation
+            # @NOTE: Estimation of sigma can be improved!!!
+            sigma = np.std(np.diff(np.log(train)))
+            thres = (sigma*policy['thres up'], -sigma*policy['thres down'])
+            t = DCTransformer()
+            t.transform(train, threshold=thres, kind=policy['interp kind'])
+            ttrain = t.tdata1
+
+            # target transformation
+            tt = TargetTransformation(type=ttype)
+            ttrain = tt.transform(ttrain)
+
+            if len(ttrain) > 1:
+                
+                # prediction
+                ty_hat_temp = np.mean(ttrain[-policy['q']:])
                 
                 ty_hat = tt.back_transform(ttrain.tolist() + [ty_hat_temp])[-horizon]
 

@@ -10,13 +10,13 @@ class TargetTransformation:
         self.transformer = {
             'none': self._raw,
             'log-return': self._log_return,
-            'simple-return': self._simple_return
+#             'simple-return': self._simple_return
         }
 
         self.back_transformer = {
             'none': self._back_raw,
             'log-return': self._back_log_return,
-            'simple-return': self._back_simple_return
+#             'simple-return': self._back_simple_return
         }
     
     def transform(self, series: Sequence) -> np.array:
@@ -44,14 +44,12 @@ class TargetTransformation:
         for i, s in enumerate(series):
             if i == 0: continue
 
-            if i == 1: res.append(1)
+            if i == 1: res.append(0)
 
             res.append((s - series[i-1])/series[i-1])
         
         return np.array(res)
 
+    # @NOTE: Not completed yet. Don't know how to deal with the first value (being 0?)
     def _back_simple_return(self, series) -> np.array:
-
-
-
         return np.exp(np.cumsum(series)) * self.y0

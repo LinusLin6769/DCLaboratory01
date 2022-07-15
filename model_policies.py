@@ -110,6 +110,9 @@ models_daily_params = {
     'LSVR' : {
         'n of lags': [7, 14, 21],
     },
+    'MA': {
+        'q': [1]
+    },
     'AutoARIMA': {}
 }
 
@@ -302,6 +305,22 @@ tran_LSVR_policies = [
     } for h in product(t_policies, *models_params['LSVR'].values())
 ]
 
+raw_MA_policies = [
+    {
+        'q': h[0]
+    } for h in product(*models_params['MA'].values())
+]
+
+tran_MA_policies = [
+    {
+        'thres up': h[0][0],
+        'thres down': h[0][1],
+        'interp kind': h[0][2],
+        'use states': h[0][3],
+        'q': h[1]
+    } for h in product(t_policies, *models_params['MA'].values())
+]
+
 AutoARIMA_policies = [{}]
 
 all_policies = {
@@ -332,5 +351,9 @@ all_policies = {
     'LSVR': {
         'raw': raw_LSVR_policies,
         'tran': tran_LSVR_policies,
+    },
+    'MA': {
+        'raw': raw_MA_policies,
+        'tran': tran_MA_policies
     }
 }
