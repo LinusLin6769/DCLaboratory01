@@ -222,7 +222,7 @@ took_time = {k: None for k in models}
 
 # start training the models
 for model in models:
-    # try:
+
     args = {
         'model': model,
         'datasets': datasets,
@@ -238,39 +238,39 @@ for model in models:
     }
     go = get_time()
     
-    # model switch
-    if model == 'ETS':
-        del args['model']
-        raw_info, tran_info = run_ets(**args)
+    try:
+        # model switch
+        if model == 'ETS':
+            del args['model']
+            raw_info, tran_info = run_ets(**args)
 
-    elif model == 'LGBM':
-        del args['model']
-        raw_info, tran_info = run_lgbm(**args)
-    
-    elif model == 'MA':
-        del args['model']
-        raw_info, tran_info = run_ma(**args)
-    
-    else:
-        run = RunModel(**args)
-        raw_info, tran_info = run.run_model()
+        elif model == 'LGBM':
+            del args['model']
+            raw_info, tran_info = run_lgbm(**args)
+        
+        elif model == 'MA':
+            del args['model']
+            raw_info, tran_info = run_ma(**args)
+        
+        else:
+            run = RunModel(**args)
+            raw_info, tran_info = run.run_model()
 
-    # one time series costs about 1 kb in the .json file
-    with open(f'{dir}/{start}/{model}_raw.json', 'x') as file:
-        json.dump(raw_info, file, indent=4)
-    with open(f'{dir}/{start}/{model}_tran.json', 'x') as file:
-        json.dump(tran_info, file, indent=4)
+        # one time series costs about 1 kb in the .json file
+        with open(f'{dir}/{start}/{model}_raw.json', 'x') as file:
+            json.dump(raw_info, file, indent=4)
+        with open(f'{dir}/{start}/{model}_tran.json', 'x') as file:
+            json.dump(tran_info, file, indent=4)
 
-    took_time[model] = [go, get_time()]
-    print(f'{model} agent has completed successfully.')
-    print(f'{model}: .json info generated.')
-    prompt_time()
+        took_time[model] = [go, get_time()]
+        print(f'{model} agent has completed successfully.')
+        print(f'{model}: .json info generated.')
+        prompt_time()
 
-    """except Exception as e:
+    except Exception as e:
         print(f'Exception {e.__class__} occurred in running {model}.')
         print(f'{model}: NO .json info is generated.')
         prompt_time()
-"""
 
 # ---------------------------------------------------------
 # Process and log the information regarding the run.

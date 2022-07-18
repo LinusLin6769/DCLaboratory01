@@ -105,7 +105,10 @@ class ParallelValidation:
                     rmodel.fit(train_X, train_y.ravel())
 
                 elif self.model == 'LSVR':
-                    rmodel = LinearSVR()
+                    rmodel = LinearSVR(
+                        tol=policy['tol'],
+                        C=policy['c']
+                    )
                     rmodel.fit(train_X, train_y.ravel())
 
                 elif self.model == 'RF':
@@ -196,7 +199,10 @@ class ParallelValidation:
                         tmodel.fit(ttrain_X, ttrain_y.ravel())
 
                     elif self.model == 'LSVR':
-                        tmodel = LinearSVR()
+                        tmodel = LinearSVR(
+                            tol=policy['tol'],
+                            C=policy['c']
+                        )
                         tmodel.fit(ttrain_X, ttrain_y.ravel())
 
                     elif self.model == 'RF':

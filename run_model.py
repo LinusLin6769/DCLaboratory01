@@ -188,7 +188,10 @@ class RunModel:
                             rmodel.fit(train_X, train_y.ravel())
                         
                         elif self.model == 'LSVR':
-                            rmodel = LinearSVR()
+                            rmodel = LinearSVR(
+                                tol=best_raw_policy['tol'],
+                                C=best_raw_policy['c']
+                            )
                             rmodel.fit(train_X, train_y.ravel())
 
                         elif self.model == 'RF':
@@ -260,7 +263,10 @@ class RunModel:
                             tmodel.fit(ttrain_X, ttrain_y.ravel())
 
                         elif self.model == 'LSVR':
-                            tmodel = LinearSVR()
+                            tmodel = LinearSVR(
+                                tol=best_tran_policy['tol'],
+                                C=best_tran_policy['c']
+                            )
                             tmodel.fit(ttrain_X, ttrain_y.ravel())
 
                         elif self.model == 'RF':

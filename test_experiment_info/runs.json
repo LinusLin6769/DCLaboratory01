@@ -724,5 +724,81 @@
                 "Only 1 series are chosen for this run."
             ]
         }
+    },
+    {
+        "run time": [
+            "18-07-2022--15-35-07",
+            "18-07-2022--15-36-04"
+        ],
+        "config input": {
+            "type of run": "test",
+            "dataset": {
+                "file name": "m4_daily_finance.json",
+                "file type": "json",
+                "file path": "datasets/",
+                "cumulate used": 0,
+                "use series": 1,
+                "min length": 1000,
+                "max length": 1500
+            },
+            "transformation config": {
+                "xthresholds": [
+                    0.01,
+                    2.1,
+                    0.2
+                ],
+                "interp kind": [
+                    "linear"
+                ],
+                "use states": [
+                    true
+                ],
+                "target transformation": "log-return"
+            },
+            "modelling config": {
+                "retrain window": 10,
+                "validation size": 0.1,
+                "test size": 0.1,
+                "forecast horizon": 1,
+                "gap": 0,
+                "score measure": "SMAPE"
+            },
+            "models": [
+                "LSVR"
+            ],
+            "execution config": {
+                "n of workers": 22
+            }
+        },
+        "number of series used": 1,
+        "Avg. len of series": 1189.0,
+        "took time": {
+            "LSVR": [
+                "18-07-2022--15-35-12",
+                "18-07-2022--15-36-04"
+            ]
+        },
+        "model hyper_params": {
+            "LSVR": {
+                "n of lags": [
+                    3,
+                    7,
+                    14
+                ],
+                "tol": [
+                    0.001,
+                    0.01
+                ],
+                "c": [
+                    1,
+                    0.1
+                ]
+            }
+        },
+        "messages": {
+            "Warning": [
+                "Only 1 series are chosen for this run."
+            ]
+        }
     }
 ]
