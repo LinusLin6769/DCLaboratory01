@@ -1,7 +1,7 @@
 {
     "type of run": "real run",
     "dataset": {
-        "file name": "m4_daily_finance.json",
+        "file name": "m4_weekly_finance.json",
         "file type": "json",
         "file path": "datasets/",
         "cumulate used": 0,

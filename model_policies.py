@@ -3,78 +3,6 @@ from itertools import product
 import numpy as np
 
 models_monthly_params = {
-    'MLP': { # 3x5=15 policies x36 thresholds x10 val x20 workers = 41 secs
-        'n of lags': [1, 3, 5],
-        'strucs': [(0, ), (1, ), (3, ), (5, ), (7, )],
-        'max iter': [500]
-    },
-    'EN': {  # 3x4x4=48 policies x36 thresholds x10 val x20 workers = 1 sec
-        'n of lags': [1, 3, 5],
-        'alpha' : [10**scale for scale in [-1, 0, 1, 2, 3]],
-        'l1 ratio': [0.01, 0.3, 0.5, 0.8, 0.9] # [round(x, 3) for x in np.arange(0.01, 1.01, 0.3)]
-    },
-    'ETS': {  # 2x2x2=8 policies x36 thresholds x10 val x20 workers = 27 sec
-        'auto': [True]
-    },
-    'XGB' :{  # 3x3x2x3=54 policies x36 thresholds x10 val x20 workers = 60 min!!!!!
-        'n of lags': [1, 3, 5],
-        'max depth': [3, 10, 17], # 3 ~ 20
-        'booster': ['gbtree', 'dart'], # gblineaer uses linear functions
-        'subsample ratio': [0.1, 0.4, 0.7], # 0 ~ 1
-    },
-    'LGBM' : {  # 3x3x4x2=72 policies x36 thresholds x10 val x20 workers = 7 min
-        'n of lags': [1, 3, 5],
-        'max depth': [-1], # -1 ~ 32
-        'min split gain': [0], # 0 ~ 5
-        'importance type': ['split']  # 'gain' doesn't not tend to win
-    },
-    'RF': {  # 3x3x3x1x1=27 policies x36 thresholds x10 val x20 workers = 1 min 30 sec
-        'n of lags': [1, 3, 5],
-        'max depth': [None], # None, or 1 ~ 32
-        'min samples split': [0.005], # defalut=2, int or 0.0001 ~ 0.5 as a fraction of n of samples
-        'min impurity decrease': [0], # defalut=0, 0 ~ 1
-        'ccp alpha': [0] # default=0 (no pruning), 0 ~ 1
-    },
-    'AutoARIMA': {}
-}
-
-models_weekly_params = {
-    'MLP': { # 3x5=15 policies x36 thresholds x10 val x20 workers = 41 secs
-        'n of lags': [4, 8, 12],
-        'strucs': [(0, ), (5, ), (10, ), (15, ), (20, )],
-        'max iter': [2000]
-    },
-    'EN': {  # 3x4x4=48 policies x36 thresholds x10 val x20 workers = 1 sec
-        'n of lags': [4, 8, 12],
-        'alpha' : [10**scale for scale in [-1, 0, 1, 2, 3]],
-        'l1 ratio': [0.01, 0.3, 0.5, 0.8, 0.9] # [round(x, 3) for x in np.arange(0.01, 1.01, 0.3)]
-    },
-    'ETS': {  # 2x2x2=8 policies x36 thresholds x10 val x20 workers = 27 sec
-        'auto': [True]
-    },
-    'XGB' :{  # 3x3x2x3=54 policies x36 thresholds x10 val x20 workers = 60 min!!!!!
-        'n of lags': [4, 8, 12],
-        'max depth': [3, 10, 17], # 3 ~ 20
-        'booster': ['gbtree', 'dart'], # gblineaer uses linear functions
-        'subsample ratio': [0.1, 0.4, 0.7], # 0 ~ 1
-    },
-    'LGBM' : {  # 3x3x4x2=72 policies x36 thresholds x10 val x20 workers = 7 min
-        'n of lags': [4, 8, 12],
-        'max depth': [-1], # -1 ~ 32
-        'min split gain': [0], # 0 ~ 5
-        'importance type': ['split']  # 'gain' doesn't not tend to win
-    },
-    'RF': {  # 3x3x3x1x1=27 policies x36 thresholds x10 val x20 workers = 1 min 30 sec
-        'n of lags': [4, 8, 12],
-        'max depth': [None], # None, or 1 ~ 32
-        'min samples split': [0.005], # defalut=2, int or 0.0001 ~ 0.5 as a fraction of n of samples
-        'min impurity decrease': [0], # defalut=0, 0 ~ 1
-        'ccp alpha': [0] # default=0 (no pruning), 0 ~ 1
-    },
-    'AutoARIMA': {}
-}
-
-models_daily_params = {
     'MLP': { 
         'n of lags': [3, 7, 14],
         'strucs': [(6, ), (12, ), (6, 6, ), (12, 6, )],
@@ -89,7 +17,7 @@ models_daily_params = {
         'auto': [True]
     },
     'LGBM' : {  
-        'n of lags': [7, 14, 21],
+        'n of lags': [3, 7, 14],
         'max depth': [-1], # -1 ~ 32
         'min split gain': [0], # 0 ~ 5
         'importance type': ['split']  # 'gain' doesn't not tend to win
@@ -111,7 +39,97 @@ models_daily_params = {
         'q': [1]
     },
     'XGB' :{  
-        'n of lags': [7, 14, 21],
+        'n of lags': [3, 7, 14],
+        'max depth': [10], # 3 ~ 20
+        'booster': ['gbtree'], # gblineaer uses linear functions
+        'subsample ratio': [0.5], # 0 ~ 1
+    },
+    'AutoARIMA': {}
+}
+
+models_weekly_params = {
+    'MLP': { 
+        'n of lags': [3, 7, 14],
+        'strucs': [(6, ), (12, ), (6, 6, ), (12, 6, )],
+        'max iter': [500]
+    },
+    'EN': { 
+        'n of lags': [3, 7, 14],
+        'alpha' : [10**scale for scale in [-1, 0, 1, 2]], # 0.1, 0, 1, 10, 100, 1000
+        'l1 ratio': [0.1, 0.5, 0.9]  # 0 ~ 1
+    },
+    'ETS': { 
+        'auto': [True]
+    },
+    'LGBM' : {  
+        'n of lags': [3, 7, 14],
+        'max depth': [-1], # -1 ~ 32
+        'min split gain': [0], # 0 ~ 5
+        'importance type': ['split']  # 'gain' doesn't not tend to win
+    },
+    'RF': {  
+        'n of lags': [3, 7, 14],
+        'max depth': [None], # None, or 1 ~ 32
+        'min samples split': [0.005, 0.01], # defalut=2, int or 0.0001 ~ 0.5 as a fraction of n of samples
+        'min impurity decrease': [0], # defalut=0, 0 ~ 1
+        'ccp alpha': [0] # default=0 (no pruning), 0 ~ 1
+    },
+    'LSVR' : {
+        'n of lags': [3, 7, 14],
+        'tol': [0.001, 0.01],
+        'c': [1, 0.1],
+        # max iter: 500 ~ 2000
+    },
+    'MA': {
+        'q': [1]
+    },
+    'XGB' :{  
+        'n of lags': [3, 7, 14],
+        'max depth': [10], # 3 ~ 20
+        'booster': ['gbtree'], # gblineaer uses linear functions
+        'subsample ratio': [0.5], # 0 ~ 1
+    },
+    'AutoARIMA': {}
+}
+
+models_daily_params = {
+    'MLP': { 
+        'n of lags': [3, 7, 14],
+        'strucs': [(6, ), (12, ), (6, 6, ), (12, 6, )],
+        'max iter': [500]
+    },
+    'EN': { 
+        'n of lags': [3, 7, 14],
+        'alpha' : [10**scale for scale in [-1, 0, 1, 2]], # 0.1, 0, 1, 10, 100, 1000
+        'l1 ratio': [0.1, 0.5, 0.9]  # 0 ~ 1
+    },
+    'ETS': { 
+        'auto': [True]
+    },
+    'LGBM' : {  
+        'n of lags': [3, 7, 14],
+        'max depth': [-1], # -1 ~ 32
+        'min split gain': [0], # 0 ~ 5
+        'importance type': ['split']  # 'gain' doesn't not tend to win
+    },
+    'RF': {  
+        'n of lags': [3, 7, 14],
+        'max depth': [None], # None, or 1 ~ 32
+        'min samples split': [0.005, 0.01], # defalut=2, int or 0.0001 ~ 0.5 as a fraction of n of samples
+        'min impurity decrease': [0], # defalut=0, 0 ~ 1
+        'ccp alpha': [0] # default=0 (no pruning), 0 ~ 1
+    },
+    'LSVR' : {
+        'n of lags': [3, 7, 14],
+        'tol': [0.001, 0.01],
+        'c': [1, 0.1],
+        # max iter: 500 ~ 2000
+    },
+    'MA': {
+        'q': [1]
+    },
+    'XGB' :{  
+        'n of lags': [3, 7, 14],
         'max depth': [10], # 3 ~ 20
         'booster': ['gbtree'], # gblineaer uses linear functions
         'subsample ratio': [0.5], # 0 ~ 1
@@ -120,40 +138,46 @@ models_daily_params = {
 }
 
 models_hourly_params = {
-    'MLP': { # 3x5=15 policies x36 thresholds x10 val x20 workers = 41 secs
-        'n of lags': [12, 24, 36],
-        'strucs': [(40, )],
-        'max iter': [2000]
+    'MLP': { 
+        'n of lags': [3, 7, 14],
+        'strucs': [(6, ), (12, ), (6, 6, ), (12, 6, )],
+        'max iter': [500]
     },
-    'EN': {  # 3x4x4=48 policies x36 thresholds x10 val x20 workers = 1 sec
-        'n of lags': [12, 24, 36],
-        'alpha' : [10**scale for scale in [2]],
-        'l1 ratio': [0.5] # [round(x, 3) for x in np.arange(0.01, 1.01, 0.3)]
+    'EN': { 
+        'n of lags': [3, 7, 14],
+        'alpha' : [10**scale for scale in [-1, 0, 1, 2]], # 0.1, 0, 1, 10, 100, 1000
+        'l1 ratio': [0.1, 0.5, 0.9]  # 0 ~ 1
     },
-    'ETS': {  # 2x2x2=8 policies x36 thresholds x10 val x20 workers = 27 sec
+    'ETS': { 
         'auto': [True]
     },
-    'XGB' :{  # 3x3x2x3=54 policies x36 thresholds x10 val x20 workers = 60 min!!!!!
-        'n of lags': [12, 24, 36],
-        'max depth': [10], # 3 ~ 20
-        'booster': ['gbtree'], # gblineaer uses linear functions
-        'subsample ratio': [0.5], # 0 ~ 1
-    },
-    'LGBM' : {  # 3x3x4x2=72 policies x36 thresholds x10 val x20 workers = 7 min
-        'n of lags': [12, 24, 36],
+    'LGBM' : {  
+        'n of lags': [3, 7, 14],
         'max depth': [-1], # -1 ~ 32
         'min split gain': [0], # 0 ~ 5
         'importance type': ['split']  # 'gain' doesn't not tend to win
     },
-    'RF': {  # 3x3x3x1x1=27 policies x36 thresholds x10 val x20 workers = 1 min 30 sec
-        'n of lags': [12, 24, 36],
+    'RF': {  
+        'n of lags': [3, 7, 14],
         'max depth': [None], # None, or 1 ~ 32
-        'min samples split': [0.005], # defalut=2, int or 0.0001 ~ 0.5 as a fraction of n of samples
+        'min samples split': [0.005, 0.01], # defalut=2, int or 0.0001 ~ 0.5 as a fraction of n of samples
         'min impurity decrease': [0], # defalut=0, 0 ~ 1
         'ccp alpha': [0] # default=0 (no pruning), 0 ~ 1
     },
-    'LSVR': {
-        'n of lags': [12, 24, 36],
+    'LSVR' : {
+        'n of lags': [3, 7, 14],
+        'tol': [0.001, 0.01],
+        'c': [1, 0.1],
+        # max iter: 500 ~ 2000
+    },
+    'MA': {
+        'q': [1]
+    },
+    'XGB' :{  
+        'n of lags': [3, 7, 14],
+        'max depth': [10], # 3 ~ 20
+        'booster': ['gbtree'], # gblineaer uses linear functions
+        'subsample ratio': [0.5], # 0 ~ 1
     },
     'AutoARIMA': {}
 }
