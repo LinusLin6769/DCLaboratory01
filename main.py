@@ -80,8 +80,10 @@ elif type(use) == int:
                 lens.append(l)
 
 used = list(datasets.keys()) # a list of indices of used time series
+avg_len = round(np.mean([d['length'] for d in datasets.values()]), 3)
 n_series = len(used)
 print(f'Total of {n_series} series are used after length filtering.')
+print(f'Avg. length is {avg_len}.')
 
 # Prompt the user about unreasonable selection of series used.
 if n_series == 0:
