@@ -1,10 +1,10 @@
 {
     "type of run": "real run",
     "dataset": {
-        "file name": "m4_monthly_finance.json",
+        "file name": "m4_weekly_finance.json",
         "file type": "json",
         "file path": "datasets/",
-        "cumulate used": 0,
+        "cumulate used": 50,
         "use series": 50,
         "min length": 600,
         "max length": 1500
@@ -16,7 +16,7 @@
         "target transformation": "log-return"
     },
     "modelling config": {
-        "retrain window": 6,
+        "retrain window": 10,
         "validation size": 0.1,
         "test size": 0.1,
         "forecast horizon": 1,

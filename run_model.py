@@ -74,7 +74,7 @@ class RunModel:
         raw_info = {}
         tran_info = {}
 
-        for i, entry in tqdm(self.datasets.items(), desc='Running EN'):
+        for i, entry in tqdm(self.datasets.items(), desc=f'Running {self.model}'):
             series = entry['raw']
 
             """If series has non-positive values, then skip.
