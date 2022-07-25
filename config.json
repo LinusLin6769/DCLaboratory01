@@ -1,27 +1,28 @@
 {
-    "type of run": "real run",
+    "type of run": "test",
     "dataset": {
         "file name": "m4_weekly_finance.json",
         "file type": "json",
         "file path": "datasets/",
-        "cumulate used": 50,
-        "use series": 50,
+        "cumulate used": 0,
+        "use series": 1,
         "min length": 600,
         "max length": 1500
     },
     "transformation config": {
-        "xthresholds": [0.01, 2.1, 0.2],
+        "xthresholds": [0.01, 2.1, 0.9],
         "interp kind": ["linear"],
         "use states": [true],
         "target transformation": "log-return"
     },
     "modelling config": {
-        "retrain window": 10,
+        "retrain window": 50,
         "validation size": 0.1,
         "test size": 0.1,
         "forecast horizon": 1,
         "gap": 0,
-        "score measure": "SMAPE"
+        "score measure": "SMAPE",
+        "task": "univariate forecasting"
     },
     "models": ["MA", "EN", "ETS", "MLP", "LSVR", "RF"],
     "execution config": {

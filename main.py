@@ -3,6 +3,7 @@ import os
 import numpy as np
 import warnings
 import math
+import data_prep
 from datetime import datetime
 from copy import copy
 from itertools import product
@@ -27,22 +28,25 @@ print(f'Programme starting at {start}')
 with open('config.json', 'r') as config_json:
     config = json.load(config_json)
 
-file_name = config['dataset']['file name']
+if "univariate forecasting" == config['modelling config']['task']:
 
-# grab the time series from the dataset
-if config['dataset']['file type'] == 'json':
-    with open(config['dataset']['file path']+file_name) as dataset:
-        ts = json.load(dataset)
-else:
-    raise ValueError('The programme currently only deals with .JSON files.')
+    file_name = config['dataset']['file name']
 
-use = config['dataset']['use series']
-min_len = config['dataset']['min length']
-max_len = config['dataset']['max length']
-cumulate_used = config['dataset']['cumulate used']  # this number normally is 0 (without any previous run)
-datasets = {}
-lens = []
+    # grab the time series from the dataset
+    if config['dataset']['file type'] == 'json':
+        with open(config['dataset']['file path']+file_name) as dataset:
+            ts = json.load(dataset)
+    else:
+        raise ValueError('The programme currently only deals with .JSON files.')
 
+    use = config['dataset']['use series']
+    min_len = config['dataset']['min length']
+    max_len = config['dataset']['max length']
+    cumulate_used = config['dataset']['cumulate used']  # this number normally is 0 (without any previous run)
+
+    lens, datasets, n_series, messages = data_prep.ts_filterer(ts, use, min_len, max_len, cumulate_used, messages)
+
+"""
 # use time series with length >= min_len
 if use == 'all':
     print(f'Reading all {len(ts)} time series...')
@@ -112,7 +116,7 @@ if n_series > 50:
         pass
     else:
         print("Invalid response. Process terminated.")
-        exit()
+        exit()"""
 
 
 # ------------------------------------------------------------------------

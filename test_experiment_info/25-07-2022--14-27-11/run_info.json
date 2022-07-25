@@ -1,0 +1,176 @@
+{
+    "run time": [
+        "25-07-2022--14-27-11",
+        "25-07-2022--14-28-38"
+    ],
+    "config input": {
+        "type of run": "test",
+        "dataset": {
+            "file name": "m4_weekly_finance.json",
+            "file type": "json",
+            "file path": "datasets/",
+            "cumulate used": 0,
+            "use series": 1,
+            "min length": 600,
+            "max length": 1500
+        },
+        "transformation config": {
+            "xthresholds": [
+                0.01,
+                2.1,
+                0.9
+            ],
+            "interp kind": [
+                "linear"
+            ],
+            "use states": [
+                true
+            ],
+            "target transformation": "log-return"
+        },
+        "modelling config": {
+            "retrain window": 50,
+            "validation size": 0.1,
+            "test size": 0.1,
+            "forecast horizon": 1,
+            "gap": 0,
+            "score measure": "SMAPE",
+            "task": "univariate forecasting"
+        },
+        "models": [
+            "MA",
+            "EN",
+            "ETS",
+            "MLP",
+            "LSVR",
+            "RF"
+        ],
+        "execution config": {
+            "n of workers": 22
+        }
+    },
+    "number of series used": 1,
+    "Avg. len of series": 1324.0,
+    "took time": {
+        "MA": [
+            "25-07-2022--14-27-14",
+            "25-07-2022--14-27-15"
+        ],
+        "EN": [
+            "25-07-2022--14-27-15",
+            "25-07-2022--14-27-47"
+        ],
+        "ETS": [
+            "25-07-2022--14-27-47",
+            "25-07-2022--14-28-14"
+        ],
+        "MLP": [
+            "25-07-2022--14-28-14",
+            "25-07-2022--14-28-20"
+        ],
+        "LSVR": [
+            "25-07-2022--14-28-20",
+            "25-07-2022--14-28-24"
+        ],
+        "RF": [
+            "25-07-2022--14-28-24",
+            "25-07-2022--14-28-38"
+        ]
+    },
+    "model hyper_params": {
+        "MA": {
+            "q": [
+                1
+            ]
+        },
+        "EN": {
+            "n of lags": [
+                3,
+                7,
+                14
+            ],
+            "alpha": [
+                0.1,
+                1,
+                10,
+                100
+            ],
+            "l1 ratio": [
+                0.1,
+                0.5,
+                0.9
+            ]
+        },
+        "ETS": {
+            "auto": [
+                true
+            ]
+        },
+        "MLP": {
+            "n of lags": [
+                3,
+                7,
+                14
+            ],
+            "strucs": [
+                [
+                    6
+                ],
+                [
+                    12
+                ],
+                [
+                    6,
+                    6
+                ],
+                [
+                    12,
+                    6
+                ]
+            ],
+            "max iter": [
+                500
+            ]
+        },
+        "LSVR": {
+            "n of lags": [
+                3,
+                7,
+                14
+            ],
+            "tol": [
+                0.001,
+                0.01
+            ],
+            "c": [
+                1,
+                0.1
+            ]
+        },
+        "RF": {
+            "n of lags": [
+                3,
+                7,
+                14
+            ],
+            "max depth": [
+                null
+            ],
+            "min samples split": [
+                0.005,
+                0.01
+            ],
+            "min impurity decrease": [
+                0
+            ],
+            "ccp alpha": [
+                0
+            ]
+        }
+    },
+    "messages": {
+        "Warning": [
+            "Only 1 series are chosen for this run."
+        ]
+    }
+}

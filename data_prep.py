@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
-from typing import List, Sequence, Tuple
+import warnings
+from typing import List, Sequence, Tuple, Dict
 from datetime import datetime, timedelta
 
 def load_csv(path: str, date_index_col: str = None) -> pd.DataFrame:
@@ -234,3 +235,88 @@ def one_hot(series: Sequence, classes: Sequence) -> np.array:
         res[i, classes.index(x)] = 1
     
     return res
+
+def ts_filterer(
+        ts: Dict[str, List],
+        use: int,
+        min_len: int,
+        max_len: int,
+        cumulate_used: int,
+        messages: Dict
+    ) -> Tuple[List, Dict, int, Dict]:
+    
+    datasets = {}
+    lens = []
+
+    # use time series with length >= min_len
+    if use == 'all':
+        print(f'Reading all {len(ts)} time series...')
+        for k, v in ts.items():
+            l = len(v)
+            if l >= min_len and l <= max_len:
+                datasets[k] = {
+                    'raw': v,
+                    'length': l
+                }
+                lens.append(l)
+    elif type(use) == list:
+        print(f'Reading series number {use}...')
+        for i in use:
+            l = len(ts[str(i)])
+            if l >= min_len and l <= max_len:
+                datasets[f'T{i}'] = {
+                    'raw': ts[str(i)],
+                    'length': l
+                }
+                lens.append(l)
+    elif type(use) == int:
+        count = 0
+        for k, v in ts.items():
+            if count == (cumulate_used + use):
+                break
+            l = len(v)
+            if l >= min_len and l <= max_len:
+                count += 1
+                if count > cumulate_used:
+                    datasets[k] = {
+                        'raw': v,
+                        'length': l
+                    }
+                    lens.append(l)
+
+    used = list(datasets.keys()) # a list of indices of used time series
+    avg_len = round(np.mean([d['length'] for d in datasets.values()]), 3)
+    n_series = len(used)
+    print(f'Total of {n_series} series are used after length filtering.')
+    print(f'Avg. length is {avg_len}.')
+
+    # Prompt the user about unreasonable selection of series used.
+    if n_series == 0:
+        raise RuntimeError('No series is chosen.')
+
+    if n_series <= 3:
+        warnings.warn("Less than 4 series are chosen. Check the specified min_length, max_length or use_series.")
+
+        proceed = input("Less than 4 series are chosen. Do you want to proceed? [yes/no]")
+        if proceed == "no":
+            print("Process terminated.")
+            exit()
+        elif proceed == "yes":
+            pass
+        else:
+            print("Invalid response. Process terminated.")
+            exit()
+        messages['Warning'] = [f'Only {n_series} series are chosen for this run.']
+
+    if n_series > 50:
+        proceed = input("You are running more than 50 series. Do you want to proceed? [yes/no]")
+        if proceed == "no":
+            print("Process terminated.")
+            exit()
+        elif proceed == "yes":
+            pass
+        else:
+            print("Invalid response. Process terminated.")
+            exit()
+    
+    return lens, datasets, n_series, messages
