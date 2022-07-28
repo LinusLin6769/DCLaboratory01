@@ -1,22 +1,22 @@
 {
-    "type of run": "test",
+    "type of run": "real run",
     "dataset": {
-        "file name": "m4_weekly_finance.json",
+        "file name": "m4_daily_micro.json",
         "file type": "json",
         "file path": "datasets/",
         "cumulate used": 0,
-        "use series": 1,
-        "min length": 600,
+        "use series": 30,
+        "min length": 1000,
         "max length": 1500
     },
     "transformation config": {
-        "xthresholds": [0.01, 2.1, 0.9],
+        "xthresholds": [0.01, 2.1, 0.2],
         "interp kind": ["linear"],
         "use states": [true],
         "target transformation": "log-return"
     },
     "modelling config": {
-        "retrain window": 50,
+        "retrain window": 10,
         "validation size": 0.1,
         "test size": 0.1,
         "forecast horizon": 1,
