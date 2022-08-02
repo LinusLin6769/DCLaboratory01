@@ -1,11 +1,11 @@
 {
     "type of run": "real run",
     "dataset": {
-        "file name": "m4_daily_micro.json",
+        "file name": "m4_hourly_dataset.json",
         "file type": "json",
         "file path": "datasets/",
         "cumulate used": 0,
-        "use series": 30,
+        "use series": 20,
         "min length": 1000,
         "max length": 1500
     },

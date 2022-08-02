@@ -139,12 +139,12 @@ models_daily_params = {
 
 models_hourly_params = {
     'MLP': { 
-        'n of lags': [3, 7, 14],
-        'strucs': [(6, ), (12, ), (6, 6, ), (12, 6, )],
+        'n of lags': [6, 12, 24],
+        'strucs': [(12, ), (24, ), (12, 12, ), (24, 12, )],
         'max iter': [500]
     },
     'EN': { 
-        'n of lags': [3, 7, 14],
+        'n of lags': [6, 12, 24],
         'alpha' : [10**scale for scale in [-1, 0, 1, 2]], # 0.1, 0, 1, 10, 100, 1000
         'l1 ratio': [0.1, 0.5, 0.9]  # 0 ~ 1
     },
@@ -152,20 +152,20 @@ models_hourly_params = {
         'auto': [True]
     },
     'LGBM' : {  
-        'n of lags': [3, 7, 14],
+        'n of lags': [6, 12, 24],
         'max depth': [-1], # -1 ~ 32
         'min split gain': [0], # 0 ~ 5
         'importance type': ['split']  # 'gain' doesn't not tend to win
     },
     'RF': {  
-        'n of lags': [3, 7, 14],
+        'n of lags': [6, 12, 24],
         'max depth': [None], # None, or 1 ~ 32
         'min samples split': [0.005, 0.01], # defalut=2, int or 0.0001 ~ 0.5 as a fraction of n of samples
         'min impurity decrease': [0], # defalut=0, 0 ~ 1
         'ccp alpha': [0] # default=0 (no pruning), 0 ~ 1
     },
     'LSVR' : {
-        'n of lags': [3, 7, 14],
+        'n of lags': [6, 12, 24],
         'tol': [0.001, 0.01],
         'c': [1, 0.1],
         # max iter: 500 ~ 2000
