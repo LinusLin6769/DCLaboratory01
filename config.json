@@ -4,8 +4,8 @@
         "file name": "m4_hourly_dataset.json",
         "file type": "json",
         "file path": "datasets/",
-        "cumulate used": 60,
-        "use series": 30,
+        "cumulate used": 90,
+        "use series": 50,
         "min length": 1000,
         "max length": 1500
     },
