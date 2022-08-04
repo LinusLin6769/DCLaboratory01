@@ -1,0 +1,172 @@
+{
+    "run time": [
+        "28-07-2022--23-09-28",
+        "29-07-2022--12-08-24"
+    ],
+    "config input": {
+        "type of run": "real run",
+        "dataset": {
+            "file name": "m4_daily_micro.json",
+            "file type": "json",
+            "file path": "datasets/",
+            "cumulate used": 0,
+            "use series": 30,
+            "min length": 1000,
+            "max length": 1500
+        },
+        "transformation config": {
+            "xthresholds": [
+                0.01,
+                2.1,
+                0.2
+            ],
+            "interp kind": [
+                "linear"
+            ],
+            "use states": [
+                true
+            ],
+            "target transformation": "log-return"
+        },
+        "modelling config": {
+            "retrain window": 10,
+            "validation size": 0.1,
+            "test size": 0.1,
+            "forecast horizon": 1,
+            "gap": 0,
+            "score measure": "SMAPE",
+            "task": "univariate forecasting"
+        },
+        "models": [
+            "MA",
+            "EN",
+            "ETS",
+            "MLP",
+            "LSVR",
+            "RF"
+        ],
+        "execution config": {
+            "n of workers": 22
+        }
+    },
+    "number of series used": 30,
+    "Avg. len of series": 1265.0333333333333,
+    "took time": {
+        "MA": [
+            "28-07-2022--23-09-45",
+            "28-07-2022--23-11-01"
+        ],
+        "EN": [
+            "28-07-2022--23-11-01",
+            "29-07-2022--07-53-54"
+        ],
+        "ETS": [
+            "29-07-2022--07-53-54",
+            "29-07-2022--08-37-07"
+        ],
+        "MLP": [
+            "29-07-2022--08-37-07",
+            "29-07-2022--09-35-22"
+        ],
+        "LSVR": [
+            "29-07-2022--09-35-22",
+            "29-07-2022--10-04-45"
+        ],
+        "RF": [
+            "29-07-2022--10-04-45",
+            "29-07-2022--12-08-24"
+        ]
+    },
+    "model hyper_params": {
+        "MA": {
+            "q": [
+                1
+            ]
+        },
+        "EN": {
+            "n of lags": [
+                3,
+                7,
+                14
+            ],
+            "alpha": [
+                0.1,
+                1,
+                10,
+                100
+            ],
+            "l1 ratio": [
+                0.1,
+                0.5,
+                0.9
+            ]
+        },
+        "ETS": {
+            "auto": [
+                true
+            ]
+        },
+        "MLP": {
+            "n of lags": [
+                3,
+                7,
+                14
+            ],
+            "strucs": [
+                [
+                    6
+                ],
+                [
+                    12
+                ],
+                [
+                    6,
+                    6
+                ],
+                [
+                    12,
+                    6
+                ]
+            ],
+            "max iter": [
+                500
+            ]
+        },
+        "LSVR": {
+            "n of lags": [
+                3,
+                7,
+                14
+            ],
+            "tol": [
+                0.001,
+                0.01
+            ],
+            "c": [
+                1,
+                0.1
+            ]
+        },
+        "RF": {
+            "n of lags": [
+                3,
+                7,
+                14
+            ],
+            "max depth": [
+                null
+            ],
+            "min samples split": [
+                0.005,
+                0.01
+            ],
+            "min impurity decrease": [
+                0
+            ],
+            "ccp alpha": [
+                0
+            ]
+        }
+    },
+    "messages": {}
+}
