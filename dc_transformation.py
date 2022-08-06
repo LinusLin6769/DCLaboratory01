@@ -218,18 +218,26 @@ class DCTransformer:
 
     def make_plot(self, marks=False, w_data0=False) -> None:
         import matplotlib.pyplot as plt
-        
-        plt.figure(figsize = (20, 10))
-        plt.plot(list(np.arange(len(self.data))), self.data, 'C0', label='raw data movement')
-        if w_data0 :plt.plot(self.tdata0, 'C1', label='local extrema')
-        plt.plot(self.tdata1, 'C2', label='local extrema and directional changes')
+        plt.style.use('seaborn')
+        font = {'family': 'serif',
+                'weight': 'normal',
+                'size': 20,
+        }
+        plt.figure(figsize = (25, 15))
+        plt.plot(list(np.arange(len(self.data))), self.data, label='raw data movement')
+        if w_data0 :plt.plot(self.tdata0, label='local extrema')
+        plt.plot(self.tdata1, label='local extrema and directional changes')
         if marks:
             plt.plot(np.array(self.markers[0][0]).astype(int), np.array(self.markers[0][1]).astype(float), 'ko', label = 'local extreme')
-            plt.plot(np.array(self.markers[10][0]).astype(int), np.array(self.markers[10][1]).astype(float), 'C3D', label = 'bullish directional change')
-            plt.plot(np.array(self.markers[-10][0]).astype(int), np.array(self.markers[-10][1]).astype(float), 'C4D', label = 'bearish directional change')
+            plt.plot(np.array(self.markers[10][0]).astype(int), np.array(self.markers[10][1]).astype(float), 'D', label = 'bullish directional change')
+            plt.plot(np.array(self.markers[-10][0]).astype(int), np.array(self.markers[-10][1]).astype(float), 'D', label = 'bearish directional change')
         # plt.plot(np.array(markers['pos close'][0]).astype(int), np.array(markers['pos close'][1]).astype(float), 'gD', label = 'position closed')
-        plt.legend()
-        plt.title(f'Std. of log-return: {self.sigma}, Thresholds: delta up = {round(self.DELTA_UP*100, 3)}%, delta down = {round(self.DELTA_DOWN*100, 3)}%, number of extrema: {len(self.markers[0][0])}')
+        plt.legend(prop={'size': 14, 'family': 'serif'})
+        plt.title(f'Std. of log-return: {self.sigma}, Thresholds: delta up = {round(self.DELTA_UP*100, 3)}%, delta down = {round(self.DELTA_DOWN*100, 3)}%, number of extrema: {len(self.markers[0][0])}', fontdict=font)
+        plt.xticks(fontsize=14, fontname='serif')
+        plt.yticks(fontsize=14, fontname='serif')
+        plt.xlabel('Time', fontdict=font)
+        plt.ylabel('Value', fontdict=font)
         plt.show()
 
     def transform(self, data, threshold=None, kind='linear') -> None:
